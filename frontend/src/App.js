@@ -1,43 +1,23 @@
-import React, { useState } from 'react';
+import logo from './logo.svg';
+import './App.css';
 
 function App() {
-  const [message, setMessage] = useState('');
-  const [reply, setReply] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const response = await fetch('http://localhost:8000/chat/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ content: message })
-    });
-    const data = await response.json();
-    setReply(data.reply);
-  };
-
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>ChatGPT Assistant</h1>
-      <form onSubmit={handleSubmit}>
-        <textarea
-          rows="4"
-          cols="50"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message here..."
-          required
-        />
-        <br />
-        <button type="submit">Send</button>
-      </form>
-      {reply && (
-        <div style={{ marginTop: '20px' }}>
-          <h2>Assistant's Reply:</h2>
-          <p>{reply}</p>
-        </div>
-      )}
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          Edit <code>src/App.js</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn React
+        </a>
+      </header>
     </div>
   );
 }
