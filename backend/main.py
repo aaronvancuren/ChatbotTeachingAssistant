@@ -1,8 +1,13 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 import openai
 import os
+
+from dotenv import load_dotenv
+from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+# Load the environment variables from .env
+load_dotenv()
 
 # Load your OpenAI API key from an environment variable or secret management service
 openai.api_key = os.getenv("OPENAI_API_KEY")
