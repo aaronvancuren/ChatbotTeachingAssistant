@@ -50,7 +50,7 @@ async def chat(message: Message):
                 }
             ],
             model=os.getenv("OPENAI_MODEL"),
-            max_completion_tokens=os.getenv("OPENAI_MAX_COMPLETION_TOKENS"),
+            max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
             temperature=0.7,
@@ -68,5 +68,6 @@ async def chat(message: Message):
         print("Another non-200-range status code was received")
         print(e.status_code)
         print(e.response)
+        print(e.message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
