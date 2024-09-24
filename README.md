@@ -53,7 +53,7 @@ cd backend
 Install the required Python packages:
 
 ```bash
-pip install fastapi uvicorn openai python-dotenv
+pip install "fastapi[standard]" uvicorn openai python-dotenv
 ```
 
 Alternatively, if you have a `requirements.txt` file:
@@ -64,58 +64,13 @@ pip install -r requirements.txt
 
 ### 4. Set Up Environment Variables
 
-Create a `.env` file in the `ChatbotTeachingAssistant/backend` directory:
+Follow the instructions found in the template `env.txt` file in the `ChatbotTeachingAssistant/backend` directory:
 
-```bash
-touch .env
-```
+Add your environment variables to the `env` file:
 
-Add your OpenAI API key to the `.env` file:
+Rename the file to `.env`
 
-```env
-OPENAI_API_KEY=your-openai-api-key
-```
-
-> **Note:** Replace `your-openai-api-key` with your actual OpenAI API key.
-
-### 5. Create the FastAPI Application
-
-Ensure that you have a `main.py` file in the `backend` directory with the following code:
-
-```python
-import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import openai
-from dotenv import load_dotenv
-
-load_dotenv()
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-app = FastAPI(
-    title="Chatbot Teaching Assistant API",
-    description="An API for a chatbot using OpenAI's GPT models",
-    version="1.0.0"
-)
-
-class Prompt(BaseModel):
-    prompt: str
-
-@app.post("/chat", tags=["Chatbot"])
-async def chat(prompt: Prompt):
-    try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt.prompt,
-            max_tokens=150
-        )
-        return {"response": response.choices[0].text.strip()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-```
-
-### 6. Run the FastAPI Server
+### 5. Run the FastAPI Server
 
 Start the server using Uvicorn:
 
@@ -125,7 +80,7 @@ uvicorn main:app --reload
 
 > The `--reload` flag enables auto-reloading of the server when code changes.
 
-### 7. Access the Swagger UI
+### 6. Access the Swagger UI
 
 FastAPI automatically generates interactive API documentation using Swagger UI. You can access it by visiting:
 
@@ -134,7 +89,7 @@ FastAPI automatically generates interactive API documentation using Swagger UI. 
 
 These interfaces allow you to interact with your API directly from the browser.
 
-### 8. Test the Chatbot
+### 7. Test the Chatbot
 
 You can test the API endpoint using **Swagger UI**, **cURL**, or tools like **Postman**.
 
@@ -159,7 +114,7 @@ You can test the API endpoint using **Swagger UI**, **cURL**, or tools like **Po
 curl -X POST "http://127.0.0.1:8000/chat" -H "Content-Type: application/json" -d "{\"prompt\": \"Hello, how are you?\"}"
 ```
 
-### 9. Open the Project in VSCode
+### 8. Open the Project in VSCode
 
 Open the project directory in VSCode:
 
@@ -169,7 +124,7 @@ code .
 
 Install the Python extension in VSCode for enhanced support.
 
-### 10. Deactivate the Virtual Environment (Optional)
+### 9. Deactivate the Virtual Environment (Optional)
 
 When you're done, you can deactivate the virtual environment:
 
@@ -195,45 +150,12 @@ FastAPI comes with built-in support for interactive API documentation powered by
   )
   ```
 
-- **Disabling Docs:**
-
-  If you want to disable the automatic documentation:
-
-  ```python
-  app = FastAPI(docs_url=None, redoc_url=None)
-  ```
-
-- **Custom Docs URLs:**
-
-  You can set custom URLs for the documentation:
-
-  ```python
-  app = FastAPI(
-      docs_url="/documentation",
-      redoc_url="/redocs"
-  )
-  ```
-
-- **Adding Tags to Routes:**
-
-  You can organize your endpoints using tags:
-
-  ```python
-  @app.post("/chat", tags=["Chatbot"])
-  async def chat(prompt: Prompt):
-      # Your code here
-  ```
-
 ### Dependencies
 
 - `fastapi`: Web framework for building APIs.
 - `uvicorn`: ASGI server to run FastAPI.
 - `openai`: OpenAI API client library.
 - `python-dotenv`: Loads environment variables from a `.env` file.
-
-### Security Tip
-
-- Never commit your `.env` file or API keys to version control.
 
 ### Git Bash Usage
 
@@ -260,15 +182,3 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [Uvicorn Documentation](https://www.uvicorn.org/)
 - [Python-dotenv Documentation](https://python-dotenv.readthedocs.io/en/latest/)
 - [Swagger UI Documentation](https://swagger.io/tools/swagger-ui/)
-
----
-
-I've corrected the links for the **FastAPI Documentation**, **Python-dotenv Documentation**, and **Swagger UI Documentation**:
-
-- **FastAPI Documentation** now points to [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/).
-- **Python-dotenv Documentation** now points to [https://python-dotenv.readthedocs.io/en/latest/](https://python-dotenv.readthedocs.io/en/latest/).
-- **Swagger UI Documentation** now points to [https://swagger.io/tools/swagger-ui/](https://swagger.io/tools/swagger-ui/).
-
-The entire installation guide is written in markdown format so you can easily copy and paste it into your GitHub README.
-
-Let me know if you need any further assistance!
