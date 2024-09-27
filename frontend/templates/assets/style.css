@@ -1,0 +1,311 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+/*
+
+Graphic design note: As we are sticking with the official PFW branding, we will be using
+the following color scheme as found on page 46 of the PDF provided by the marketing department's
+branding document found (https://www.pfw.edu/offices/communications-marketing/docs/PFW-Brand-Standard-Guidelines-06_30_2020-DIGITAL.pdf)
+
+We will be using specifically, the Institution Palette. This means that 70% of our composition's 
+color space will be of a PFW primary color swatch (these will be denoted as --pfw-primary-<COLOR>).
+10% of the composition's color space will be used for gold swatches (these will be denoted as --pfw-gold-<COLOR>).
+Finally, 20% of the composition's color space will be of the Black supporting swatch (these will be denoted as --pfw-black-<COLOR>).
+
+To ensure Level AA standards, please see page 50 of the document referenced earlier.
+
+*/
+:root {
+    /* Primary Swatches */
+    --primary-pfw-black: #000;
+    --primary-pfw-golden: #CFB991;
+    --primary-pfw-white: #fff;
+
+    /* Gold Accent Swatches */
+    --pfw-gold-summit: #DAAA00;
+    --pfw-gold-clay: #8E6F3E;
+    --pfw-gold-tassel: #DDB945;
+    --pfw-gold-rumble: #EBD99F;
+
+    /* Black Accent Swatches */
+    --pfw-black-footprints: #555960;
+    --pfw-black-storm: #6F727B;
+    --pfw-black-fog: #9D9795;
+    --pfw-black-tusk: #C4BFC0;
+}
+
+* {
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 400;
+
+    transition: .3s;
+    margin: 0px;
+    padding: 0px;
+    scroll-behavior: smooth;
+    text-decoration: none;
+    color: inherit;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+main {
+    background-color: var(--primary-pfw-white);
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+header {
+    display:flex;
+    top:0;
+    height: 3em;
+    width: 100%;
+    position: sticky;
+    background-color: var(--pfw-gold-tassel);
+    align-items: center;
+    justify-content: space-between;
+    justify-items: center;
+    align-content: center;
+    padding: 1ch;
+    z-index: 1;
+}
+
+header img {
+    width: auto;
+    height: 5ch;
+}
+
+header h1 {
+    font-weight: bold;
+    font-size: xx-large;
+}
+
+header #select_class select {
+    width: 20ch;
+    height: 3ch;
+}
+
+header #login {
+    display:flex;
+    align-items: center;
+    height: 100%;
+}
+
+header #login p {
+    font-style: italic;
+    text-align:left;
+}
+
+header #login img {
+    border-radius: 100%;
+    margin:2ch;
+    border-style: solid;
+    border-color: var(--primary-pfw-black);
+}
+
+header a {
+    display:flex;
+    align-items: center;
+}
+
+header a span {
+    padding: 1ch;
+}
+
+/*Scroll Bar*/
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #aaa;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+.host {
+    padding: 5% 15% 5% 15%;
+}
+
+
+#host {
+    display: table;
+    width: 100%;
+    height: 100%;
+}
+
+#sidebar {
+    display: table-cell;
+    height: 100%;
+    width: 20%;
+    vertical-align: top;
+    background-color: var(--pfw-black-footprints);
+    position: fixed;
+    color:var(--primary-pfw-white);
+}
+
+#sidebar h1 {
+    font-weight: 200;   
+    font-size: 20pt;
+}
+
+#sidebar a {
+    text-decoration: none;
+}
+
+#content {
+    display: table-cell;
+    width: 80%;
+    height: 100%;
+    vertical-align: bottom;
+    overflow-y: auto;
+    padding: 3ch;
+    z-index: -1;
+    margin: 3ch;
+}
+
+#conversation {
+    display:flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: auto;
+    width: 100%;
+}
+
+.chat-box {
+    width: 100%;
+    margin: auto;
+}
+
+.chat-box #input * {
+    width: 100%;
+    height: auto;
+    min-height: 3ch;
+    max-height: 30%;
+    overflow-y:auto;
+}
+
+.chat-box::after {
+    content: "Victor is an AI and may make mistakes.";
+    color: #00000060;
+    font-size: small;
+}
+
+/* ChatGPT Code */
+#sidebar ul {
+    list-style-type: none;
+    padding-top: 3ch;
+    padding-bottom: 3ch;
+    overflow-y: auto;
+}
+
+#sidebar ul li {
+    padding: 10px 20px;
+    color: white;
+}
+
+#sidebar ul li.active {
+    background-color: #FFC107;
+    color: black;
+}
+/* End ChatGPT Code*/
+
+/* Source: https://codepen.io/Founts/pen/AJyVOr */
+.talk-bubble {
+    display: inline-block;
+    position: relative;
+	width: 80%;
+	height: auto;
+    margin: 1em;
+}
+
+.talk-bubble.victor ::before{
+    content: "Victor Says...";
+    position:relative;
+}
+
+.talk-bubble.user ::before {
+    content: "You asked...";
+}
+
+.victor {
+    margin-left: 0;
+    background-color: var(--pfw-gold-rumble);
+    border-color: var(--pfw-gold-rumble);
+}
+
+.user {
+    margin-right: 0;
+    background-color: var(--pfw-black-tusk);
+    border-color: var(--pfw-black-tusk);
+}
+
+.talktext{
+    padding: 1em;
+    text-align: left;
+    line-height: 1.5em;
+}
+.talktext p{
+    /* remove webkit p margins */
+    -webkit-margin-before: 0em;
+    -webkit-margin-after: 0em;
+}
+
+/*Right triangle, placed bottom right side slightly in*/
+.tri-right.border.btm-right:before {
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
+    left: auto;
+	right: -8px;
+	bottom: -40px;
+	border: 20px solid;
+	border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+}
+.tri-right.btm-right:after{
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
+    left: auto;
+	right: 0px;
+	bottom: -20px;
+	border: 12px solid;
+	border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+}
+
+/*Right triangle, placed bottom left side slightly in*/
+.tri-right.border.btm-left:before {
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
+	left: -8px;
+    right: auto;
+    top: auto;
+	bottom: -40px;
+	border: 32px solid;
+	border-color: transparent transparent transparent var(--pfw-gold-rumble);
+}
+.tri-right.btm-left:after {
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
+	left: 0;
+    right: auto;
+    top: auto;
+	bottom: -20px;
+	border: 22px solid;
+	border-color: transparent transparent transparent var(--pfw-gold-rumble);
+}
+/* End Source: https://codepen.io/Founts/pen/AJyVOr */
