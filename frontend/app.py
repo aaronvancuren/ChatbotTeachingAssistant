@@ -1,24 +1,40 @@
-from flask import *
+import logging
 
-app = Flask(__name__)
+from starlette.applications import Starlette
+from starlette.routing import Route, Mount
+from starlette.templating import Jinja2Templates
+from starlette.staticfiles import StaticFiles
 
-# This section is needed for url_for("foo", _external=True) to automatically
-# generate http scheme when this sample is running on localhost,
-# and to generate https scheme when it is deployed behind reversed proxy.
-# See also https://flask.palletsprojects.com/en/2.2.x/deploying/proxy_fix/
-from werkzeug.middleware.proxy_fix import ProxyFix
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+logger = logging.getLogger(__name__)
 
+templates = Jinja2Templates(directory='templates')
 
-@app.route("/")
-def index():
-    return render_template('chat.html', version=identity.__version__)
+#region HTML Pages
+# Note: Any page will need to follow this format: 
+# async def <description>page(request):
+#       return templates.TemplateResponse(request, <PATH>)
 
+# The homepage
+async def homepage(request):
+    print(request)
+    return templates.TemplateResponse(request, 'index.html')
 
-@app.route("/chat")
-def openChat():
-    return render_template("chat.html", version=identity.__version__)
+# The Chat Page
+async def chatpage(request):
+    print(request)
+    return templates.TemplateResponse(request, 'chat.html')
 
+#endregion
 
-if __name__ == "__main__":
-    app.run()
+# This code is our web page map.
+# Root directory is '/', this is defaulted to the 'index.html' page.
+# Mount('/static', ...) needs to be present to mount the directory where the pages are.
+# When a new page is added, insert it above Mount('/static', ...) and give it
+# a descriptive file path.
+routes = [
+    Route('/', endpoint=homepage),
+    Route('/chat', endpoint=chatpage),
+    Mount('/static', StaticFiles(directory='templates'), name='static')
+]
+
+app = Starlette(debug=True,routes=routes)

@@ -40,8 +40,8 @@ To ensure Level AA standards, please see page 50 of the document referenced earl
     font-weight: 400;
 
     transition: .3s;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     scroll-behavior: smooth;
     text-decoration: none;
     color: inherit;
@@ -74,7 +74,7 @@ header {
 
 header img {
     width: auto;
-    height: 5ch;
+    height: 3.5ch;
 }
 
 header h1 {
@@ -190,13 +190,15 @@ header a span {
     height: auto;
     min-height: 3ch;
     max-height: 30%;
-    overflow-y:auto;
+    overflow-x:auto;
 }
 
 .chat-box::after {
     content: "Victor is an AI and may make mistakes.";
     color: #00000060;
     font-size: small;
+    width: 100%;
+    margin:auto;
 }
 
 /* ChatGPT Code */
@@ -227,12 +229,12 @@ header a span {
     margin: 1em;
 }
 
-.talk-bubble.victor ::before{
+.talk-bubble.victor div ::before{
     content: "Victor Says...";
     position:relative;
 }
 
-.talk-bubble.user ::before {
+.talk-bubble.user div::before {
     content: "You asked...";
 }
 
