@@ -28,6 +28,13 @@ routes = [
 
 
 app = Starlette(debug=True,routes=routes)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"])
+
+@app.route("/ask", methods=["POST"])
+async def submit(request: Request):
+    form_data = await request.body()
+    print(form_data.decode())
+    return JSONResponse({"chat":await validate(request.headers['X-victor-uid'], form_data.decode())})
 
 if __name__ == "__main__":
     uvicorn.run("app:app", port=8000, log_level="info", reload=True)
