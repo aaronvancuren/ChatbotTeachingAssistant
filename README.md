@@ -4,9 +4,9 @@ This guide will help you set up the Chatbot Teaching Assistant application using
 
 ## Prerequisites
 
-- **Python 3.7+** installed. [Download Python](https://www.python.org/downloads/)
+- **Python 3.12+** installed. [Download Python](https://www.python.org/downloads/)
 - **Git Bash** installed. [Download Git Bash](https://git-scm.com/downloads)
-- **Visual Studio Code** installed. [Download VSCode](https://code.visualstudio.com/download)
+- **Visual Studio Code 1.93+** installed. [Download VSCode](https://code.visualstudio.com/download)
 - An **OpenAI API key**. [Sign up for OpenAI API](https://platform.openai.com/signup)
 
 ## Installation Steps
@@ -24,6 +24,14 @@ cd ChatbotTeachingAssistant
 
 Create a virtual environment to manage project dependencies:
 
+- **On Windows**:
+
+```bash
+py -m venv venv
+```
+
+- **On Unix or MacOS**:
+
 ```bash
 python -m venv venv
 ```
@@ -32,31 +40,25 @@ Activate the virtual environment:
 
 - **On Windows**:
 
-  ```bash
-  source venv/Scripts/activate
-  ```
+```bash
+source venv/Scripts/activate
+```
 
 - **On Unix or MacOS**:
 
-  ```bash
-  source venv/bin/activate
-  ```
+```bash
+source venv/bin/activate
+```
 
 ### 3. Install Dependencies
 
-Navigate to the `backend` directory:
+Update pip to ensure latest version:
 
 ```bash
-cd backend
+pip install --upgrade pip
 ```
 
 Install the required Python packages:
-
-```bash
-pip install "fastapi[standard]" uvicorn openai python-dotenv
-```
-
-Alternatively, if you have a `requirements.txt` file:
 
 ```bash
 pip install -r requirements.txt
@@ -150,12 +152,47 @@ FastAPI comes with built-in support for interactive API documentation powered by
   )
   ```
 
-### Dependencies
+## Dependencies
 
+- `annotated-types`: Provides support for annotated type hints in Python.
+- `anyio`: Asynchronous networking and concurrency library.
+- `certifi`: Mozilla’s curated collection of Root Certificates.
+- `click`: Package for creating command-line interfaces.
+- `colorama`: Produces colored terminal text on Windows.
+- `dnspython`: DNS toolkit for Python.
+- `email-validator`: Robust email address syntax and deliverability validator.
 - `fastapi`: Web framework for building APIs.
-- `uvicorn`: ASGI server to run FastAPI.
-- `openai`: OpenAI API client library.
-- `python-dotenv`: Loads environment variables from a `.env` file.
+- `fastapi-cli`: CLI tool to manage FastAPI projects.
+- `h11`: Pure-Python HTTP/1.1 protocol implementation.
+- `h2`: Python HTTP/2 protocol implementation.
+- `hpack`: HTTP/2 header encoding for Python.
+- `httpcore`: Low-level HTTP client interface.
+- `httptools`: HTTP parsing tools collection.
+- `httpx`: Fully featured HTTP client supporting HTTP/1.1 and HTTP/2.
+- `hyperframe`: Python module for working with HTTP/2 frames.
+- `idna`: Implements Internationalized Domain Names in Applications (IDNA) standard.
+- `itsdangerous`: Securely signs data.
+- `Jinja2`: Templating engine for generating HTML.
+- `markdown-it-py`: Markdown parser with full CommonMark support.
+- `MarkupSafe`: String handling library for safe HTML and XML rendering.
+- `mdurl`: URL parsing for markdown.
+- `pydantic`: Data validation and settings management using Python type annotations.
+- `pydantic-extra-types`: Extra types for Pydantic.
+- `pydantic-settings`: Settings management library for Pydantic.
+- `pydantic-core`: Core engine powering Pydantic.
+- `Pygments`: Syntax highlighter for code.
+- `python-dotenv`: Reads key-value pairs from `.env` file and adds them to the environment.
+- `python-multipart`: Streaming multipart parser for Python.
+- `PyYAML`: YAML parser and emitter for Python.
+- `rich`: Library for rich text and beautiful formatting in the terminal.
+- `shellingham`: Detects the current user’s shell.
+- `sniffio`: Library to detect which async library is running.
+- `starlette`: Lightweight ASGI framework/toolkit for building high-performance async services.
+- `typer`: Library for building CLI applications, designed to be easy to use with FastAPI.
+- `typing_extensions`: Backports new type hinting features.
+- `uvicorn`: Lightning-fast ASGI server implementation.
+- `watchfiles`: File watching library for Python.
+- `websockets`: Library for building WebSocket servers and clients in Python.
 
 ### Git Bash Usage
 
@@ -177,8 +214,42 @@ FastAPI comes with built-in support for interactive API documentation powered by
 
 ## Useful Links
 
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [OpenAI API Reference](https://platform.openai.com/docs/api-reference/introduction)
-- [Uvicorn Documentation](https://www.uvicorn.org/)
-- [Python-dotenv Documentation](https://python-dotenv.readthedocs.io/en/latest/)
-- [Swagger UI Documentation](https://swagger.io/tools/swagger-ui/)
+- [annotated-types Documentation](https://pypi.org/project/annotated-types/)
+- [anyio Documentation](https://anyio.readthedocs.io/en/stable/)
+- [certifi Documentation](https://pypi.org/project/certifi/)
+- [click Documentation](https://click.palletsprojects.com/en/stable/)
+- [colorama Documentation](https://pypi.org/project/colorama/)
+- [dnspython Documentation](https://www.dnspython.org/)
+- [email-validator Documentation](https://pypi.org/project/email-validator/)
+- [fastapi Documentation](https://fastapi.tiangolo.com/)
+- [fastapi-cli Documentation](https://pypi.org/project/fastapi-cli/)
+- [h11 Documentation](https://h11.readthedocs.io/en/stable/)
+- [h2 Documentation](https://python-hyper.org/projects/h2/en/stable/)
+- [hpack Documentation](https://pypi.org/project/hpack/)
+- [httpcore Documentation](https://www.python-httpx.org/httpcore/)
+- [httptools Documentation](https://pypi.org/project/httptools/)
+- [httpx Documentation](https://www.python-httpx.org/)
+- [hyperframe Documentation](https://pypi.org/project/hyperframe/)
+- [idna Documentation](https://pypi.org/project/idna/)
+- [itsdangerous Documentation](https://pypi.org/project/itsdangerous/)
+- [Jinja2 Documentation](https://jinja.palletsprojects.com/en/stable/)
+- [markdown-it-py Documentation](https://markdown-it-py.readthedocs.io/en/latest/)
+- [MarkupSafe Documentation](https://pypi.org/project/MarkupSafe/)
+- [mdurl Documentation](https://pypi.org/project/mdurl/)
+- [pydantic Documentation](https://docs.pydantic.dev/)
+- [pydantic-extra-types Documentation](https://pypi.org/project/pydantic-extra-types/)
+- [pydantic-settings Documentation](https://pypi.org/project/pydantic-settings/)
+- [pydantic-core Documentation](https://docs.pydantic.dev/latest/usage/types/pydantic_core/)
+- [Pygments Documentation](https://pygments.org/docs/)
+- [python-dotenv Documentation](https://pypi.org/project/python-dotenv/)
+- [python-multipart Documentation](https://pypi.org/project/python-multipart/)
+- [PyYAML Documentation](https://pyyaml.org/wiki/PyYAMLDocumentation)
+- [rich Documentation](https://rich.readthedocs.io/en/stable/)
+- [shellingham Documentation](https://pypi.org/project/shellingham/)
+- [sniffio Documentation](https://pypi.org/project/sniffio/)
+- [starlette Documentation](https://www.starlette.io/)
+- [typer Documentation](https://typer.tiangolo.com/)
+- [typing_extensions Documentation](https://pypi.org/project/typing-extensions/)
+- [uvicorn Documentation](https://www.uvicorn.org/)
+- [watchfiles Documentation](https://pypi.org/project/watchfiles/)
+- [websockets Documentation](https://websockets.readthedocs.io/en/stable/)
