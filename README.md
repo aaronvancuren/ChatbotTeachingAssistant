@@ -66,11 +66,17 @@ pip install -r requirements.txt
 
 ### 4. Set Up Environment Variables
 
-Follow the instructions found in the template `env.txt` file in the `ChatbotTeachingAssistant/backend` directory:
+Create a `.env` file.
 
-Add your environment variables to the `env` file:
+Add the following environment variables to the `.env` file:
+OPENAI_API_KEY=[PROJECT API KEY]
+OPENAI_MODEL=[CHATGPT MODEL]
+OPENAI_ORGANIZATION=[ORGANIZATION ID]
+OPENAI_PROJECT=[PROJECT ID]
+OPENAI_MAX_COMPLETION_TOKENS=150
+ORIGINS=[LOCAL HOST] (e.g. http://localhost:3000)
 
-Rename the file to `.env`
+> The OpenAI environment variables can be found on the OpenAI Platform.
 
 ### 5. Run the FastAPI Server
 
@@ -78,6 +84,11 @@ Start the server using Uvicorn:
 
 ```bash
 uvicorn main:app --reload
+```
+
+Alternatively, you can use run.py:
+```bash
+python run.py
 ```
 
 > The `--reload` flag enables auto-reloading of the server when code changes.
