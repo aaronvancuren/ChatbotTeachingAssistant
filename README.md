@@ -66,11 +66,9 @@ pip install -r requirements.txt
 
 ### 4. Set Up Environment Variables
 
-Follow the instructions found in the template `env.txt` file in the `ChatbotTeachingAssistant/backend` directory:
+Create a `.env` file from the `.env.template` file.
 
-Add your environment variables to the `env` file:
-
-Rename the file to `.env`
+> The OpenAI environment variables can be found on the OpenAI Platform.
 
 ### 5. Run the FastAPI Server
 
@@ -78,6 +76,11 @@ Start the server using Uvicorn:
 
 ```bash
 uvicorn main:app --reload
+```
+
+Alternatively, you can use run.py:
+```bash
+python run.py
 ```
 
 > The `--reload` flag enables auto-reloading of the server when code changes.
@@ -176,6 +179,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `markdown-it-py`: Markdown parser with full CommonMark support.
 - `MarkupSafe`: String handling library for safe HTML and XML rendering.
 - `mdurl`: URL parsing for markdown.
+- `openai`: Provides convenient access to the OpenAI REST API.
 - `pydantic`: Data validation and settings management using Python type annotations.
 - `pydantic-extra-types`: Extra types for Pydantic.
 - `pydantic-settings`: Settings management library for Pydantic.
@@ -236,6 +240,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [markdown-it-py Documentation](https://markdown-it-py.readthedocs.io/en/latest/)
 - [MarkupSafe Documentation](https://pypi.org/project/MarkupSafe/)
 - [mdurl Documentation](https://pypi.org/project/mdurl/)
+- [openai Documentation](https://platform.openai.com/docs/overview)
 - [pydantic Documentation](https://docs.pydantic.dev/)
 - [pydantic-extra-types Documentation](https://pypi.org/project/pydantic-extra-types/)
 - [pydantic-settings Documentation](https://pypi.org/project/pydantic-settings/)
