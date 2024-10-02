@@ -1,10 +1,10 @@
 import os
-import openai
-from openai import OpenAI
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import openai
+from openai import OpenAI
 
 # Load the environment variables from .env
 load_dotenv()
