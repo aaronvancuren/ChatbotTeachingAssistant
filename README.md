@@ -66,22 +66,9 @@ pip install -r requirements.txt
 
 ### 4. Set Up Environment Variables
 
-Create a `.env` file with the following content:
-
-Add the following environment variables to the `.env` file:
-
-OPENAI_API_KEY=[PROJECT API KEY]<br>
-OPENAI_MODEL=[CHATGPT MODEL]<br>
-OPENAI_ORGANIZATION=[ORGANIZATION ID]<br>
-OPENAI_PROJECT=[PROJECT ID]<br>
-OPENAI_MAX_COMPLETION_TOKENS=150<br>
-HOST=127.0.0.1<br>
-PORT=8000<br>
-ORIGINS=[LOCAL HOST] (e.g. http://localhost:3000)<br>
+Create a `.env` file from the `.env.template` file.
 
 > The OpenAI environment variables can be found on the OpenAI Platform.
->
-> Current HOST and PORT values are for running the application locally. Update values when appropriate.
 
 ### 5. Run the FastAPI Server
 
