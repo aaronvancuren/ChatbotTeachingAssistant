@@ -187,6 +187,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `markdown-it-py`: Markdown parser with full CommonMark support.
 - `MarkupSafe`: String handling library for safe HTML and XML rendering.
 - `mdurl`: URL parsing for markdown.
+- `openai`: Provides convenient access to the OpenAI REST API.
 - `pydantic`: Data validation and settings management using Python type annotations.
 - `pydantic-extra-types`: Extra types for Pydantic.
 - `pydantic-settings`: Settings management library for Pydantic.
@@ -247,6 +248,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [markdown-it-py Documentation](https://markdown-it-py.readthedocs.io/en/latest/)
 - [MarkupSafe Documentation](https://pypi.org/project/MarkupSafe/)
 - [mdurl Documentation](https://pypi.org/project/mdurl/)
+- [openai Documentation](https://platform.openai.com/docs/overview)
 - [pydantic Documentation](https://docs.pydantic.dev/)
 - [pydantic-extra-types Documentation](https://pypi.org/project/pydantic-extra-types/)
 - [pydantic-settings Documentation](https://pypi.org/project/pydantic-settings/)
