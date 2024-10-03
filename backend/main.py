@@ -3,8 +3,16 @@ import openai
 from openai import OpenAI
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+import chromadb
+import logging
+from typing import List
+from text_processor import process_file
+from embeddings_generator import get_embeddings, store_embeddings
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Load the environment variables from .env
 load_dotenv()
@@ -71,3 +79,37 @@ async def chat(message: Message):
         print(e.message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+@app.post("/upload-files/")
+async def upload_files(files: List[UploadFile] = File(...)):
+    all_chunks = []
+    unsupported_files = []
+    stored_ids = []
+    for file in files:
+        contents = await file.read()
+        try:
+            chunks = process_file(contents, file.filename)
+            if chunks is None:
+                unsupported_files.append(file.filename)
+                logging.warning(f"Unsupported file type: {file.filename}")
+            else:
+                all_chunks.extend(chunks)
+        except ValueError as e:
+            logging.error(f"Error processing file {file.filename}: {e}")
+            unsupported_files.append(file.filename)
+    
+    if all_chunks:
+        # Generate embeddings using the updated OpenAI API
+        embeddings = get_embeddings(all_chunks)
+        # Store embeddings and get stored IDs
+        stored_ids = store_embeddings(embeddings, collection_name='teacher_documents')
+        logging.info(f"Stored {len(stored_ids)} embeddings in ChromaDB.")
+    
+    response = {
+        "message": "Files processed successfully.",
+        "number_of_chunks": len(all_chunks),
+        "unsupported_files": unsupported_files,
+        "stored_ids": stored_ids if all_chunks else []
+    }
+    
+    return response

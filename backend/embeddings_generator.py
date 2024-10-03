@@ -77,3 +77,30 @@ def store_embeddings(embeddings, collection_name='my_collection'):
             logging.info(f"Stored embedding {idx + 1}/{len(embeddings)}")
         else:
             logging.warning(f"Skipping embedding {idx + 1} due to error: {item.get('error')}")
+
+def store_embeddings(embeddings, collection_name='teacher_documents'):
+    """
+    Stores embeddings in a ChromaDB collection.
+
+    Args:
+        embeddings (list): A list of dictionaries containing embeddings and metadata.
+        collection_name (str): The name of the ChromaDB collection.
+
+    Returns:
+        stored_ids (list): A list of IDs of the stored embeddings.
+    """
+    collection = client.get_or_create_collection(collection_name)
+    stored_ids = []
+    for idx, item in enumerate(embeddings):
+        if item['embedding'] is not None:
+            doc_id = f"{collection_name}_{idx}"
+            collection.add(
+                embeddings=[item['embedding']],
+                metadatas=[{'text': item['text']}],
+                ids=[doc_id]
+            )
+            stored_ids.append(doc_id)
+            logging.info(f"Stored embedding {idx + 1}/{len(embeddings)} with ID {doc_id}")
+        else:
+            logging.warning(f"Skipping embedding {idx + 1} due to error: {item.get('error')}")
+    return stored_ids
