@@ -80,7 +80,7 @@ async def chat(message: Message):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
-@app.post("/upload-files/")
+@app.post("/upload-files/", tags=["Upload Files"])
 async def upload_files(files: List[UploadFile] = File(...)):
     all_chunks = []
     unsupported_files = []
