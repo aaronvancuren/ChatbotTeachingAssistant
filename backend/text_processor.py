@@ -9,6 +9,7 @@ from io import BytesIO
 import PyPDF2
 import docx
 from pptx import Presentation
+from bs4 import BeautifulSoup
 from striprtf.striprtf import rtf_to_text
 import tiktoken  # For tokenization and chunking
 
