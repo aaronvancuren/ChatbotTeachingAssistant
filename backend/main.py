@@ -1,10 +1,10 @@
 import os
-import openai
-from openai import OpenAI
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+import openai
+from openai import OpenAI
 import chromadb
 import logging
 from typing import List
