@@ -1,8 +1,10 @@
 # embeddings_generator.py
 import os
 import openai
+from openai import OpenAI
 import logging
 import chromadb
+from dotenv import load_dotenv
 
 #initialize ChromaDB client
 client = chromadb.Client()
@@ -11,30 +13,33 @@ client = chromadb.Client()
 logging.basicConfig(level=logging.INFO)
 
 # Set OpenAI API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+load_dotenv()
+openai = OpenAI()
+#openai.api_key = os.getenv('OPENAI_API_KEY')
 
-def get_embeddings(text_chunks, engine='text-embedding-ada-002', batch_size=16):
+def get_embeddings(text_chunks, model='text-embedding-ada-002', batch_size=16):
     """
     Converts a list of text chunks into embeddings using OpenAI's API.
 
     Args:
         text_chunks (list): A list of text strings.
-        engine (str): The embedding model to use.
+        model (str): The embedding model to use.
         batch_size (int): Number of text chunks to send per API request.
 
     Returns:
         embeddings (list): A list of embeddings.
     """
     embeddings = []
+    total_batches = (len(text_chunks) - 1) // batch_size + 1
     for i in range(0, len(text_chunks), batch_size):
         batch = text_chunks[i:i + batch_size]
         try:
-            response = openai.Embedding.create(
+            response = openai.embeddings.create(
                 input=batch,
-                engine=engine
+                model=model
             )
-            for idx, data in enumerate(response['data']):
-                embedding = data['embedding']
+            for idx, data in enumerate(response.data):
+                embedding = data.embedding
                 embeddings.append({
                     'embedding': embedding,
                     'text': batch[idx]
@@ -60,6 +65,7 @@ def store_embeddings(embeddings, collection_name='my_collection'):
         collection_name (str): The name of the ChromaDB collection.
     """
     collection = client.get_or_create_collection(collection_name)
+    stored_count = 0
     for idx, item in enumerate(embeddings):
         if item['embedding'] is not None:
             collection.add(
@@ -67,6 +73,7 @@ def store_embeddings(embeddings, collection_name='my_collection'):
                 metadatas=[{'text': item['text']}],
                 ids=[f"{collection_name}_{idx}"]
             )
+            stored_count += 1
             logging.info(f"Stored embedding {idx + 1}/{len(embeddings)}")
         else:
             logging.warning(f"Skipping embedding {idx + 1} due to error: {item.get('error')}")

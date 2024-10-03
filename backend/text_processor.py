@@ -1,67 +1,52 @@
+# text_processor.py
+
 import os
-import mimetypes
-import magic
-from io import BytesIO
+import magic  # Requires the 'python-magic' library
 import logging
-import tiktoken
-#imports for processing different filetypes 
-import PyPDF2 #PDF
-import docx #Word Docs
-from pptx import Presentation #PowerPoint
+from io import BytesIO
+
+# Import libraries for extracting text from various file types
+import PyPDF2
+import docx
+from pptx import Presentation
+from bs4 import BeautifulSoup
 from striprtf.striprtf import rtf_to_text
+import tiktoken  # For tokenization and chunking
 
-# Mapping of file extensions to MIME types
-extension_to_mime = {
-    '.pdf': 'application/pdf',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.txt': 'text/plain',
-    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    '.rtf': 'application/rtf',
-    # Add more mappings as needed
-}
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-# Mapping of MIME types to extraction functions
-mime_type_to_extractor = {
-    'application/pdf': extract_text_from_pdf,
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': extract_text_from_docx,
-    'text/plain': extract_text_from_txt,
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': extract_text_from_pptx,
-    'application/rtf': extract_text_from_rtf,
-    # Add more mappings as needed
-}
-
+# Helper functions
 def get_file_extension(filename):
-    """
-    Extracts file extension from filename
-    """
     _, ext = os.path.splitext(filename)
     return ext.lower()
 
 def detect_mime_type(file_bytes):
     """
-    Detects MIME type of a file using magic numbers
+    Detects the MIME type of a file using magic numbers.
     """
     try:
         mime = magic.from_buffer(file_bytes, mime=True)
         return mime
     except Exception as e:
-        #logging.error(f"Error detecting MIME type: {e}")
+        logging.error(f"Error detecting MIME type: {e}")
         return None
 
 def clean_text(text):
     """
-    Cleans text by removing unwanted characters or formatting
+    Cleans the text by removing unwanted characters or formatting.
     """
-    #Removes zero-width spaces
+    # Remove zero-width spaces
     text = text.replace('\u200b', '')
+    # Additional cleaning steps can be added here
     return text
 
 def chunk_text(text, max_tokens=1000):
     """
-    Splits text into chunks suitable for embeddings based on token count
+    Splits text into chunks suitable for embeddings based on token count.
     """
     text = clean_text(text)
-    tokenizer = tiktoken.get_encoding("cl100k_base")#may need to change based on model
+    tokenizer = tiktoken.get_encoding("cl100k_base")
     tokens = tokenizer.encode(text)
     chunks = []
     for i in range(0, len(tokens), max_tokens):
@@ -70,10 +55,10 @@ def chunk_text(text, max_tokens=1000):
         chunks.append(chunk)
     return chunks
 
-
+# Extraction functions
 def extract_text_from_pdf(file_bytes):
     """
-    Extracts text from a PDF file
+    Extracts text from a PDF file.
     """
     try:
         pdf_reader = PyPDF2.PdfReader(BytesIO(file_bytes))
@@ -84,10 +69,10 @@ def extract_text_from_pdf(file_bytes):
     except Exception as e:
         logging.error(f"Error extracting text from PDF: {e}")
         return ''
-    
+
 def extract_text_from_docx(file_bytes):
     """
-    Extracts text from a DOCX file
+    Extracts text from a DOCX file.
     """
     try:
         document = docx.Document(BytesIO(file_bytes))
@@ -96,10 +81,10 @@ def extract_text_from_docx(file_bytes):
     except Exception as e:
         logging.error(f"Error extracting text from DOCX: {e}")
         return ''
-    
+
 def extract_text_from_txt(file_bytes):
     """
-    Extracts text from a TXT file
+    Extracts text from a TXT file.
     """
     try:
         text = file_bytes.decode('utf-8', errors='ignore')
@@ -107,7 +92,7 @@ def extract_text_from_txt(file_bytes):
     except Exception as e:
         logging.error(f"Error extracting text from TXT: {e}")
         return ''
-    
+
 def extract_text_from_pptx(file_bytes):
     """
     Extracts text from a PPTX file.
@@ -124,6 +109,18 @@ def extract_text_from_pptx(file_bytes):
         logging.error(f"Error extracting text from PPTX: {e}")
         return ''
 
+def extract_text_from_html(file_bytes):
+    """
+    Extracts text from an HTML file.
+    """
+    try:
+        soup = BeautifulSoup(file_bytes, 'html.parser')
+        text = soup.get_text(separator='\n')
+        return text
+    except Exception as e:
+        logging.error(f"Error extracting text from HTML: {e}")
+        return ''
+
 def extract_text_from_rtf(file_bytes):
     """
     Extracts text from an RTF file.
@@ -134,7 +131,29 @@ def extract_text_from_rtf(file_bytes):
     except Exception as e:
         logging.error(f"Error extracting text from RTF: {e}")
         return ''
-    
+
+# Now define the mappings
+extension_to_mime = {
+    '.pdf': 'application/pdf',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.txt': 'text/plain',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.html': 'text/html',
+    '.htm': 'text/html',
+    '.rtf': 'application/rtf',
+    # Add more mappings as needed
+}
+
+mime_type_to_extractor = {
+    'application/pdf': extract_text_from_pdf,
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': extract_text_from_docx,
+    'text/plain': extract_text_from_txt,
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': extract_text_from_pptx,
+    'text/html': extract_text_from_html,
+    'application/rtf': extract_text_from_rtf,
+    # Add more mappings as needed
+}
+
 def process_file(file_bytes, filename):
     """
     Main function to process a file: detects file type, extracts text, and chunks it.
@@ -151,7 +170,7 @@ def process_file(file_bytes, filename):
         mime_type = expected_mime
 
     extractor = mime_type_to_extractor.get(mime_type)
-    
+
     if extractor:
         logging.info(f"Using extractor for MIME type: {mime_type}")
         text = extractor(file_bytes)
