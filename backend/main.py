@@ -8,8 +8,8 @@ from openai import OpenAI
 import chromadb
 import logging
 from typing import List
-from text_processor import process_file
-from embeddings_generator import get_embeddings, store_embeddings
+from database.text_processor import process_file
+from database.embeddings_generator import get_embeddings, store_embeddings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
