@@ -157,6 +157,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `annotated-types`: Provides support for annotated type hints in Python.
 - `anyio`: Asynchronous networking and concurrency library.
 - `certifi`: Mozilla’s curated collection of Root Certificates.
+- `chromadb`: Vector database for storing and retrieving embeddings.
 - `click`: Package for creating command-line interfaces.
 - `colorama`: Produces colored terminal text on Windows.
 - `dnspython`: DNS toolkit for Python.
@@ -180,14 +181,20 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `pydantic-extra-types`: Extra types for Pydantic.
 - `pydantic-settings`: Settings management library for Pydantic.
 - `pydantic-core`: Core engine powering Pydantic.
+- `PyPDF2`: Extracts text from PDFs.
+- `Python-docx`:Extracts text from Word documents.
+- `Python-pptx`:Extracts text from Power Points.
 - `Pygments`: Syntax highlighter for code.
 - `python-dotenv`: Reads key-value pairs from `.env` file and adds them to the environment.
+- `Python-magic`: Identifies file types by content.
 - `python-multipart`: Streaming multipart parser for Python.
 - `PyYAML`: YAML parser and emitter for Python.
 - `rich`: Library for rich text and beautiful formatting in the terminal.
 - `shellingham`: Detects the current user’s shell.
 - `sniffio`: Library to detect which async library is running.
 - `starlette`: Lightweight ASGI framework/toolkit for building high-performance async services.
+- `striprtf`: Extracts plain text from RTF files.
+- `tiktoken`: tokenizes text and counts token use.
 - `typer`: Library for building CLI applications, designed to be easy to use with FastAPI.
 - `typing_extensions`: Backports new type hinting features.
 - `uvicorn`: Lightning-fast ASGI server implementation.
