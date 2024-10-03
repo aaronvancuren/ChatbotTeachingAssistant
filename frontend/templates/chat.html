@@ -9,8 +9,12 @@
     <title>TA Victor - CS 460</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="{{url_for('static', path='/assets/scripts.js')}}"></script>
-    <link rel="stylesheet" href="{{url_for('static', path='/assets/style.css')}}"/>
+    <script src="{{url_for('static', path='../static/js/index.js')}}"></script>
+    <script src="{{url_for('static', path='../static/js/chat.js')}}"></script>
+
+    <link rel="stylesheet" href="{{url_for('static', path='../static/css/style.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', path='../static/css/chat.css')}}"/>
+
     <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/46/46955.png"/>
 </head>
 
@@ -64,7 +68,7 @@
             </div><Br>
             <div class="chat-box">
                 <form id="input" onsubmit="AskQuestion();return false;" method="post">
-                    <input id="question" name="question" type="text"/>
+                    <input id="question" name="question" type="text" required placeholder="What's your question?"/>
                 </form>
             </div>
         </div>

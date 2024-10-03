@@ -7,8 +7,8 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from backend import *
-from backend.errorpages import not_found
-from backend.helpers import validate
+#from backend.api.routes.web import not_found
+#from backend.core.helpers import validate
 
 # This code is our web page map.
 # Root directory is '/', this is defaulted to the 'index.html' page.
@@ -22,7 +22,7 @@ routes = [
     #### Web Pages
     Route('/', endpoint=homepage),
     Route('/chat', endpoint=chatpage),
-    Mount('/static', StaticFiles(directory='frontend'), name='static')
+    Mount('/static', StaticFiles(directory='frontend/static'), name='static')
 
 ]
 

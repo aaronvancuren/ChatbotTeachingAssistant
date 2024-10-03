@@ -5,7 +5,10 @@ function AskQuestion() {
         url: "/ask",
         data: document.getElementById("question").value,
         headers: {
-            "X-victor-uid": "DEMO-1234"
+            "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "frame-ancestors 'none'",
+            "X-Frame-Options": "DENY",
         },
         success: function(data) {
             GenerateElement(document.getElementById("question").value, "DEMO-1234");
