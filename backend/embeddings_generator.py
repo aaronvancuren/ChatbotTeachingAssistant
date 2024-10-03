@@ -56,28 +56,6 @@ def get_embeddings(text_chunks, model='text-embedding-ada-002', batch_size=16):
                 })
     return embeddings
 
-def store_embeddings(embeddings, collection_name='my_collection'):
-    """
-    Stores embeddings in a ChromaDB collection.
-
-    Args:
-        embeddings (list): A list of dictionaries containing embeddings and metadata.
-        collection_name (str): The name of the ChromaDB collection.
-    """
-    collection = client.get_or_create_collection(collection_name)
-    stored_count = 0
-    for idx, item in enumerate(embeddings):
-        if item['embedding'] is not None:
-            collection.add(
-                embeddings=[item['embedding']],
-                metadatas=[{'text': item['text']}],
-                ids=[f"{collection_name}_{idx}"]
-            )
-            stored_count += 1
-            logging.info(f"Stored embedding {idx + 1}/{len(embeddings)}")
-        else:
-            logging.warning(f"Skipping embedding {idx + 1} due to error: {item.get('error')}")
-
 def store_embeddings(embeddings, collection_name='teacher_documents'):
     """
     Stores embeddings in a ChromaDB collection.
