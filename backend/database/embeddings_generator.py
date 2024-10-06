@@ -1,4 +1,4 @@
-# embeddings_generator.py
+#ChatGPT was used to help write this code
 import os
 import openai
 from openai import OpenAI
@@ -15,7 +15,6 @@ logging.basicConfig(level=logging.INFO)
 # Set OpenAI API key
 load_dotenv()
 openai = OpenAI()
-#openai.api_key = os.getenv('OPENAI_API_KEY')
 
 def get_embeddings(text_chunks, model='text-embedding-ada-002', batch_size=16):
     """

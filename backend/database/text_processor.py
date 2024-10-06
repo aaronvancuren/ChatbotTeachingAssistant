@@ -1,9 +1,9 @@
-# text_processor.py
-
+#ChatGPT was used to create sections of this code
 import os
 import magic  # Requires the 'python-magic' library
 import logging
 from io import BytesIO
+from pathlib import Path
 
 # Import libraries for extracting text from various file types
 import PyPDF2
@@ -15,11 +15,6 @@ import tiktoken  # For tokenization and chunking
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
-# Helper functions
-def get_file_extension(filename):
-    _, ext = os.path.splitext(filename)
-    return ext.lower()
 
 def detect_mime_type(file_bytes):
     """
@@ -158,7 +153,7 @@ def process_file(file_bytes, filename):
     """
     Main function to process a file: detects file type, extracts text, and chunks it.
     """
-    extension = get_file_extension(filename)
+    extension = Path(filename).suffix.lower()
     expected_mime = extension_to_mime.get(extension)
     detected_mime = detect_mime_type(file_bytes)
 
@@ -177,7 +172,6 @@ def process_file(file_bytes, filename):
     else:
         error_message = f"No extractor found for MIME type '{mime_type}' or extension '{extension}'."
         logging.error(error_message)
-        # Gracefully handle unsupported file types
         return None
 
     if not text:
