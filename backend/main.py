@@ -18,11 +18,7 @@ logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
 # Set up default values for OpenAI client
-client = OpenAI(
-    api_key = os.getenv("OPENAI_API_KEY"),
-    organization= os.getenv("OPENAI_ORGANIZATION"),
-    project= os.getenv("OPENAI_PROJECT")
-)
+client = OpenAI()
 
 # Set up FastAPI settings
 app = FastAPI()
