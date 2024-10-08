@@ -14,6 +14,14 @@ function AskQuestion() {
             createChatBubble(document.getElementById("question").value, ["btm-right", "user"]);
             createChatBubble(data.reply, ["btm-left", "victor"]);
             document.getElementById("question").value = "";
+        },
+        statusCode:  {
+            405: (value) => {
+                alert("Error: " + JSON.parse(value.responseText).detail);
+            },
+            401: (value) => {
+                alert("Error 401: Unauthorised");
+            }
         }
     })
 }
