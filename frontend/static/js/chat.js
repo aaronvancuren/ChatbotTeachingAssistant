@@ -1,47 +1,29 @@
 function AskQuestion() {
-    console.log(document.getElementById("question").value)
     $.ajax({
         type: "POST",
         url: "/ask",
-        data: document.getElementById("question").value,
+        data: `{"content":"${document.getElementById("question").value}"}`,
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
             "X-Content-Type-Options": "nosniff",
             "Content-Security-Policy": "frame-ancestors 'none'",
             "X-Frame-Options": "DENY",
+            "Content-Type": "application/json"
         },
         success: function(data) {
-            GenerateElement(document.getElementById("question").value, "DEMO-1234");
-            GenerateElement(data.chat);
+            createChatBubble(document.getElementById("question").value, ["btm-right", "user"]);
+            createChatBubble(data.reply, ["btm-left", "victor"]);
             document.getElementById("question").value = "";
-        },
-        error: function(error) {
-            console.log("Error!", error);
-            switch (code) {
-                case 400:
-                    alert(error);
-                    break;
-                case 500:
-                    alert(error);
-                    break;
-            }
         }
     })
-
-
 }
 
-function GenerateElement(dialogue, SPEAKER = "Victor"){
-    console.log(SPEAKER, " said ", dialogue);
+function createChatBubble(dialogue, classes){
     wrapper = document.getElementById("conversation");
     
     container = document.createElement("div");
-    if (SPEAKER === "Victor") {
-        container.classList.add("talk-bubble", "tri-right", "btm-left", "victor");
-    } else {
-        container.classList.add("talk-bubble", "tri-right", "btm-right", "user");
-    }
-
+    container.classList.add("talk-bubble", "tri-right", ...classes);
+        
     displayContainer = document.createElement("div");
     displayContainer.classList.add("talktext");
 
@@ -51,5 +33,4 @@ function GenerateElement(dialogue, SPEAKER = "Victor"){
     displayContainer.appendChild(dialogueContainer);
     container.appendChild(displayContainer);
     wrapper.appendChild(container);
-
 }
