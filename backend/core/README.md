@@ -6,7 +6,6 @@ The `core/` directory contains the core functionality and configurations essenti
 
 - **`config.py`**: Defines the application settings using Pydantic's `BaseSettings`. It manages environment variables and configuration parameters.
 - **`templates.py`**: Sets up Jinja2 templates for rendering HTML pages. It configures the templates directory and initializes the `Jinja2Templates` object.
-- **`helpers.py`**: Defines various application helping methods such as validation.
 - **`__init__.py`**: Initializes the `core` package.
 
 ## **Purpose**
