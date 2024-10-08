@@ -17,8 +17,4 @@ async def chatpage(request):
 
 #region Error Pages
 
-# 404 Page
-async def not_found(request, exc):
-    return error_templates.TemplateResponse(request, '404.html')
-
 #endregion
