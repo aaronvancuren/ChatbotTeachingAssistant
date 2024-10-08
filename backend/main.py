@@ -15,11 +15,7 @@ from .api.routes import *
 load_dotenv()
 
 # Set up default values for OpenAI client
-client = OpenAI(
-    api_key = os.getenv("OPENAI_API_KEY"),
-    organization= os.getenv("OPENAI_ORGANIZATION"),
-    project= os.getenv("OPENAI_PROJECT")
-)
+client = OpenAI()
 
 # This code is our web page map.
 # Root directory is '/', this is defaulted to the 'index.html' page.
