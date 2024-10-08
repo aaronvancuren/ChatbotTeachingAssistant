@@ -60,8 +60,8 @@ main {
 }
 
 header {
-    display:flex;
-    top:0;
+    display: flex;
+    top: 0;
     height: 3em;
     width: 100%;
     position: sticky;
@@ -90,25 +90,25 @@ header #select_class select {
 }
 
 header #login {
-    display:flex;
+    display: flex;
     align-items: center;
     height: 100%;
 }
 
 header #login p {
     font-style: italic;
-    text-align:left;
+    text-align: left;
 }
 
 header #login img {
     border-radius: 100%;
-    margin:2ch;
+    margin: 2ch;
     border-style: solid;
     border-color: var(--primary-pfw-black);
 }
 
 header a {
-    display:flex;
+    display: flex;
     align-items: center;
 }
 
@@ -151,11 +151,11 @@ header a span {
     vertical-align: top;
     background-color: var(--pfw-black-footprints);
     position: fixed;
-    color:var(--primary-pfw-white);
+    color: var(--primary-pfw-white);
 }
 
 #sidebar h1 {
-    font-weight: 200;   
+    font-weight: 200;
     font-size: 20pt;
 }
 
@@ -175,7 +175,7 @@ header a span {
 }
 
 #conversation {
-    display:flex;
+    display: flex;
     flex-direction: column;
     align-items: flex-end;
     margin: auto;
@@ -192,7 +192,7 @@ header a span {
     height: auto;
     min-height: 3ch;
     max-height: 30%;
-    overflow-x:auto;
+    overflow-x: auto;
     margin: .5ch;
 }
 
@@ -201,7 +201,7 @@ header a span {
     color: #00000060;
     font-size: small;
     width: 100%;
-    margin:auto;
+    margin: auto;
 }
 
 /* ChatGPT Code */
@@ -221,18 +221,19 @@ header a span {
     background-color: #FFC107;
     color: black;
 }
+
 /* End ChatGPT Code*/
 
 /* Source: https://codepen.io/Founts/pen/AJyVOr */
 .talk-bubble {
     display: inline-block;
     position: relative;
-	width: 80%;
-	height: auto;
+    width: 80%;
+    height: auto;
     margin: 1em;
 }
 
-.talk-bubble.victor div ::before{
+.talk-bubble.victor div ::before {
     content: "Victor Says...";
 
 }
@@ -253,12 +254,13 @@ header a span {
     border-color: var(--pfw-black-tusk);
 }
 
-.talktext{
+.talktext {
     padding: 1em;
     text-align: left;
     line-height: 1.5em;
 }
-.talktext p{
+
+.talktext p {
     /* remove webkit p margins */
     -webkit-margin-before: 0em;
     -webkit-margin-after: 0em;
@@ -267,51 +269,54 @@ header a span {
 
 /*Right triangle, placed bottom right side slightly in*/
 .tri-right.border.btm-right:before {
-	content: ' ';
-	position: absolute;
-	width: 0;
-	height: 0;
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
     left: auto;
-	right: -8px;
-	bottom: -40px;
-	border: 20px solid;
-	border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+    right: -8px;
+    bottom: -40px;
+    border: 20px solid;
+    border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
 }
-.tri-right.btm-right:after{
-	content: ' ';
-	position: absolute;
-	width: 0;
-	height: 0;
+
+.tri-right.btm-right:after {
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
     left: auto;
-	right: 0px;
-	bottom: -20px;
-	border: 12px solid;
-	border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+    right: 0px;
+    bottom: -20px;
+    border: 12px solid;
+    border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
 }
 
 /*Right triangle, placed bottom left side slightly in*/
 .tri-right.border.btm-left:before {
-	content: ' ';
-	position: absolute;
-	width: 0;
-	height: 0;
-	left: -8px;
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    left: -8px;
     right: auto;
     top: auto;
-	bottom: -40px;
-	border: 32px solid;
-	border-color: transparent transparent transparent var(--pfw-gold-rumble);
+    bottom: -40px;
+    border: 32px solid;
+    border-color: transparent transparent transparent var(--pfw-gold-rumble);
 }
+
 .tri-right.btm-left:after {
-	content: ' ';
-	position: absolute;
-	width: 0;
-	height: 0;
-	left: 0;
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    left: 0;
     right: auto;
     top: auto;
-	bottom: -20px;
-	border: 22px solid;
-	border-color: transparent transparent transparent var(--pfw-gold-rumble);
+    bottom: -20px;
+    border: 22px solid;
+    border-color: transparent transparent transparent var(--pfw-gold-rumble);
 }
+
 /* End Source: https://codepen.io/Founts/pen/AJyVOr */
