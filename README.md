@@ -160,7 +160,6 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `annotated-types`: Provides support for annotated type hints in Python.
 - `anyio`: Asynchronous networking and concurrency library.
 - `certifi`: Mozilla’s curated collection of Root Certificates.
-- `chromadb`: Vector database for storing and retrieving embeddings.
 - `click`: Package for creating command-line interfaces.
 - `colorama`: Produces colored terminal text on Windows.
 - `dnspython`: DNS toolkit for Python.
