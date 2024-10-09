@@ -6,6 +6,7 @@ The `templates/` directory contains Jinja2 HTML templates used by the applicatio
 
 - **`base.html`**: The base template that defines the common structure of your web pages (e.g., header, footer, navigation).
 - **`index.html`**: Template for the home page, extending `base.html`.
+- **`chat.html`**: Template for the chat page. This page will display the current student's chat history.
 
 ## **Purpose**
 

@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+/*
+
+Graphic design note: As we are sticking with the official PFW branding, we will be using
+the following color scheme as found on page 46 of the PDF provided by the marketing department's
+branding document found (https://www.pfw.edu/offices/communications-marketing/docs/PFW-Brand-Standard-Guidelines-06_30_2020-DIGITAL.pdf)
+
+We will be using specifically, the Institution Palette. This means that 70% of our composition's 
+color space will be of a PFW primary color swatch (these will be denoted as --pfw-primary-<COLOR>).
+10% of the composition's color space will be used for gold swatches (these will be denoted as --pfw-gold-<COLOR>).
+Finally, 20% of the composition's color space will be of the Black supporting swatch (these will be denoted as --pfw-black-<COLOR>).
+
+To ensure Level AA standards, please see page 50 of the document referenced earlier.
+
+*/
+:root {
+    /* Primary Swatches */
+    --primary-pfw-black: #000;
+    --primary-pfw-golden: #CFB991;
+    --primary-pfw-white: #fff;
+
+    /* Gold Accent Swatches */
+    --pfw-gold-summit: #DAAA00;
+    --pfw-gold-clay: #8E6F3E;
+    --pfw-gold-tassel: #DDB945;
+    --pfw-gold-rumble: #EBD99F;
+
+    /* Black Accent Swatches */
+    --pfw-black-footprints: #555960;
+    --pfw-black-storm: #6F727B;
+    --pfw-black-fog: #9D9795;
+    --pfw-black-tusk: #C4BFC0;
+}
+
+* {
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 400;
+
+    transition: .3s;
+    margin: 0;
+    padding: 0;
+    scroll-behavior: smooth;
+    text-decoration: none;
+    color: inherit;
+
+    user-select: none;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+main {
+    background-color: var(--primary-pfw-white);
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+header {
+    display: flex;
+    top: 0;
+    height: 3em;
+    width: 100%;
+    position: sticky;
+    background-color: var(--pfw-gold-tassel);
+    align-items: center;
+    justify-content: space-between;
+    justify-items: center;
+    align-content: center;
+    padding: 1ch;
+    z-index: 1;
+}
+
+header img {
+    width: auto;
+    height: 3.5ch;
+}
+
+header h1 {
+    font-weight: bold;
+    font-size: xx-large;
+}
+
+header #select_class select {
+    width: 20ch;
+    height: 3ch;
+}
+
+header #login {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+header #login p {
+    font-style: italic;
+    text-align: left;
+}
+
+header #login img {
+    border-radius: 100%;
+    margin: 2ch;
+    border-style: solid;
+    border-color: var(--primary-pfw-black);
+}
+
+header a {
+    display: flex;
+    align-items: center;
+}
+
+header a span {
+    padding: 1ch;
+}
+
+/*Scroll Bar*/
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #aaa;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots"
+        content="noindex, nofollow, noarchive, nositelinkssearchbox, nosnippet, noimageindex, noai, noimageai"/>
+    <title>TA Victor</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="{{url_for('static', path='../static/js/index.js')}}"></script>
+    <script src="{{url_for('static', path='../static/js/chat.js')}}"></script>
+
+    <link rel="stylesheet" href="{{url_for('static', path='../static/css/style.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', path='../static/css/chat.css')}}"/>
+
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/46/46955.png"/>
+</head>
+
+<body>
+    <header>
+        <a href="#top">
+            <img src="https://cdn-icons-png.flaticon.com/512/46/46955.png"/>
+            <span>
+                <h1>TA Victor</h1>
+            </span>
+        </a>
+        <div>
+            <form id="select_class">
+                <select>
+                    <option value="CS_460">CS 460</option>
+                </select>
+            </form>
+        </div>
+
+        <div id="login">
+            <p>Welcome Example</p>
+            <a href="#top">
+                <img id="profile"
+                    src="https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0="/>
+            </a>
+        </div>
+    </header>
+
+    <main id="host">
+        <div id="sidebar">
+            <ul>
+                <li class="active">Introduction</li>
+                <li class="inactive">Demo</li>
+            </ul>
+        </div>
+        <div id="content">
+            <div id="conversation">
+                <div class="talk-bubble tri-right btm-right user">
+                    <div class="talktext">
+                        <p>Can you introduce yourself? We are using you for a group presentation.</p>
+                    </div>
+                </div>
+                <div class="talk-bubble tri-right btm-left victor">
+                    <div class="talktext">
+                        <p>Hi everyone! My name is Victor! I am a helpful AI designed to help you with your classwork. Feel
+                            free to ask me anything related to your class such as when assignments are due, when tests are,
+                            explain a concept you have gone over in class, or give you hints about your homework. I hope 
+                            that this introduction is good for your presentation!</p>
+                    </div>
+                </div>
+            </div><Br>
+            <div class="chat-box">
+                <form id="input" onsubmit="AskQuestion();return false;" method="post">
+                    <input id="question" name="question" type="text" required placeholder="What's your question?"/>
+                </form>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
