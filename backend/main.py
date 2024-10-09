@@ -1,18 +1,10 @@
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import openai
 from openai import OpenAI
-import chromadb
-import logging
-from typing import List
-from database.text_processor import process_file
-from database.embeddings_generator import get_embeddings, store_embeddings
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 
 from starlette.routing import Route, Mount
 from starlette.staticfiles import StaticFiles
