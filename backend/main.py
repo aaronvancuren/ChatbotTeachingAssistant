@@ -14,14 +14,36 @@ from database.embeddings_generator import get_embeddings, store_embeddings
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
+from starlette.routing import Route, Mount
+from starlette.staticfiles import StaticFiles
+
+from .api.routes import *
+
 # Load the environment variables from .env
 load_dotenv()
 
 # Set up default values for OpenAI client
 client = OpenAI()
 
+# This code is our web page map.
+# Root directory is '/', this is defaulted to the 'index.html' page.
+# Mount('/static', ...) needs to be present to mount the directory where the pages are.
+# When a new page is added, insert it above Mount('/static', ...) and give it
+# a descriptive file path.
+
+routes = [
+
+    #### End Points
+    
+    #### Web Pages
+    Route('/', endpoint=homepage),
+    Route('/chat', endpoint=chatpage),
+    Mount('/static', StaticFiles(directory='frontend/static'), name='static')
+
+]
+
 # Set up FastAPI settings
-app = FastAPI()
+app = FastAPI(routes=routes)
 
 # Allow CORS for local development (adjust origins as needed)
 app.add_middleware(
@@ -36,7 +58,7 @@ class Message(BaseModel):
     """OpenAI message model"""
     content: str
 
-@app.post("/chat/", tags=["Chatbot"])
+@app.post("/ask", tags=["Chatbot"])
 async def chat(message: Message):
     """OpenAI chat endpoint
     Args:
