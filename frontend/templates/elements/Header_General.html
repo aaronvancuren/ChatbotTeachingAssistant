@@ -1,0 +1,18 @@
+<header>
+    
+    <a href="/">
+        <img src="https://cdn-icons-png.flaticon.com/512/46/46955.png" />
+        <span>
+            <h1>TA Victor</h1>
+        </span>
+    </a>
+
+    {% block profile %}
+        {% if loggedin == 'true' %}
+            {% include './elements/Header_LoggedIn.html' %}
+        {% else %}
+            {% include './elements/Header_LoggedOut.html' %}
+        {% endif %}
+    {% endblock %}
+
+</header>
