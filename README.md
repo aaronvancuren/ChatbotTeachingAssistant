@@ -166,6 +166,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `email-validator`: Robust email address syntax and deliverability validator.
 - `fastapi`: Web framework for building APIs.
 - `fastapi-cli`: CLI tool to manage FastAPI projects.
+- `fastapi_msal`: Out of the box support for microsoft MSAL authentication.
 - `h11`: Pure-Python HTTP/1.1 protocol implementation.
 - `h2`: Python HTTP/2 protocol implementation.
 - `hpack`: HTTP/2 header encoding for Python.
@@ -174,6 +175,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `httpx`: Fully featured HTTP client supporting HTTP/1.1 and HTTP/2.
 - `hyperframe`: Python module for working with HTTP/2 frames.
 - `idna`: Implements Internationalized Domain Names in Applications (IDNA) standard.
+- `identity`: Implements Microsoft Entra user authentication.
 - `itsdangerous`: Securely signs data.
 - `Jinja2`: Templating engine for generating HTML.
 - `markdown-it-py`: Markdown parser with full CommonMark support.
@@ -227,6 +229,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [email-validator Documentation](https://pypi.org/project/email-validator/)
 - [fastapi Documentation](https://fastapi.tiangolo.com/)
 - [fastapi-cli Documentation](https://pypi.org/project/fastapi-cli/)
+- [fastapi_msal](https://github.com/dudil/fastapi_msal)
 - [h11 Documentation](https://h11.readthedocs.io/en/stable/)
 - [h2 Documentation](https://python-hyper.org/projects/h2/en/stable/)
 - [hpack Documentation](https://pypi.org/project/hpack/)
@@ -235,6 +238,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [httpx Documentation](https://www.python-httpx.org/)
 - [hyperframe Documentation](https://pypi.org/project/hyperframe/)
 - [idna Documentation](https://pypi.org/project/idna/)
+- [identity Documentation](https://pypi.org/project/identity/)
 - [itsdangerous Documentation](https://pypi.org/project/itsdangerous/)
 - [Jinja2 Documentation](https://jinja.palletsprojects.com/en/stable/)
 - [markdown-it-py Documentation](https://markdown-it-py.readthedocs.io/en/latest/)

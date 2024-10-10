@@ -7,9 +7,11 @@ import openai
 from openai import OpenAI
 
 from starlette.routing import Route, Mount
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
 from .api.routes import *
+from .api.authentication.Microsoft import *
 
 # Load the environment variables from .env
 load_dotenv()
@@ -26,7 +28,7 @@ client = OpenAI()
 routes = [
 
     #### End Points
-    
+
     #### Web Pages
     Route('/', endpoint=homepage),
     Route('/chat', endpoint=chatpage),
@@ -45,6 +47,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(SessionMiddleware, secret_key=CLIENT_SECRET)
+app.include_router(AUTHENTICATION_SERVER.router)
 
 class Message(BaseModel):
     """OpenAI message model"""

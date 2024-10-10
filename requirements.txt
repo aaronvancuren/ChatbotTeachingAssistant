@@ -7,6 +7,7 @@ dnspython==2.6.1
 email_validator==2.2.0
 fastapi==0.115.0
 fastapi-cli==0.0.5
+fastapi_msal[full]==2.1.6
 h11==0.14.0
 h2==4.1.0
 hpack==4.0.0
@@ -15,6 +16,7 @@ httptools==0.6.1
 httpx==0.27.2
 hyperframe==6.0.1
 idna==3.10
+identity>=0.2,<0.3
 itsdangerous==2.2.0
 Jinja2==3.1.4
 markdown-it-py==3.0.0
