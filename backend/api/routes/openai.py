@@ -2,16 +2,15 @@
 
 import openai
 from openai import OpenAI
-from pydantic import BaseModel
+from fastapi import APIRouter
+from backend.models.openai import *
+
+openai_router = APIRouter()
 
 # Set up default values for OpenAI client
 client = OpenAI()
 
-class Message(BaseModel):
-    """OpenAI message model"""
-    content: str
-
-@app.post("/ask", tags=["Chatbot"])
+@openai_router.post("/ask", tags=["Chatbot"])
 async def chat(message: Message):
     """OpenAI chat endpoint
     Args:
