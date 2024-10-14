@@ -5,9 +5,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
+from backend.api.routes.web import web_router
+from backend.api.routes.openai import openai_router
 
 # Set up FastAPI settings
 app = FastAPI()
+
+app.include_router(web_router, prefix="/web")
+app.include_router(openai_router, "/openai")
 
 app.mount('/static', StaticFiles(directory='frontend/static'), name='static')
 
