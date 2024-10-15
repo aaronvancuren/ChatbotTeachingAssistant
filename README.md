@@ -159,6 +159,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 
 - `annotated-types`: Provides support for annotated type hints in Python.
 - `anyio`: Asynchronous networking and concurrency library.
+- `beautifulSoup4`: Handles reading HTML files.
 - `certifi`: Mozilla’s curated collection of Root Certificates.
 - `click`: Package for creating command-line interfaces.
 - `colorama`: Produces colored terminal text on Windows.
@@ -186,14 +187,20 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `pydantic-extra-types`: Extra types for Pydantic.
 - `pydantic-settings`: Settings management library for Pydantic.
 - `pydantic-core`: Core engine powering Pydantic.
+- `PyPDF2`: Extracts text from PDFs.
+- `Python-docx`:Extracts text from Word documents.
+- `Python-pptx`:Extracts text from Power Points.
 - `Pygments`: Syntax highlighter for code.
 - `python-dotenv`: Reads key-value pairs from `.env` file and adds them to the environment.
+- `Python-magic`: Identifies file types by content.
 - `python-multipart`: Streaming multipart parser for Python.
 - `PyYAML`: YAML parser and emitter for Python.
 - `rich`: Library for rich text and beautiful formatting in the terminal.
 - `shellingham`: Detects the current user’s shell.
 - `sniffio`: Library to detect which async library is running.
 - `starlette`: Lightweight ASGI framework/toolkit for building high-performance async services.
+- `striprtf`: Extracts plain text from RTF files.
+- `tiktoken`: tokenizes text and counts token use.
 - `typer`: Library for building CLI applications, designed to be easy to use with FastAPI.
 - `typing_extensions`: Backports new type hinting features.
 - `uvicorn`: Lightning-fast ASGI server implementation.
@@ -222,6 +229,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 
 - [annotated-types Documentation](https://pypi.org/project/annotated-types/)
 - [anyio Documentation](https://anyio.readthedocs.io/en/stable/)
+- [beautifulsoup4 Documentation](https://pypi.org/project/beautifulsoup4/#description)
 - [certifi Documentation](https://pypi.org/project/certifi/)
 - [click Documentation](https://click.palletsprojects.com/en/stable/)
 - [colorama Documentation](https://pypi.org/project/colorama/)
@@ -250,13 +258,19 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [pydantic-settings Documentation](https://pypi.org/project/pydantic-settings/)
 - [pydantic-core Documentation](https://docs.pydantic.dev/latest/usage/types/pydantic_core/)
 - [Pygments Documentation](https://pygments.org/docs/)
+- [PyPDF2 Documentation](https://pypi.org/project/PyPDF2/)
 - [python-dotenv Documentation](https://pypi.org/project/python-dotenv/)
+- [python-docx Documentation](https://pypi.org/project/python-docx/)
+- [python-magic Documentation](https://pypi.org/project/python-magic/)
 - [python-multipart Documentation](https://pypi.org/project/python-multipart/)
+- [python-pptx Documentation](https://pypi.org/project/python-pptx/#description)
 - [PyYAML Documentation](https://pyyaml.org/wiki/PyYAMLDocumentation)
 - [rich Documentation](https://rich.readthedocs.io/en/stable/)
 - [shellingham Documentation](https://pypi.org/project/shellingham/)
 - [sniffio Documentation](https://pypi.org/project/sniffio/)
 - [starlette Documentation](https://www.starlette.io/)
+- [striprtf Documentation](https://pypi.org/project/striprtf/)
+- [tiktoken Documentation](https://pypi.org/project/tiktoken/)
 - [typer Documentation](https://typer.tiangolo.com/)
 - [typing_extensions Documentation](https://pypi.org/project/typing-extensions/)
 - [uvicorn Documentation](https://www.uvicorn.org/)
