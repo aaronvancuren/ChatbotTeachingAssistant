@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.INFO)
 
 # Set OpenAI API key
-load_dotenv()
 openai = OpenAI()
 
 def get_embeddings(text_chunks, model='text-embedding-ada-002', batch_size=16):
