@@ -76,8 +76,8 @@ test_text_chunks = [
 embeddings = get_embeddings(test_text_chunks)
 
 # Insert embeddings into the database
-for item in embeddings:
-    title = item['Test Insert: 1']
+for idx, item in enumerate(embeddings):
+    title = f"Test Insert: {idx + 1}"  #Title for enumerated test inserts
     content = item['text']  # plain text that produced the embeddings 
     embedding = item['embedding']
     
