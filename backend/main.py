@@ -1,21 +1,30 @@
-"""" update docstring """
-
+"""TODO: update docstring"""
 import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from backend.api.main import ai_router
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi.staticfiles import StaticFiles
+from backend.api.routes.web import web_router
+from backend.api.routes.openai import openai_router
 
 # Set up FastAPI settings
 app = FastAPI()
 
+app.include_router(web_router, prefix="/web")
+app.include_router(openai_router, "/openai")
+
+app.mount('/static', StaticFiles(directory='frontend/static'), name='static')
+
 # Allow CORS for local development (adjust origins as needed)
 app.add_middleware(
     CORSMiddleware,
+    HTTPSRedirectMiddleware,
     allow_origins=[os.getenv("ORIGINS")],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origin_regex="https://*",
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Accept", "Accept-Language", "Content-Language", "Content-Type"],
+    allow_credentials=True, # When True allow_origins, allow_methods and allow_headers cannot be set to ['*']
+    expose_headers=[],
+    max_age=600
 )
-
-app.include_router(ai_router)
