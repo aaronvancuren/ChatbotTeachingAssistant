@@ -1,19 +1,16 @@
-"""TODO: update docstring"""
+"""Contains OpenAI API calls"""
 
 import os
-import openai
-from openai import OpenAI
+from openai import OpenAI, _exceptions
 from fastapi import APIRouter, HTTPException
 from backend.models.openai import *
 
-openai_router = APIRouter()
-
-# Set up default values for OpenAI client
 client = OpenAI()
+openai_router = APIRouter()
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(message: Message):
-    """OpenAI chat endpoint
+    """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         message: User chat input
     
@@ -37,13 +34,13 @@ async def chat(message: Message):
         )
         reply = response.choices[0].message.content.strip()
         return {"reply": reply}
-    except openai.APIConnectionError as e:
+    except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.
-    except openai.RateLimitError as e:
+    except _exceptions.RateLimitError as e:
         print("A 429 status code was received; we should back off a bit.")
         print(e.status_code)
-    except openai.APIStatusError as e:
+    except _exceptions.APIStatusError as e:
         print("Another non-200-range status code was received")
         print(e.status_code)
         print(e.response)

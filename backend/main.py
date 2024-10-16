@@ -1,6 +1,6 @@
-"""TODO: update docstring"""
-import os
+"""Initializing the FastAPI application"""
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
