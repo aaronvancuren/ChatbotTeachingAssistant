@@ -1,8 +1,9 @@
 """TODO: update docstring"""
 
+import os
 import openai
 from openai import OpenAI
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from backend.models.openai import *
 
 openai_router = APIRouter()
