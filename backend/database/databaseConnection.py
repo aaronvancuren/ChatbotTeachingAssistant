@@ -1,12 +1,17 @@
 import psycopg2
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Database connection configuration
 db_config = {
-    "dbname": "my_vector_db",  # Your database name
-    "user": "my_user",         # Your PostgreSQL username
-    "password": "my_password", # Your PostgreSQL password
-    "host": "localhost",       # Or any other host where PostgreSQL is running
-    "port": 5432               # Default port for PostgreSQL
+    "dbname": os.getenv("DB_NAME"),        # Database name from .env file
+    "user": os.getenv("DB_USER"),          # PostgreSQL username from .env file
+    "password": os.getenv("DB_PASSWORD"),  # PostgreSQL password from .env file
+    "host": os.getenv("DB_HOST", "localhost"),  # PostgreSQL host, default to 'localhost'
+    "port": os.getenv("DB_PORT", 5432)     # PostgreSQL port, default to 5432
 }
 
 # Connect to PostgreSQL using psycopg2
