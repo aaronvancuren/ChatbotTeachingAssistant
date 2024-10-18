@@ -1,17 +1,17 @@
+from os import getenv
+
 from fastapi import Request
 from fastapi_msal import MSALAuthorization, MSALClientConfig
 
 import msal
 
-from . auth_config import *
-
 AUTHENTICATION_CLIENT = MSALClientConfig()
-AUTHENTICATION_CLIENT.client_id = CLIENT_ID
-AUTHENTICATION_CLIENT.client_credential = CLIENT_SECRET
-AUTHENTICATION_CLIENT.tenant = TENANT
-AUTHENTICATION_CLIENT.login_path = LOGIN_PATH
-AUTHENTICATION_CLIENT.redirect_uri = REDIRECT_PATH
-AUTHENTICATION_CLIENT.logout_path = LOGOUT_PATH
+AUTHENTICATION_CLIENT.client_id = getenv("MS_ID")
+AUTHENTICATION_CLIENT.client_credential = getenv("MS_SECRET")
+AUTHENTICATION_CLIENT.tenant = getenv('MS_TENANT')
+AUTHENTICATION_CLIENT.login_path = getenv('MS_LOGIN')
+AUTHENTICATION_CLIENT.redirect_uri = getenv('MS_REDIRECT')
+AUTHENTICATION_CLIENT.logout_path = getenv('MS_LOGOUT')
 
 AUTHENTICATION_SERVER = MSALAuthorization(client_config=AUTHENTICATION_CLIENT)
 

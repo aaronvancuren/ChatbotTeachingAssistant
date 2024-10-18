@@ -4,11 +4,10 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from backend.api.authentication.Microsoft import AUTHENTICATION_SERVER, CLIENT_SECRET
+from backend.api.authentication.Microsoft import AUTHENTICATION_SERVER
 from backend.api.routes.web import web_router
 from backend.api.routes.openai import openai_router
 
@@ -33,8 +32,7 @@ app.add_middleware(
     max_age=600
 )
 
-#app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(
     SessionMiddleware,
-    secret_key=CLIENT_SECRET,
+    secret_key=os.getenv("MS_SECRET"),
 )
