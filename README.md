@@ -156,17 +156,17 @@ FastAPI comes with built-in support for interactive API documentation powered by
   ```
 
 ### Setting Up Authentication
-Using Microsoft Entra, find (our application)[https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/973d0063-2640-4751-9edf-4a103b364b8f/isMSAApp~/false] and retrieve or create `client_id`, `tenant_id`, and `client_credential`. Set each of these in their corresponding environment variables in your `.env`.
+Using Microsoft Entra, find [our application](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/973d0063-2640-4751-9edf-4a103b364b8f/isMSAApp~/false) and retrieve or create `client_id`, `tenant_id`, and `client_credential`. Set each of these in their corresponding environment variables in your `.env`.
 
 - **Customizing Redirects**
   Ensure that all redirects are approved and included in the application under `Authentication`.
 - **Customizing Permissions**
   Reference this (document)[] to ensure that the permissions you are requesting exist and are accessable.
-  > [!NOTE]  
-  > We do not have admin approval or permission with this app, therefore only permissions that don't require admin delegate privaleges should be used.
+> [!NOTE]  
+> We do not have admin approval or permission with this app, therefore only permissions that don't require admin delegate privaleges should be used.
 
-  > [!NOTE]  
-  > For application permissions, the user must grant our application access to run as them and are unreliable.
+> [!NOTE]
+> For application permissions, the user must grant our application access to run as them and are unreliable.
 
 ## Dependencies
 
