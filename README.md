@@ -163,10 +163,15 @@ Using Microsoft Entra, find [our application](https://entra.microsoft.com/#view/
 - **Customizing Permissions**
   Reference this [document](https://docs.microsoft.com/en-us/graph/permissions-reference) to ensure that the permissions you are requesting exist and are accessable.
 > [!NOTE]  
-> We do not have admin approval or permission with this app, therefore only permissions that don't require admin delegate privaleges should be used.
+> Many of the scopes in Microsoft GraphAPI will require elevated permissions to run without a user logged in.
+> We recommend using only scopes that do _not_ require admin _delegate_ permissions as any scopes that fail will fail any authentication attempt(s).
+> We recommend using minimal permission scope in this application context.
 
 > [!NOTE]
-> For application permissions, the user must grant our application access to run as them and are unreliable.
+> Many of the permissions in Microsoft GraphAPI will require elevated permissions to run with a user logged in.
+> As the user has the ability to approve/deny requests, this will prove to be an unreliable method to retrieve data.
+> We recommend using only scopes that do _not_ require admin _application_ permissions as any scopes that fail will fail any authentication attempt(s).
+> We recommend using minimal permission scope in this application context. 
 
 ## Dependencies
 
