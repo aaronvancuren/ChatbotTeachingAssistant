@@ -5,6 +5,7 @@ import openai
 from openai import OpenAI
 from fastapi import APIRouter, HTTPException
 from backend.models.openai import *
+from backend.database.base import *
 
 openai_router = APIRouter()
 
@@ -12,7 +13,7 @@ openai_router = APIRouter()
 client = OpenAI()
 
 @openai_router.post("/ask", tags=["Chatbot"])
-async def chat(message: Message):
+async def chat(user_id: int, conversation_id:int, message: Message):
     """OpenAI chat endpoint
     Args:
         message: User chat input
@@ -20,6 +21,12 @@ async def chat(message: Message):
     Returns:
         OpenAI response
     """
+    
+    save_message(1, 1, "", message)
+    conversation = get_conversation(1, 1)
+    if not conversation:
+        save
+    
     try:
         response = client.chat.completions.create(
             messages=[
@@ -36,6 +43,9 @@ async def chat(message: Message):
             # TODO add user field once user authentication is figured out
         )
         reply = response.choices[0].message.content.strip()
+        
+        save_message(1, 1, "", reply)
+        
         return {"reply": reply}
     except openai.APIConnectionError as e:
         print("The server could not be reached")
