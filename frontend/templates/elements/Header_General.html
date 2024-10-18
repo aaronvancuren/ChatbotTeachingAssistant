@@ -7,12 +7,10 @@
         </span>
     </a>
 
-    {% block profile %}
-        {% if loggedin == 'true' %}
-            {% include './elements/Header_LoggedIn.html' %}
-        {% else %}
-            {% include './elements/Header_LoggedOut.html' %}
-        {% endif %}
-    {% endblock %}
+    {% if loggedin == 'true' %}
+        {% include './elements/Header_LoggedIn.html' %}
+    {% else %}
+        {% include './elements/Header_LoggedOut.html' %}
+    {% endif %}
 
 </header>

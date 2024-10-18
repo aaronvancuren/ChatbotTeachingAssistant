@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
     
-    {% block head %}
-        {% include './elements/HTML_Head.html' %}
-    {% endblock %}
+    {% include './elements/HTML_Head.html' %}
 
     <body>
 
-        {% block app_header %}
-            {% include './elements/Header_General.html' %}
-        {% endblock %}
+        {% include './elements/Header_General.html' %}
 
         <main>
-            <a href="./chat">Go to Chat</a>
+            {% if loggedin == 'true' %}
+                <a href="./chat">Go to Chat</a>
+            {% endif %}
         </main>
     </body>
 </html>
