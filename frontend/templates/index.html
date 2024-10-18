@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    {% include './elements/HTML_Head.html' %}
+
+    <body>
+
+        {% include './elements/Header_General.html' %}
+
+        <main>
+            {% if loggedin %}
+                <a href="./chat">Go to Chat</a>
+            {% endif %}
+        </main>
+    </body>
+</html>
