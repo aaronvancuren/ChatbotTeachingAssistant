@@ -32,6 +32,7 @@ mdurl==0.1.2
 openai==1.46.0
 pillow==11.0.0
 platformdirs==4.3.6
+psycopg2==2.9.10
 pydantic==2.9.2
 pydantic-extra-types==2.9.0
 pydantic-settings==2.5.2

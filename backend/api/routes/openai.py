@@ -19,17 +19,16 @@ async def chat(user_id: int, conversation_id:int, message: Message):
         OpenAI response
     """
     
-    save_message(1, 1, "", message)
-    conversation = get_conversation(1, 1)
-    if not conversation:
-        save
-    
+    conversation = get_conversation(user_id, conversation_id)
+    conversation.append(message)
+    save_message(user_id, conversation_id, "user", message.content)
+
     try:
         response = client.chat.completions.create(
             messages=[
                 {
                     "role": "user",
-                    "content": message.content
+                    "content": conversation
                 }
             ],
             model=os.getenv("OPENAI_MODEL"),
@@ -39,11 +38,12 @@ async def chat(user_id: int, conversation_id:int, message: Message):
             temperature=0.7,
             # TODO add user field once user authentication is figured out
         )
-        reply = response.choices[0].message.content.strip()
         
-        save_message(1, 1, "", reply)
+        assistant_reply = response.choices[0].message.content.strip()
+        conversation.append(assistant_reply)
+        save_message(user_id, conversation_id, "assistant", assistant_reply)
         
-        return {"reply": reply}
+        return {"reply": assistant_reply}
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.
