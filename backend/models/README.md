@@ -5,6 +5,7 @@ The `models/` directory holds the data models and schemas used by the applicatio
 ## **Contents**
 
 - **`__init__.py`**: Initializes the `models` package and can be used to import all models for easier access.
+- **`openai.py`**: Contains all models required for OpenAI API request/respones.
 
 ## **Purpose**
 

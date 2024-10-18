@@ -1,4 +1,5 @@
-"""TODO: update docstring"""
+"""Initializing the FastAPI application"""
+
 import os
 
 from fastapi import FastAPI
