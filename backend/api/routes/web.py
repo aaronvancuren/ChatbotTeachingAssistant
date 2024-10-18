@@ -1,6 +1,6 @@
 """TODO: update docstring"""
 from backend.api.authentication.Microsoft import get_user_context
-from backend.core.templates import page_templates, error_templates
+from backend.core.templates import page_templates
 from fastapi import APIRouter, Request
 
 web_router = APIRouter()
@@ -55,6 +55,6 @@ async def Error_401(request: Request, user_context):
     Returns:
         401 error page
     """
-    return error_templates.TemplateResponse('/errors/401.html', {"request": request, **user_context})
+    return page_templates.TemplateResponse('/errors/401.html', {"request": request, **user_context})
 
 #endregion

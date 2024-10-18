@@ -161,7 +161,7 @@ Using Microsoft Entra, find [our application](https://entra.microsoft.com/#view/
 - **Customizing Redirects**
   Ensure that all redirects are approved and included in the application under `Authentication`.
 - **Customizing Permissions**
-  Reference this (document)[] to ensure that the permissions you are requesting exist and are accessable.
+  Reference this [document](https://docs.microsoft.com/en-us/graph/permissions-reference) to ensure that the permissions you are requesting exist and are accessable.
 > [!NOTE]  
 > We do not have admin approval or permission with this app, therefore only permissions that don't require admin delegate privaleges should be used.
 

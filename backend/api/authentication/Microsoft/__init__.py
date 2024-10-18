@@ -32,13 +32,13 @@ async def get_user_context(Request: Request):
             "user": '',
             "user_id": None,
             "version": msal.__version__,
-            "loggedin": 'false',
+            "loggedin": False,
         }   
     else:
         context = {
             "user": token.id_token_claims.display_name,
             "user_id": token.id_token_claims.user_id,
             "version": msal.__version__,
-            "loggedin": 'true',
+            "loggedin": True,
         }
     return context
