@@ -185,6 +185,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `pydantic-extra-types`: Extra types for Pydantic.
 - `pydantic-settings`: Settings management library for Pydantic.
 - `pydantic-core`: Core engine powering Pydantic.
+- `pylint`: Checks for errors, enforces a coding standard, looks for code smells, and can make suggestions about how the code could be refactored.
 - `PyPDF2`: Extracts text from PDFs.
 - `Python-docx`:Extracts text from Word documents.
 - `Python-pptx`:Extracts text from Power Points.
@@ -254,6 +255,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [pydantic-settings Documentation](https://pypi.org/project/pydantic-settings/)
 - [pydantic-core Documentation](https://docs.pydantic.dev/latest/usage/types/pydantic_core/)
 - [Pygments Documentation](https://pygments.org/docs/)
+- [pylint](https://pylint.pycqa.org/en/latest/index.html)
 - [PyPDF2 Documentation](https://pypi.org/project/PyPDF2/)
 - [python-dotenv Documentation](https://pypi.org/project/python-dotenv/)
 - [python-docx Documentation](https://pypi.org/project/python-docx/)
