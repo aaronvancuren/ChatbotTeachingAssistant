@@ -10,7 +10,7 @@ client = OpenAI()
 openai_router = APIRouter()
 
 @openai_router.post("/ask", tags=["Chatbot"])
-async def chat(user_id: int, conversation_id:int, message: Message):
+async def chat(user_id: int, conversation_id: int, message: Message):
     """OpenAI chat endpoint
     Args:
         message: User chat input
