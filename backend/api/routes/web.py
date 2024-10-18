@@ -1,5 +1,5 @@
 """TODO: update docstring"""
-from backend.core import page_templates
+from backend.core.templates import page_templates
 from fastapi import APIRouter
 
 web_router = APIRouter()
