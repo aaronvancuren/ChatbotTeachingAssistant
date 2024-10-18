@@ -5,8 +5,8 @@ The `api/` directory contains the application's routing logic, including both we
 ## **Contents**
 
 - **`routes/`**: A subdirectory that holds individual route modules.
+  - **`openai.py`**: Contains OpenAI API calls.
   - **`web.py`**: Contains routes for rendering Jinja2 templates (server-side rendered web pages).
-  - **`NAME_api.py`**: Contains RESTful API endpoints for handling AJAX requests or providing data to the frontend.
   - **`__init__.py`**: Initializes the `routes` package.
 - **`dependencies.py`**: Defines dependencies that can be injected into route handlers, such as database sessions or authentication classes.
 - **`__init__.py`**: Initializes the `api` package.
