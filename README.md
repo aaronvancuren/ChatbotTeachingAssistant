@@ -155,6 +155,24 @@ FastAPI comes with built-in support for interactive API documentation powered by
   )
   ```
 
+### Setting Up Authentication
+Using Microsoft Entra, find [our application](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/973d0063-2640-4751-9edf-4a103b364b8f/isMSAApp~/false) and retrieve or create `client_id`, `tenant_id`, and `client_credential`. Set each of these in their corresponding environment variables in your `.env`.
+
+- **Customizing Redirects**
+  Ensure that all redirects are approved and included in the application under `Authentication`.
+- **Customizing Permissions**
+  Reference this [document](https://docs.microsoft.com/en-us/graph/permissions-reference) to ensure that the permissions you are requesting exist and are accessable.
+> [!NOTE]  
+> Many of the scopes in Microsoft GraphAPI will require elevated permissions to run without a user logged in.
+> We recommend using only scopes that do _not_ require admin _delegate_ permissions as any scopes that fail will fail any authentication attempt(s).
+> We recommend using minimal permission scope in this application context.
+
+> [!NOTE]
+> Many of the permissions in Microsoft GraphAPI will require elevated permissions to run with a user logged in.
+> As the user has the ability to approve/deny requests, this will prove to be an unreliable method to retrieve data.
+> We recommend using only scopes that do _not_ require admin _application_ permissions as any scopes that fail will fail any authentication attempt(s).
+> We recommend using minimal permission scope in this application context. 
+
 ## Dependencies
 
 - `annotated-types`: Provides support for annotated type hints in Python.
@@ -167,6 +185,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `email-validator`: Robust email address syntax and deliverability validator.
 - `fastapi`: Web framework for building APIs.
 - `fastapi-cli`: CLI tool to manage FastAPI projects.
+- `fastapi_msal`: Out of the box support for microsoft MSAL authentication.
 - `h11`: Pure-Python HTTP/1.1 protocol implementation.
 - `h2`: Python HTTP/2 protocol implementation.
 - `hpack`: HTTP/2 header encoding for Python.
@@ -175,6 +194,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `httpx`: Fully featured HTTP client supporting HTTP/1.1 and HTTP/2.
 - `hyperframe`: Python module for working with HTTP/2 frames.
 - `idna`: Implements Internationalized Domain Names in Applications (IDNA) standard.
+- `identity`: Implements Microsoft Entra user authentication.
 - `itsdangerous`: Securely signs data.
 - `Jinja2`: Templating engine for generating HTML.
 - `markdown-it-py`: Markdown parser with full CommonMark support.
@@ -185,6 +205,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - `pydantic-extra-types`: Extra types for Pydantic.
 - `pydantic-settings`: Settings management library for Pydantic.
 - `pydantic-core`: Core engine powering Pydantic.
+- `pylint`: Checks for errors, enforces a coding standard, looks for code smells, and can make suggestions about how the code could be refactored.
 - `PyPDF2`: Extracts text from PDFs.
 - `Python-docx`:Extracts text from Word documents.
 - `Python-pptx`:Extracts text from Power Points.
@@ -235,6 +256,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [email-validator Documentation](https://pypi.org/project/email-validator/)
 - [fastapi Documentation](https://fastapi.tiangolo.com/)
 - [fastapi-cli Documentation](https://pypi.org/project/fastapi-cli/)
+- [fastapi_msal](https://github.com/dudil/fastapi_msal)
 - [h11 Documentation](https://h11.readthedocs.io/en/stable/)
 - [h2 Documentation](https://python-hyper.org/projects/h2/en/stable/)
 - [hpack Documentation](https://pypi.org/project/hpack/)
@@ -243,6 +265,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [httpx Documentation](https://www.python-httpx.org/)
 - [hyperframe Documentation](https://pypi.org/project/hyperframe/)
 - [idna Documentation](https://pypi.org/project/idna/)
+- [identity Documentation](https://pypi.org/project/identity/)
 - [itsdangerous Documentation](https://pypi.org/project/itsdangerous/)
 - [Jinja2 Documentation](https://jinja.palletsprojects.com/en/stable/)
 - [markdown-it-py Documentation](https://markdown-it-py.readthedocs.io/en/latest/)
@@ -254,6 +277,7 @@ FastAPI comes with built-in support for interactive API documentation powered by
 - [pydantic-settings Documentation](https://pypi.org/project/pydantic-settings/)
 - [pydantic-core Documentation](https://docs.pydantic.dev/latest/usage/types/pydantic_core/)
 - [Pygments Documentation](https://pygments.org/docs/)
+- [pylint](https://pylint.pycqa.org/en/latest/index.html)
 - [PyPDF2 Documentation](https://pypi.org/project/PyPDF2/)
 - [python-dotenv Documentation](https://pypi.org/project/python-dotenv/)
 - [python-docx Documentation](https://pypi.org/project/python-docx/)
