@@ -173,6 +173,21 @@ Using Microsoft Entra, find [our application](https://entra.microsoft.com/#view/
 > We recommend using only scopes that do _not_ require admin _application_ permissions as any scopes that fail will fail any authentication attempt(s).
 > We recommend using minimal permission scope in this application context. 
 
+### Running Unit Tests
+
+Unit tests can be run using the follow commands. 
+
+Running a unit test file:
+
+```bash
+python -m unittest tests.test_file_name
+```
+Running a specific test case:
+
+```bash
+python -m unittest tests.test_file_name.TestCaseClassName
+```
+
 ## Dependencies
 
 - `annotated-types`: Provides support for annotated type hints in Python.
