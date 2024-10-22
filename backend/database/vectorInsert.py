@@ -5,6 +5,7 @@ import psycopg2
 import logging
 from dotenv import load_dotenv
 from embeddings_generator import get_embeddings
+from databaseConnection import get_db_connection  # Import the function
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,47 +16,44 @@ load_dotenv()
 # Set OpenAI API key
 openai = OpenAI()
 
+def insert_embeddings_into_db(text_chunks):
+    """
+    Generates embeddings for given text chunks and inserts them into the database.
 
-# Database connection configuration
-db_config = {
-     "dbname": os.getenv("DB_NAME"),        # Database name from .env file
-    "user": os.getenv("DB_USER"),          # PostgreSQL username from .env file
-    "password": os.getenv("DB_PASSWORD"),  # PostgreSQL password from .env file
-    "host": os.getenv("DB_HOST", "localhost"),  # PostgreSQL host, default to 'localhost'
-    "port": os.getenv("DB_PORT", 5432)     # PostgreSQL port, default to 5432
-}
+    Args:
+        text_chunks (list): List of text strings to generate embeddings for.
+    """
+    # Generate embeddings
+    embeddings = get_embeddings(text_chunks)
+    logging.info("Embeddings generated successfully.")
 
-# Connect to PostgreSQL using psycopg2
-conn = psycopg2.connect(**db_config)
-cur = conn.cursor()
+    # Connect to PostgreSQL
+    conn = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return
+    cur = conn.cursor()
 
-#
-#We can add test files or scripts here to test the get_emedding function
-#
-test_text_chunks = [
-    "Introduction to C and Unix",
-    "C is a very powerful low-level programming langauage",
-    "Unix is a powerful operating system designed for flexibility and security"
-]
+    # Insert embeddings into the database
+    for idx, item in enumerate(embeddings):
+        title = f"Insert {idx + 1}"  # Title based on enumerated inserts
+        content = item['text']       # Plain text of the text chunk that produced the embedding
+        embedding = item['embedding']
 
-embeddings = get_embeddings(test_text_chunks)
+        if embedding is not None:
+            try:
+                # Insert into database
+                cur.execute("""
+                    INSERT INTO course_materials (title, content, embedding)
+                    VALUES (%s, %s, %s)
+                """, (title, content, embedding))
+            except psycopg2.Error as e:
+                logging.error(f"Database insertion error for {title}: {e}")
+        else:
+            logging.error(f"Failed to get embedding for: {title}")
 
-# Insert embeddings into the database
-for idx, item in enumerate(embeddings):
-    title = f"Test Insert: {idx + 1}"  #Title for enumerated test inserts
-    content = item['text']  # plain text that produced the embeddings 
-    embedding = item['embedding']
-    
-    if embedding is not None:
-        # Insert into database
-        cur.execute("""
-            INSERT INTO course_materials (title, content, embedding)
-            VALUES (%s, %s, %s)
-        """, (title, content, embedding))
-    else:
-        logging.error(f"Failed to get embedding for: {title}")
-
-# Commit the transaction and close the connection
-conn.commit()
-cur.close()
-conn.close()
+    # Commit the transaction and close the connection
+    conn.commit()
+    cur.close()
+    conn.close()
+    logging.info("Embeddings inserted into the database successfully.")
