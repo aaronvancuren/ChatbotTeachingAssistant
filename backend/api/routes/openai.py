@@ -1,15 +1,23 @@
 """Contains OpenAI API calls"""
 
 import os
+import json
+
 from openai import OpenAI, _exceptions
 from fastapi import APIRouter, HTTPException
 from typing import List, Tuple
+from pydantic import BaseModel
 
 client = OpenAI()
 openai_router = APIRouter()
 
+class ChatRequest(BaseModel):
+    chatbot: List[Tuple[str, str]]
+    user_content: str
+
+
 @openai_router.post("/ask", tags=["Chatbot"])
-async def chat(chatbot: List[Tuple[str, str]], user_input: str) -> List[Tuple[str, str]]:
+async def chat(request: ChatRequest) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         message: User chat input
@@ -19,13 +27,13 @@ async def chat(chatbot: List[Tuple[str, str]], user_input: str) -> List[Tuple[st
     """
     try:
         messages = []
-        for input_text, response_text in chatbot:
+        for input_text, response_text in request.chatbot:
             messages.append({'role': 'user', 'content': input_text})
             messages.append({'role': 'assistant', 'content': response_text})
 
         # Adds the user input to the conversation
-        messages.append({'role': 'user', 'content': user_input})
-        
+        messages.append({'role': 'user', 'content': request.user_content})
+
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=messages,
@@ -36,12 +44,12 @@ async def chat(chatbot: List[Tuple[str, str]], user_input: str) -> List[Tuple[st
             temperature=0.7,
             # TODO add user field once user authentication is figured out
         )
-        
+
         # Adds the user input and ChatGPT response to the conversation
-        chatbot.append((user_input, response.choices[0].message.content.strip()))
+        request.chatbot.append((request.user_content, response.choices[0].message.content.strip()))
         
         # Returns the conversation to the frontend to display
-        return chatbot
+        return json.dumps(request.chatbot)
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.
