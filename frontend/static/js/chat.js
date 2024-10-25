@@ -1,8 +1,13 @@
+var chatbot = [];
+
 function AskQuestion() {
     $.ajax({
         type: "POST",
         url: "/ask",
-        data: `{"content":"${document.getElementById("question").value}"}`,
+        data: JSON.stringify({
+            chatbot: chatbot,
+            user_content: document.getElementById("question").value
+        }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
             "X-Content-Type-Options": "nosniff",
@@ -11,8 +16,9 @@ function AskQuestion() {
             "Content-Type": "application/json"
         },
         success: function(data) {
+            chatbot = JSON.parse(data);
             createChatBubble(document.getElementById("question").value, ["btm-right", "user"]);
-            createChatBubble(data.reply, ["btm-left", "victor"]);
+            createChatBubble(chatbot[chatbot.length - 1][1], ["btm-left", "victor"]);
             document.getElementById("question").value = "";
         },
         statusCode:  {
