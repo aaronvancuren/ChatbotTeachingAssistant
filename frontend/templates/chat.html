@@ -8,23 +8,36 @@
     {% include './elements/Header_General.html' %}
 
     <main id="host">
-        <div id="sidebar">
-            <ul>
-                <li class="active">Introduction</li>
-                <li class="inactive">Demo</li>
-            </ul>
-        </div>
+        
+        {% include './elements/Sidebar_ChatOverview.html' %}
+
         <div id="content">
             <div id="conversation">
-            </div><br>
-            <div class="chat-box">
-                <form id="input" onsubmit="AskQuestion();return false;" method="post">
-                    <input id="question" name="question" type="text" required placeholder="What's your question?"/>
-                </form>
+                <div class="talk-bubble left">
+                    <p class="text-from left">Victor Says...</p>
+                    <div class="tri-right btm-left ta">
+                        <div class="talktext">
+                            <p>Hi! What can I help you with today?</p>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <br>
         </div>
+        
     </main>
-
+    <div class="chat-box">
+        <form id="input" onsubmit="AskQuestion();return false;" method="post">
+            <select name="TA" id="TAs" required onchange="updateDisclaimer()">
+                <option value="gpt-3.5-turbo" selected>Victor</option>
+                <option value="gpt-4o-mini">John</option>
+                <option value="gpt-4o">Hedy</option>
+                <option value="o1-preview">Henrietta</option>
+            </select>
+            <input id="question" name="question" type="text" required placeholder="What's your question?"/><br>
+            <p class="text-from left" id="Disclaimer">Victor is an AI and will occassionally make mistakes.</p>
+        </form>
+    </div>
 </body>
 
 </html>

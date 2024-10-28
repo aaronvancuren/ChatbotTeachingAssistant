@@ -6,7 +6,8 @@ function AskQuestion() {
         url: "/ask",
         data: JSON.stringify({
             chatbot: chatbot,
-            user_content: document.getElementById("question").value
+            user_content: document.getElementById("question").value,
+            ta: document.getElementById('TAs').value
         }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
@@ -17,8 +18,8 @@ function AskQuestion() {
         },
         success: function(data) {
             chatbot = JSON.parse(data);
-            createChatBubble(document.getElementById("question").value, ["btm-right", "user"]);
-            createChatBubble(chatbot[chatbot.length - 1][1], ["btm-left", "victor"]);
+            createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
+            createChatBubble(chatbot[chatbot.length - 1][1], ["btm-left", "ta"]);
             document.getElementById("question").value = "";
         },
         statusCode:  {
@@ -35,8 +36,25 @@ function AskQuestion() {
 function createChatBubble(dialogue, classes){
     wrapper = document.getElementById("conversation");
     
+    containerWrapper = document.createElement("div");
+    containerWrapper.classList.add('talk-bubble');
+    chatWrapper = document.createElement("p");
+    
+    if (classes.includes('ta')) {
+        chatWrapper.innerText = `${document.getElementById('TAs').options[document.getElementById('TAs').selectedIndex].text} says...`;
+        containerWrapper.classList.add('left');
+        chatWrapper.classList.add('left')
+    } else {
+        chatWrapper.innerText = 'You asked...';
+        containerWrapper.classList.add('right');
+        chatWrapper.classList.add('right')
+    }
+
+    chatWrapper.classList.add('text-from')
+    containerWrapper.appendChild(chatWrapper);
+
     container = document.createElement("div");
-    container.classList.add("talk-bubble", "tri-right", ...classes);
+    container.classList.add("tri-right", ...classes);
         
     displayContainer = document.createElement("div");
     displayContainer.classList.add("talktext");
@@ -46,5 +64,12 @@ function createChatBubble(dialogue, classes){
     
     displayContainer.appendChild(dialogueContainer);
     container.appendChild(displayContainer);
-    wrapper.appendChild(container);
+    containerWrapper.appendChild(container);
+    wrapper.appendChild(containerWrapper);
+}
+
+function updateDisclaimer(){
+    let target = document.getElementById('Disclaimer')
+    let newVal = document.getElementById('TAs').options[document.getElementById('TAs').selectedIndex].text;
+    target.innerText = target.innerText.replace(/[^\s]*/, newVal);
 }
