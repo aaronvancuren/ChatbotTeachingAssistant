@@ -66,8 +66,8 @@
     left: 22%;
 }
 
-#TAs {
-    width: 10em;
+#teaching_assistant {
+    width: 15em;
     top: 10%;
     padding:.25ch .5ch .25ch .5ch;
 }
@@ -136,7 +136,7 @@
     text-align: right;
 }
 
-.ta {
+.teaching_assistant {
     background-color: var(--pfw-gold-rumble);
     border-color: var(--pfw-gold-rumble);
 }

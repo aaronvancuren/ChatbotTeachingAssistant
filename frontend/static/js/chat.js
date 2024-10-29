@@ -7,7 +7,7 @@ function AskQuestion() {
         data: JSON.stringify({
             chatbot: chatbot,
             user_content: document.getElementById("question").value,
-            ta: document.getElementById('TAs').value
+            teaching_assistant: document.getElementById('teaching_assistant').value
         }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
@@ -19,7 +19,7 @@ function AskQuestion() {
         success: function(data) {
             chatbot = JSON.parse(data);
             createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
-            createChatBubble(chatbot[chatbot.length - 1][1], ["btm-left", "ta"]);
+            createChatBubble(chatbot[chatbot.length - 1][1], ["btm-left", "teaching_assistant"]);
             document.getElementById("question").value = "";
         },
         statusCode:  {
@@ -40,8 +40,8 @@ function createChatBubble(dialogue, classes){
     containerWrapper.classList.add('talk-bubble');
     chatWrapper = document.createElement("p");
     
-    if (classes.includes('ta')) {
-        chatWrapper.innerText = `${document.getElementById('TAs').options[document.getElementById('TAs').selectedIndex].text} says...`;
+    if (classes.includes('teaching_assistant')) {
+        chatWrapper.innerText = `${document.getElementById('teaching_assistant').options[document.getElementById('teaching_assistant').selectedIndex].text} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
@@ -70,6 +70,7 @@ function createChatBubble(dialogue, classes){
 
 function updateDisclaimer(){
     let target = document.getElementById('Disclaimer')
-    let newVal = document.getElementById('TAs').options[document.getElementById('TAs').selectedIndex].text;
+    let newVal = document.getElementById('teaching_assistant').options[document.getElementById('teaching_assistant').selectedIndex].text;
     target.innerText = target.innerText.replace(/[^\s]*/, newVal);
+    document.getElementById('teaching_assistant').title = document.getElementById('TAs').options[document.getElementById('teaching_assistant').selectedIndex].title;
 }

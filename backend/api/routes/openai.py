@@ -14,7 +14,7 @@ openai_router = APIRouter()
 class ChatRequest(BaseModel):
     chatbot: List[Tuple[str, str]]
     user_content: str
-    ta: str
+    teaching_assistant: str
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest) -> str:
@@ -37,7 +37,7 @@ async def chat(request: ChatRequest) -> str:
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=messages,
-            model=request.ta,
+            model=request.teaching_assistant, # os.getenv("OPENAI_MODEL"),
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
