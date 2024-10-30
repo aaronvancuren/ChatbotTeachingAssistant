@@ -23,6 +23,7 @@
 #sidebar h1 {
     font-weight: 200;
     font-size: 20pt;
+    margin-left: .5ch;
 }
 
 #sidebar a {
@@ -46,6 +47,8 @@
     align-items: flex-end;
     margin: auto;
     width: 100%;
+    height: 70vh;
+    overflow-y: auto;
 }
 
 .chat-box {
@@ -54,15 +57,30 @@
 }
 
 .chat-box #input * {
-    width: 100%;
     height: auto;
     min-height: 3ch;
     max-height: 30%;
     overflow-x: auto;
     margin: .5ch;
+    position:absolute;
+    left: 22%;
 }
 
-.chat-box::after {
+#teaching_assistant {
+    width: 15em;
+    top: 10%;
+    padding:.25ch .5ch .25ch .5ch;
+}
+
+#question {
+    width: 65%;
+    right: 10%;
+    position:absolute;
+    bottom: 5%;
+    padding:.25ch .5ch .25ch .5ch;
+}
+
+#chat-box::after {
     content: "Victor is an AI and may make mistakes.";
     color: #00000060;
     font-size: small;
@@ -86,10 +104,12 @@
 #sidebar ul li.active {
     background-color: #FFC107;
     color: black;
+    text-align: right;
 }
 
 /* End ChatGPT Code*/
 
+/*#region Chat bubbles*/
 /* Source: https://codepen.io/Founts/pen/AJyVOr */
 .talk-bubble {
     display: inline-block;
@@ -97,25 +117,31 @@
     width: 80%;
     height: auto;
     margin: 1em;
+    align-self: flex-start;
 }
 
-.talk-bubble.victor div ::before {
-    content: "Victor Says...";
-
+.text-from {
+    color: #00000060;
+    font-size: small;
+    width: 100%;
+    margin: auto;
 }
 
-.talk-bubble.user div ::before {
-    content: "You asked...";
+.left {
+    align-self: flex-start;
+    text-align: left;
+}
+.right {
+    align-self: flex-end;
+    text-align: right;
 }
 
-.victor {
-    margin-left: 0;
+.teaching_assistant {
     background-color: var(--pfw-gold-rumble);
     border-color: var(--pfw-gold-rumble);
 }
 
-.user {
-    margin-right: 0;
+.student {
     background-color: var(--pfw-black-tusk);
     border-color: var(--pfw-black-tusk);
 }
@@ -130,7 +156,6 @@
     /* remove webkit p margins */
     -webkit-margin-before: 0em;
     -webkit-margin-after: 0em;
-    user-select: text;
 }
 
 /*Right triangle, placed bottom right side slightly in*/
@@ -186,3 +211,4 @@
 }
 
 /* End Source: https://codepen.io/Founts/pen/AJyVOr */
+/*#endregion*/
