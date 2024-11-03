@@ -8,8 +8,8 @@ from backend.database.databaseConnection import get_db_connection
 
 class TestGetDbConnection(unittest.TestCase):
 
-    @patch('db_utils.psycopg2.connect')
-    @patch('db_utils.load_dotenv')
+    @patch('backend.database.databaseConnection.psycopg2.connect')
+    @patch('backend.database.databaseConnection.load_dotenv')
     def test_get_db_connection_success(self, mock_load_dotenv, mock_connect):
         # Mock environment variables
         with patch.dict(os.environ, {
@@ -37,8 +37,8 @@ class TestGetDbConnection(unittest.TestCase):
                 port=5432
             )
 
-    @patch('db_utils.psycopg2.connect')
-    @patch('db_utils.load_dotenv')
+    @patch('backend.database.databaseConnection.psycopg2.connect')
+    @patch('backend.database.databaseConnection.load_dotenv')
     def test_get_db_connection_exception(self, mock_load_dotenv, mock_connect):
         # Mock environment variables
         with patch.dict(os.environ, {
@@ -59,8 +59,8 @@ class TestGetDbConnection(unittest.TestCase):
             mock_load_dotenv.assert_called_once()
             mock_connect.assert_called_once()
 
-    @patch('db_utils.psycopg2.connect')
-    @patch('db_utils.load_dotenv')
+    @patch('backend.database.databaseConnection.psycopg2.connect')
+    @patch('backend.database.databaseConnection.load_dotenv')
     def test_get_db_connection_missing_env_vars(self, mock_load_dotenv, mock_connect):
         # Clear environment variables
         with patch.dict(os.environ, {}, clear=True):
@@ -72,8 +72,8 @@ class TestGetDbConnection(unittest.TestCase):
             mock_connect.assert_not_called()
             mock_load_dotenv.assert_called_once()
 
-    @patch('db_utils.psycopg2.connect')
-    @patch('db_utils.load_dotenv')
+    @patch('backend.database.databaseConnection.psycopg2.connect')
+    @patch('backend.database.databaseConnection.load_dotenv')
     def test_get_db_connection_invalid_port(self, mock_load_dotenv, mock_connect):
         # Mock environment variables with invalid port
         with patch.dict(os.environ, {
