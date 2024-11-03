@@ -8,8 +8,8 @@ from backend.database.vectorInsert import insert_embeddings_into_db
 
 class TestInsertEmbeddingsIntoDb(unittest.TestCase):
 
-    @patch('insert_embeddings.get_db_connection')
-    @patch('insert_embeddings.get_embeddings')
+    @patch('backend.database.vectorInsert.get_db_connection')
+    @patch('backend.database.vectorInsert.embeddings_generator.get_embeddings')
     def test_insert_embeddings_success(self, mock_get_embeddings, mock_get_db_connection):
         # Sample input data
         text_chunks = ['Sample text 1', 'Sample text 2', 'Sample text 3']
@@ -49,9 +49,9 @@ class TestInsertEmbeddingsIntoDb(unittest.TestCase):
         ]
         mock_cursor.execute.assert_has_calls(expected_calls, any_order=False)
 
-    @patch('insert_embeddings.logging')
-    @patch('insert_embeddings.get_db_connection')
-    @patch('insert_embeddings.get_embeddings')
+    @patch('backend.database.vectorInsert.logging')
+    @patch('backend.database.vectorInsert.get_db_connection')
+    @patch('backend.database.vectorInsert.get_embeddings')
     def test_insert_embeddings_embedding_failure(self, mock_get_embeddings, mock_get_db_connection, mock_logging):
         # Sample input data
         text_chunks = ['Sample text 1']
@@ -83,9 +83,9 @@ class TestInsertEmbeddingsIntoDb(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('insert_embeddings.logging')
-    @patch('insert_embeddings.get_db_connection')
-    @patch('insert_embeddings.get_embeddings')
+    @patch('backend.database.vectorInsert.logging')
+    @patch('backend.database.vectorInsert.get_db_connection')
+    @patch('backend.database.vectorInsert.get_embeddings')
     def test_insert_embeddings_db_connection_failure(self, mock_get_embeddings, mock_get_db_connection, mock_logging):
         # Sample input data
         text_chunks = ['Sample text 1']
@@ -111,9 +111,9 @@ class TestInsertEmbeddingsIntoDb(unittest.TestCase):
         # We can check that cursor methods are not called by ensuring mock_get_db_connection.return_value is None
         self.assertIsNone(mock_get_db_connection.return_value)
 
-    @patch('insert_embeddings.logging')
-    @patch('insert_embeddings.get_db_connection')
-    @patch('insert_embeddings.get_embeddings')
+    @patch('backend.database.vectorInsert.logging')
+    @patch('backend.database.vectorInsert.get_db_connection')
+    @patch('backend.database.vectorInsert.get_embeddings')
     def test_insert_embeddings_db_insertion_error(self, mock_get_embeddings, mock_get_db_connection, mock_logging):
         # Sample input data
         text_chunks = ['Sample text 1']
