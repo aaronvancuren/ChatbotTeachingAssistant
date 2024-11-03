@@ -6,8 +6,8 @@ from backend.database.vectorUpdate import update_embedding_by_id, update_embeddi
 
 class TestUpdateEmbedding(unittest.TestCase):
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_id_success(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536  # Mock embedding of correct size
@@ -35,8 +35,8 @@ class TestUpdateEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_id_no_record_found(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536
@@ -64,8 +64,8 @@ class TestUpdateEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_id_db_connection_failure(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536
@@ -83,8 +83,8 @@ class TestUpdateEmbedding(unittest.TestCase):
         self.assertFalse(result)
         mock_get_embeddings.assert_called_once_with([new_content])
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_id_exception(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536
@@ -110,8 +110,8 @@ class TestUpdateEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_title_success(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536
@@ -139,8 +139,8 @@ class TestUpdateEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_title_no_record_found(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536
@@ -168,8 +168,8 @@ class TestUpdateEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_title_db_connection_failure(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536
@@ -187,8 +187,8 @@ class TestUpdateEmbedding(unittest.TestCase):
         self.assertFalse(result)
         mock_get_embeddings.assert_called_once_with([new_content])
 
-    @patch('vectorUpdate.get_embeddings')
-    @patch('vectorUpdate.get_db_connection')
+    @patch('backend.database.vectorUpdate.get_embeddings')
+    @patch('backend.databae.vectorUpdate.get_db_connection')
     def test_update_embedding_by_title_exception(self, mock_get_db_connection, mock_get_embeddings):
         # Mock the embedding generation
         mock_embedding = [0.1] * 1536
