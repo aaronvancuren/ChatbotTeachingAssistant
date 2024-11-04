@@ -2,8 +2,8 @@ from psycopg2.extensions import AsIs
 from psycopg2.extras import execute_values
 import logging
 
-from embeddings_generator import get_embeddings
-from databaseConnection import get_db_connection  # Import the function
+from backend.database.embeddings_generator import get_embeddings
+from backend.database.databaseConnection import get_db_connection  # Import the function
 
 embedding_vector_length = 1536 
 
