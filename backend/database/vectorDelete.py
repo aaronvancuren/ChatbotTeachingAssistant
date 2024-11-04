@@ -1,6 +1,6 @@
 import logging
 
-from databaseConnection import get_db_connection
+from backend.database.databaseConnection import get_db_connection
 
 
 # Configure logging
