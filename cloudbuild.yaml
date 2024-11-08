@@ -1,6 +1,7 @@
+logsBucket: gs://chatbot-teaching-assistant-build-logs
+
 options:
   logging: GCS_ONLY
-  logsBucket: gs://chatbot-teaching-assistant-build-logs  # Replace with your bucket name
 
 steps:
   - name: 'gcr.io/cloud-builders/docker'
