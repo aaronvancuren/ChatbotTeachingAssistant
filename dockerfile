@@ -15,7 +15,8 @@ ENV PATH="/root/.cargo/bin:$PATH"
 COPY requirements.txt .
 
 # Install dependencies.
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
 
 # Copy the rest of the application code
 COPY . .
