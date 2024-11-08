@@ -4,19 +4,23 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_msal import MSALAuthorization, MSALClientConfig
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
 
-from backend.api.authentication.Microsoft import AUTHENTICATION_SERVER
 from backend.api.routes.web import web_router
 from backend.api.routes.openai import openai_router
+
+#
+client_config = MSALClientConfig()
+msal_auth = MSALAuthorization(client_config)
 
 # Set up FastAPI settings
 app = FastAPI()
 
+#
 app.include_router(web_router)
 app.include_router(openai_router)
-app.include_router(AUTHENTICATION_SERVER.router)
+app.include_router(msal_auth.router)
 
 app.mount('/static', StaticFiles(directory='frontend/static'), name='static')
 
@@ -30,9 +34,4 @@ app.add_middleware(
     allow_credentials=True, # When True allow_origins, allow_methods and allow_headers cannot be set to ['*']
     expose_headers=[],
     max_age=600
-)
-
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=os.getenv("MS_SECRET"),
 )

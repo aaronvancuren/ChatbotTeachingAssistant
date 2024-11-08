@@ -14,7 +14,8 @@ openai_router = APIRouter()
 class ChatRequest(BaseModel):
     chatbot: List[Tuple[str, str]]
     user_content: str
-    teaching_assistant: str
+
+conversations = [dict[str,ChatRequest]]
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest) -> str:

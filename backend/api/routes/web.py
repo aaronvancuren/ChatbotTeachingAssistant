@@ -1,5 +1,4 @@
 """TODO: update docstring"""
-from backend.api.authentication.Microsoft import get_user_context
 from backend.core.templates import page_templates
 from fastapi import APIRouter, Request
 
