@@ -3,9 +3,8 @@
 import os
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware import CORSMiddleware, HTTPSRedirectMiddleware, SessionMiddleware
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
 
 from backend.api.authentication.Microsoft import AUTHENTICATION_SERVER
 from backend.api.routes.web import web_router
@@ -36,3 +35,5 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("MS_SECRET"),
 )
+
+app.add_middleware(HTTPSRedirectMiddleware)
