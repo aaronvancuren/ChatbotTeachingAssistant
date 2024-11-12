@@ -3,8 +3,10 @@
 import os
 
 from fastapi import FastAPI
-from fastapi.middleware import CORSMiddleware, HTTPSRedirectMiddleware, SessionMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
 from backend.api.authentication.Microsoft import AUTHENTICATION_SERVER
 from backend.api.routes.web import web_router
