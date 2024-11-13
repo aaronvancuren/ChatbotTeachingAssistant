@@ -38,4 +38,5 @@ app.add_middleware(
     secret_key=os.getenv("MS_SECRET"),
 )
 
-app.add_middleware(HTTPSRedirectMiddleware)
+if os.getenv("environment") == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
