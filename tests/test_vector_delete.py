@@ -2,11 +2,11 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 # Import the functions under test
-from backend.database.vectorDelete import delete_embedding_by_title, delete_embedding_by_id
+from backend.database.vector_CRUD import delete_embedding_by_title, delete_embedding_by_id
 
 class TestDeleteEmbedding(unittest.TestCase):
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_title_success(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -34,7 +34,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_title_no_record_found(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -62,7 +62,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_title_db_connection_failure(self, mock_get_db_connection):
         # Mock get_db_connection to return None
         mock_get_db_connection.return_value = None
@@ -74,7 +74,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         # Assertions
         self.assertFalse(result)
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_title_exception(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -95,7 +95,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_id_success(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -123,7 +123,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_id_no_record_found(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -151,7 +151,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_id_db_connection_failure(self, mock_get_db_connection):
         # Mock get_db_connection to return None
         mock_get_db_connection.return_value = None
@@ -163,7 +163,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         # Assertions
         self.assertFalse(result)
 
-    @patch('backend.database.vectorDelete.get_db_connection')
+    @patch('backend.database.vector_CRUD.get_db_connection')
     def test_delete_embedding_by_id_exception(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
