@@ -1,5 +1,5 @@
 import chromadb
-from chromadb import Documents, EmbeddingFunction, Embeddings
+from chromadb import Documents, Embeddings
 from openai import OpenAI
 from typing import List, Dict
 import logging
