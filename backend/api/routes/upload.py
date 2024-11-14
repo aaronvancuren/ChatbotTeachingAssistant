@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Form, Request, HTTPException, Depends
+from fastapi import APIRouter, File, UploadFile, Form, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 import uuid
 from fastapi.responses import HTMLResponse
@@ -10,14 +10,12 @@ from backend.database.chroma_database import (
     update_entry,
     delete_entry,
 )
-from starlette.responses import RedirectResponse
-import os
 
 # Initialize templates directory
 templates = Jinja2Templates(directory="frontend/templates")
 
 # Initialize ChromaDB client and collection
-client = initialize_chromadb()
+client = initialize_chromadb(True,'backend/chromadb_store')
 collection = get_or_create_collection(client, 'file_collection')
 
 upload_router = APIRouter(prefix="/files")

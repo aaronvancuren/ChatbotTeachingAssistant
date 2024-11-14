@@ -18,10 +18,10 @@
     <tr>
         <td>{{ file_name }}</td>
         <td>
-            <form action="/delete/{{ file_name }}" method="post" style="display:inline;">
+            <form action="/files/delete/{{ file_name }}" method="post" style="display:inline;">
                 <button type="submit">Delete</button>
             </form>
-            <form action="/update/{{ file_name }}" method="get" style="display:inline;">
+            <form action="/files/update/{{ file_name }}" method="get" style="display:inline;">
                 <button type="submit">Update</button>
             </form>
         </td>
