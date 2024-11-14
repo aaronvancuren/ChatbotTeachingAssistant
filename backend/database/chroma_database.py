@@ -25,6 +25,7 @@ def initialize_chromadb(use_persistence=False, persist_directory=None):
         client = chromadb.Client()
         logging.info("ChromaDB initialized without persistent storage.")
     return client
+
 # Function to get or create a collection
 def get_or_create_collection(client, collection_name):
     collection = client.get_or_create_collection(name=collection_name)
