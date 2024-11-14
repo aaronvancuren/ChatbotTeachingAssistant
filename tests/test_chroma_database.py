@@ -48,9 +48,15 @@ class TestChromaDatabase(unittest.TestCase):
     @patch('backend.database.chroma_database.openai.embeddings.create')
     def test_generate_embedding(self, mock_create):
         # Arrange
-        mock_response = {
-            'data': [{'embedding': [0.1, 0.2, 0.3]}]
-        }
+        # Create a mock response object with 'data' attribute
+        mock_data = MagicMock()
+        mock_embedding = MagicMock()
+        mock_embedding.embedding = [0.1, 0.2, 0.3]
+        mock_data.__getitem__.return_value = mock_embedding  # For data[0]
+        
+        mock_response = MagicMock()
+        mock_response.data = [mock_embedding]
+        
         mock_create.return_value = mock_response
         text = "Test text"
 
@@ -194,9 +200,9 @@ class TestChromaDatabase(unittest.TestCase):
         results = nearest_neighbor_search(collection, input_text, n_results=2)
 
         # Assert
-        self.assertEqual(len(results['documents'][0]), 2)
-        self.assertIn("Document 1", results['documents'][0])
-        self.assertIn("Document 2", results['documents'][0])
+        self.assertEqual(len(results), 2)
+        self.assertIn("Document 1", [doc['content'] for doc in results])
+        self.assertIn("Document 2", [doc['content'] for doc in results])
         mock_generate_embedding.assert_called_with(input_text)
 
 if __name__ == '__main__':
