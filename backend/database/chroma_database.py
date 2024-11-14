@@ -3,6 +3,7 @@ from chromadb import Documents, Embeddings
 from openai import OpenAI
 from typing import List, Dict
 import logging
+import os
 
 openai = OpenAI()
 
@@ -10,7 +11,7 @@ openai = OpenAI()
 def generate_embedding(text):
     response = openai.embeddings.create(
         input=text,
-        model='text-embedding-ada-002'
+        model=os.getenv("OPENAI_EMBEDDING_MODEL")
     )
     embedding = response.data[0].embedding
     return embedding

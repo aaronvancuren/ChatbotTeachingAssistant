@@ -3,6 +3,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import chromadb
+import os
 
 # Import the functions to test
 from backend.database.chroma_database import (
@@ -51,7 +52,7 @@ class TestChromaDatabase(unittest.TestCase):
         # Assert
         mock_create.assert_called_once_with(
             input=text,
-            model='text-embedding-ada-002'
+            model=os.getenv("OPENAI_EMBEDDING_MODEL")
         )
         self.assertEqual(embedding, [0.1, 0.2, 0.3])
 
