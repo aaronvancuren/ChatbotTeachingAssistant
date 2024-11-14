@@ -30,21 +30,6 @@ class TestChromaDatabase(unittest.TestCase):
         if all_ids:
             self.collection.delete(ids=all_ids)
 
-    @unittest.skip("Skipping due to ChromaDB singleton limitation")
-    def test_initialize_chromadb_with_persistence(self):
-        # This test is skipped because ChromaDB cannot be re-initialized with different settings
-        pass
-
-    # def test_initialize_chromadb_with_persistence(self):
-    #     # Arrange
-    #     persist_directory = 'test_persist_directory'
-
-    #     # Act
-    #     client = initialize_chromadb(use_persistence=True, persist_directory=persist_directory)
-
-    #     # Assert
-    #     self.assertIsInstance(client, chromadb.Client)
-
     @patch('backend.database.chroma_database.openai.embeddings.create')
     def test_generate_embedding(self, mock_create):
         # Arrange
