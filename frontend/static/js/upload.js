@@ -1,4 +1,4 @@
-// frontend/static/js/main.js
+let currentUpdateFileName = null;
 
 // Handle Upload Form Submission
 document.getElementById('upload-form').addEventListener('submit', async function(event) {
@@ -10,6 +10,7 @@ document.getElementById('upload-form').addEventListener('submit', async function
     formData.append('file', fileField.files[0]);
 
     try {
+        showLoading();
         const response = await fetch('/files/upload', {
             method: 'POST',
             body: formData
@@ -27,6 +28,8 @@ document.getElementById('upload-form').addEventListener('submit', async function
     } catch (error) {
         showMessage('An unexpected error occurred.', 'error');
         console.error('Error:', error);
+    } finally {
+        hideLoading();
     }
 });
 
@@ -40,7 +43,9 @@ function showMessage(message, type) {
 
     // Remove message after 5 seconds
     setTimeout(() => {
-        messageContainer.removeChild(messageDiv);
+        if (messageDiv.parentNode === messageContainer) {
+            messageContainer.removeChild(messageDiv);
+        }
     }, 5000);
 }
 
@@ -48,23 +53,26 @@ function showMessage(message, type) {
 function addFileToList(fileName) {
     const fileList = document.getElementById('file-list');
     const listItem = document.createElement('li');
-    listItem.id = `file-${fileName}`;
+    // Sanitize fileName for use in ID
+    const safeFileName = fileName.replace(/[^a-zA-Z0-9-_]/g, '_');
+    listItem.id = `file-${safeFileName}`;
     listItem.innerHTML = `
         ${fileName}
-        <button onclick="deleteFile('${fileName}')">Delete</button>
-        <button onclick="showUpdateForm('${fileName}')">Update</button>
+        <button onclick="deleteFile('${encodeURIComponent(fileName)}')">Delete</button>
+        <button onclick="initiateUpdate('${encodeURIComponent(fileName)}')">Update</button>
     `;
     fileList.appendChild(listItem);
 }
 
 // Function to Delete a File
 async function deleteFile(fileName) {
-    if (!confirm(`Are you sure you want to delete "${fileName}"?`)) {
+    if (!confirm(`Are you sure you want to delete "${decodeURIComponent(fileName)}"?`)) {
         return;
     }
 
     try {
-        const response = await fetch(`/files/delete/${encodeURIComponent(fileName)}`, {
+        showLoading();
+        const response = await fetch(`/files/delete/${fileName}`, {
             method: 'DELETE'
         });
 
@@ -79,41 +87,49 @@ async function deleteFile(fileName) {
     } catch (error) {
         showMessage('An unexpected error occurred.', 'error');
         console.error('Error:', error);
+    } finally {
+        hideLoading();
     }
 }
 
 // Function to Remove a File from the List
 function removeFileFromList(fileName) {
-    const listItem = document.getElementById(`file-${fileName}`);
+    const safeFileName = decodeURIComponent(fileName).replace(/[^a-zA-Z0-9-_]/g, '_');
+    const listItem = document.getElementById(`file-${safeFileName}`);
     if (listItem) {
         listItem.remove();
     }
 }
 
-// Function to Show the Update Form
-function showUpdateForm(fileName) {
-    document.getElementById('update-file-name').innerText = fileName;
-    document.getElementById('update-modal').classList.remove('hidden');
+// Function to Initiate Update
+function initiateUpdate(fileName) {
+    currentUpdateFileName = fileName;
+    const updateFileInput = document.getElementById('update-file-input');
+    updateFileInput.value = ''; // Reset the file input
+    updateFileInput.click(); // Open the file dialog
 }
 
-// Function to Hide the Update Form
-function hideUpdateForm() {
-    document.getElementById('update-modal').classList.add('hidden');
-    document.getElementById('update-form').reset();
-}
+// Function to Handle Update File Selection
+async function handleUpdateFile(event) {
+    const fileInput = event.target;
+    const file = fileInput.files[0];
 
-// Handle Update Form Submission
-document.getElementById('update-form').addEventListener('submit', async function(event) {
-    event.preventDefault(); // Prevent default form submission
+    if (!file) {
+        // No file selected
+        return;
+    }
 
-    const fileName = document.getElementById('update-file-name').innerText;
-    const content = document.getElementById('update-content').value;
+    if (!currentUpdateFileName) {
+        showMessage('No file selected for update.', 'error');
+        return;
+    }
 
     const formData = new FormData();
-    formData.append('content', content);
+    formData.append('file', file);
 
     try {
-        const response = await fetch(`/files/update/${encodeURIComponent(fileName)}`, {
+        showLoading();
+        const response = await fetch(`/files/update/${currentUpdateFileName}`, {
             method: 'PUT',
             body: formData
         });
@@ -122,13 +138,41 @@ document.getElementById('update-form').addEventListener('submit', async function
 
         if (response.ok) {
             showMessage(result.message, 'success');
-            hideUpdateForm();
             // Optionally, update the file list if needed
+            // For simplicity, we can reload the page or update specific entries
         } else {
             showMessage(result.detail, 'error');
         }
     } catch (error) {
         showMessage('An unexpected error occurred.', 'error');
         console.error('Error:', error);
+    } finally {
+        hideLoading();
+        currentUpdateFileName = null;
     }
-});
+}
+
+// Loading Indicator Functions
+function showLoading() {
+    let loadingIndicator = document.getElementById('loading-indicator');
+    if (!loadingIndicator) {
+        loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'loading-indicator';
+        loadingIndicator.innerHTML = '<div class="spinner"></div>';
+        loadingIndicator.style.position = 'fixed';
+        loadingIndicator.style.top = '50%';
+        loadingIndicator.style.left = '50%';
+        loadingIndicator.style.transform = 'translate(-50%, -50%)';
+        loadingIndicator.style.zIndex = '1000';
+        loadingIndicator.style.display = 'none';
+        document.body.appendChild(loadingIndicator);
+    }
+    loadingIndicator.style.display = 'block';
+}
+
+function hideLoading() {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+}

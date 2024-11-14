@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, Form, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 import uuid
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import (
     initialize_chromadb,
@@ -80,20 +80,40 @@ async def delete_file_api(file_name: str):
         raise HTTPException(status_code=404, detail="File not found.")
 
 @upload_router.put("/update/{file_name}")
-async def update_file_api(file_name: str, content: str = Form(...)):
-    # Delete existing entries
-    results = collection.get(where={"file_name": file_name})
-    if results['ids']:
-        collection.delete(ids=results['ids'])
-        # Re-process the updated content
-        chunks = chunk_text(content)
-        chunk_ids = [str(uuid.uuid4()) for _ in chunks]
-        metadatas = [{"file_name": file_name} for _ in chunks]
-        # Add updated chunks to the collection
-        add_documents(collection, chunks, chunk_ids, metadatas)
-        return {"message": "File updated successfully.", "file_name": file_name}
-    else:
-        raise HTTPException(status_code=404, detail="File not found.")
+async def update_file_api(file_name: str, file: UploadFile = File(...)):
+    accepted_content_types = [
+        'text/plain',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]
+
+    if file.content_type not in accepted_content_types:
+        raise HTTPException(status_code=400, detail="Unsupported file type.")
+
+    try:
+        # Read the new file content
+        new_content = await file.read()
+        new_chunks = process_file(new_content, file_name)
+
+        if not new_chunks:
+            raise HTTPException(status_code=400, detail="Failed to extract text from the uploaded file.")
+
+        # Generate new chunk IDs and metadatas
+        new_chunk_ids = [str(uuid.uuid4()) for _ in new_chunks]
+        new_metadatas = [{"file_name": file_name, "chunk_index": idx} for idx, _ in enumerate(new_chunks)]
+
+        # Delete existing entries
+        existing = collection.get(where={"file_name": file_name})
+        if existing['ids']:
+            collection.delete(ids=existing['ids'])
+            # Add updated chunks to the collection
+            add_documents(collection, new_chunks, new_chunk_ids, new_metadatas)
+            return JSONResponse(status_code=200, content={"message": "File updated successfully.", "file_name": file_name})
+        else:
+            raise HTTPException(status_code=404, detail="File not found.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while updating the file: {str(e)}")
 
 @upload_router.post("/update/{file_name}")
 async def update_file(request: Request, file_name: str, content: str = Form(...)):
