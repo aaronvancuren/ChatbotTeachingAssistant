@@ -18,16 +18,49 @@
     background-color: var(--pfw-black-footprints);
     position: fixed;
     color: var(--primary-pfw-white);
+
+    padding: 1.5ch;
+    overflow-y: auto;
 }
 
 #sidebar h1 {
-    font-weight: 200;
+    font-weight: 400;
     font-size: 20pt;
-    margin-left: .5ch;
+    text-align: center;
+}
+
+.chatList {
+    width: 100%;
 }
 
 #sidebar a {
     text-decoration: none;
+    position: relative;
+    padding: 10px 20px;
+    color: white !important;
+    text-align: left;
+    width: 100%;
+}
+
+#sidebar a .active {
+    background-color: var(--pfw-gold-tassel);
+    color: black;
+    text-align: right;
+}
+
+#sidebar a::after{
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--pfw-gold-tassel);
+    transition: width 0.3s ease;
+}
+
+#sidebar a:hover::after{
+    width: 100%;
 }
 
 #content {
@@ -80,35 +113,6 @@
     padding:.25ch .5ch .25ch .5ch;
 }
 
-#chat-box::after {
-    content: "Victor is an AI and may make mistakes.";
-    color: #00000060;
-    font-size: small;
-    width: 100%;
-    margin: auto;
-}
-
-/* ChatGPT Code */
-#sidebar ul {
-    list-style-type: none;
-    padding-top: 3ch;
-    padding-bottom: 3ch;
-    overflow-y: auto;
-}
-
-#sidebar ul li {
-    padding: 10px 20px;
-    color: white;
-}
-
-#sidebar ul li.active {
-    background-color: #FFC107;
-    color: black;
-    text-align: right;
-}
-
-/* End ChatGPT Code*/
-
 /*#region Chat bubbles*/
 /* Source: https://codepen.io/Founts/pen/AJyVOr */
 .talk-bubble {
@@ -121,10 +125,13 @@
 }
 
 .text-from {
-    color: #00000060;
+    color: #00000060 !important;
     font-size: small;
     width: 100%;
-    margin: auto;
+    padding-top: 1.25em;
+    margin-bottom: 0 !important;
+    user-select: none;
+    z-index: -1;
 }
 
 .left {
