@@ -10,13 +10,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from backend.api.authentication.Microsoft import AUTHENTICATION_SERVER
 from backend.api.routes.web import web_router
 from backend.api.routes.openai import openai_router
-
+from backend.api.routes.upload import upload_router
 # Set up FastAPI settings
 app = FastAPI()
 
 app.include_router(web_router)
 app.include_router(openai_router)
 app.include_router(AUTHENTICATION_SERVER.router)
+app.include_router(upload_router)
 
 app.mount('/static', StaticFiles(directory='frontend/static'), name='static')
 
