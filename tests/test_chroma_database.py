@@ -4,6 +4,8 @@ import unittest
 from unittest.mock import patch, MagicMock
 import chromadb
 import os
+import shutil
+import tempfile
 
 # Import the functions to test
 from backend.database.chroma_database import (
@@ -20,16 +22,32 @@ from backend.database.chroma_database import (
 class TestChromaDatabase(unittest.TestCase):
 
     def setUp(self):
+        # Create a temporary directory for persistent storage
+        self.test_persistence_path = tempfile.mkdtemp()
+
+        # Set the environment variable to the temporary directory
+        os.environ["CHROMA_PERSISTENT_DIRECTORY"] = self.test_persistence_path
+
         # Initialize client and collection
-        self.client = initialize_chromadb()
+        self.client = initialize_chromadb(use_persistence=True)
         self.collection_name = 'test_collection'
         self.collection = get_or_create_collection(self.client, self.collection_name)
+
         # Retrieve all document IDs
         all_documents = self.collection.get()
         all_ids = all_documents.get('ids', [])
         # Delete all documents by IDs if any exist
         if all_ids:
             self.collection.delete(ids=all_ids)
+
+    def tearDown(self):
+        # Clean up after tests
+        if hasattr(self, 'client'):
+            del self.client
+        if os.path.exists(self.test_persistence_path):
+            shutil.rmtree(self.test_persistence_path)
+        if "CHROMA_PERSISTENT_DIRECTORY" in os.environ:
+            del os.environ["CHROMA_PERSISTENT_DIRECTORY"]
 
     @patch('backend.database.chroma_database.openai.embeddings.create')
     def test_generate_embedding(self, mock_create):
@@ -64,7 +82,56 @@ class TestChromaDatabase(unittest.TestCase):
         self.assertIsNotNone(client)
         self.assertTrue(hasattr(client, 'get_or_create_collection'))
 
+    @patch('backend.database.chroma_database.generate_embedding')
+    def test_persistent_client(self, mock_generate_embedding):
+        # Arrange
+        # Set up a test path for persistent storage
+        test_persistence_path = 'test_chroma_db'
+        os.environ["CHROMA_PERSISTANT_DIRECTORY"] = test_persistence_path
 
+        # Ensure the persistence directory is clean before the test
+        if os.path.exists(test_persistence_path):
+            import shutil
+            shutil.rmtree(test_persistence_path)
+
+        # Mock the embedding generation
+        mock_generate_embedding.return_value = [0.1, 0.2, 0.3]
+
+        # Initialize the persistent client and collection
+        client = initialize_chromadb(use_persistence=True)
+        collection_name = 'test_persistent_collection'
+        collection = get_or_create_collection(client, collection_name)
+
+        # Add documents to the collection
+        documents = ["Persistent Document 1", "Persistent Document 2"]
+        ids = ["pdoc1", "pdoc2"]
+        metadatas = [{"file_name": "pfile1.txt"}, {"file_name": "pfile2.txt"}]
+        add_documents(collection, documents, ids, metadatas)
+
+        # Close the client to simulate ending the session
+        del client
+
+        # Re-initialize the client and collection
+        client = initialize_chromadb(use_persistence=True)
+        collection = get_or_create_collection(client, collection_name)
+
+        # Act
+        # Retrieve documents from the collection
+        result = collection.get()
+
+        # Assert
+        self.assertEqual(len(result['documents']), 2)
+        self.assertIn("Persistent Document 1", result['documents'])
+        self.assertIn("Persistent Document 2", result['documents'])
+
+        # Clean up
+        collection.delete(ids=ids)
+        del client
+
+        # Remove the test persistence directory after the test
+        if os.path.exists(test_persistence_path):
+            import shutil
+            shutil.rmtree(test_persistence_path)
 
     def test_get_or_create_collection(self):
         # Arrange

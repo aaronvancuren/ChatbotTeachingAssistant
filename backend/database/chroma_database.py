@@ -17,10 +17,10 @@ def generate_embedding(text):
     return embedding
 
 # Function to initialize ChromaDB client with optional persistent storage
-def initialize_chromadb(use_persistence=False, persist_directory=None):
-    if use_persistence and persist_directory:
-        client = chromadb.PersistentClient(path=persist_directory)
-        logging.info(f"ChromaDB initialized with persistent storage at '{persist_directory}'.")
+def initialize_chromadb(use_persistence=True):
+    if use_persistence == True:
+        client = chromadb.PersistentClient(os.getenv("CHROMA_PERSISTENT_DIRECTORY"))
+        logging.info(f"ChromaDB initialized with persistent storage at '{os.getenv("CHROMA_PERSISTENT_DIRECTORY")}'.")
     else:
         # Initialize without persistence
         client = chromadb.Client()
