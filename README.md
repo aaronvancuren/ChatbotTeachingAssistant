@@ -232,7 +232,7 @@ python -m unittest test_module.TestClass.test_method
 
 # Credits
 - [Aaron Van Curen](https://github.com/aaronvancuren) - Software Engineer (2024-2025)
-- [Neil Birchfield](https://github.com/The-Architect01) - Software Engineer (2024-2025)
+- [Neal Birchfield](https://github.com/The-Architect01) - Software Engineer (2024-2025)
 - [Wright Ceresa](https://github.com/wrightceresa) - Software Engineer (2024-2025)
 - [Carter Besson](https://github.com/CarterBesson) - Software Engineer (2024-2025)
 - [Dr. Zesheng Chen](https://users.pfw.edu/chenz/) - Academic Advisor/Project Cosponsor
