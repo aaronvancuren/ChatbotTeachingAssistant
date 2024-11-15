@@ -154,6 +154,8 @@ FastAPI comes with built-in support for interactive API documentation powered by
       version="1.0.0"
   )
   ```
+### Setting Up PostgresDB and Psycopg2
+Reference this (https://www.psycopg.org/docs/install.html#quick-install)
 
 ### Setting Up Authentication
 Using Microsoft Entra, find [our application](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/973d0063-2640-4751-9edf-4a103b364b8f/isMSAApp~/false) and retrieve or create `client_id`, `tenant_id`, and `client_credential`. Set each of these in their corresponding environment variables in your `.env`.
