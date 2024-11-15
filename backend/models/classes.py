@@ -4,3 +4,4 @@ class ClassSection:
     section: int    # Section Number
     professor_id: str
     teaching_assistant_id: str
+    splash: str # Splash Image

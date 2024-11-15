@@ -3,7 +3,7 @@ from backend.api.authentication.Microsoft import get_user_context
 from backend.core.templates import page_templates
 from fastapi import APIRouter, Request
 
-from backend.database.base import get_user_classes
+from backend.database.database_class_sections import get_user_classes
 from backend.models.classes import ClassSection
 
 web_router = APIRouter()
