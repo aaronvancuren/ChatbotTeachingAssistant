@@ -1,14 +1,12 @@
-<div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="card-deck">
     {% for class in classList %}
-    <div class="col">
-        <div class="card" style="width: 18rem;">
-            <img src="https://plus.unsplash.com/premium_photo-1661872817492-fd0c30404d74?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y29tcHV0ZXIlMjBzY2llbmNlfGVufDB8fDB8fHww"
-                class="card-img-top" alt="Place holder image">
-            <div class="card-body">
-                <h5 class="card-title">{{class.name}}</h5>
-                <p class="card-text">{{class.professor}}</p>
-                <a href="/chat?classID={{class.id}}" class="btn btn-primary">Chat with the TA</a>
-            </div>
+    <div class="card" style="width:fit-content; margin: 10px">
+        <img src="https://plus.unsplash.com/premium_photo-1661872817492-fd0c30404d74?fm=jpg&q=60&w=300&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y29tcHV0ZXIlMjBzY2llbmNlfGVufDB8fDB8fHww"
+            class="card-img-top" alt="Course Splash Image" style="height: 100%; width: 300px; display: block;">
+        <div class="card-body">
+            <h5 class="card-title">{{class.name}}</h5>
+            <p class="card-text">{{class.professor}}</p>
+            <a href="/chat?classID={{class.id}}" class="btn btn-primary">Chat with the TA</a>
         </div>
     </div>
     {% endfor %}

@@ -47,9 +47,9 @@ To ensure Level AA standards, please see page 50 of the document referenced earl
     color: inherit;
 }
 
-root {
-    margin: 10em;
-    padding: 10em;
+.root {
+    margin: 1em;
+    padding: 1em;
 }
 
 body {
