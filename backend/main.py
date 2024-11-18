@@ -5,6 +5,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_msal import MSALAuthorization, MSALClientConfig
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from backend.api.routes.web import web_router
@@ -35,3 +36,11 @@ app.add_middleware(
     expose_headers=[],
     max_age=600
 )
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("MS_SECRET"),
+)
+
+if os.getenv("environment") == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
