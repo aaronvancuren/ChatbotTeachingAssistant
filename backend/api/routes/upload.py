@@ -15,20 +15,20 @@ from backend.database.chroma_database import (
 templates = Jinja2Templates(directory="frontend/templates")
 
 # Initialize ChromaDB client and collection
-client = initialize_chromadb(True,'backend/chromadb_store')
+client = initialize_chromadb()
 collection = get_or_create_collection(client, 'file_collection')
 
 upload_router = APIRouter(prefix="/files")
 
-# Dependency to get the current user (if needed)
-def get_current_user():
-    # Implement your authentication logic here
-    pass
+accepted_content_types = [
+        'text/plain',
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'text/html',
+        'application/rtf'
+    ]
 
-# @upload_router.get("/", response_class=HTMLResponse)
-# async def read_root(request: Request):
-#     documents = collection.get()
-#     return templates.TemplateResponse("upload_index.html", {"request": request, "documents": documents})
 
 @upload_router.get("/upload", response_class=HTMLResponse)
 async def get_upload_form(request: Request):
@@ -36,13 +36,6 @@ async def get_upload_form(request: Request):
 
 @upload_router.post("/upload")
 async def upload_file_api(file: UploadFile = File(...)):
-    accepted_content_types = [
-        'text/plain',
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ]
-
     if file.content_type not in accepted_content_types:
         raise HTTPException(status_code=400, detail="Unsupported file type.")
 
@@ -80,56 +73,51 @@ async def delete_file_api(file_name: str):
         raise HTTPException(status_code=404, detail="File not found.")
 
 @upload_router.put("/update/{file_name}")
-async def update_file_api(file_name: str, file: UploadFile = File(...)):
-    accepted_content_types = [
-        'text/plain',
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ]
+async def update_file_api(
+    file_name: str,
+    request: Request,
+    file: UploadFile = File(None),
+    content: str = Form(None)
+):
 
-    if file.content_type not in accepted_content_types:
-        raise HTTPException(status_code=400, detail="Unsupported file type.")
+    # Check if the file exists in the database
+    existing = collection.get(where={"file_name": file_name})
+    if not existing['ids']:
+        raise HTTPException(status_code=404, detail="File not found.")
 
     try:
-        # Read the new file content
-        new_content = await file.read()
-        new_chunks = process_file(new_content, file_name)
+        if file:
+            # Update via file upload
+            if file.content_type not in accepted_content_types:
+                raise HTTPException(status_code=400, detail="Unsupported file type.")
 
-        if not new_chunks:
-            raise HTTPException(status_code=400, detail="Failed to extract text from the uploaded file.")
+            # Read the new file content
+            new_content = await file.read()
+            new_chunks = process_file(new_content, file.filename)
+
+            if not new_chunks:
+                raise HTTPException(status_code=400, detail="Failed to extract text from the uploaded file.")
+        elif content:
+            # Update via form content
+            new_chunks = chunk_text(content)
+            if not new_chunks:
+                raise HTTPException(status_code=400, detail="No content provided for update.")
+        else:
+            raise HTTPException(status_code=400, detail="No content provided for update.")
 
         # Generate new chunk IDs and metadatas
         new_chunk_ids = [str(uuid.uuid4()) for _ in new_chunks]
         new_metadatas = [{"file_name": file_name, "chunk_index": idx} for idx, _ in enumerate(new_chunks)]
 
         # Delete existing entries
-        existing = collection.get(where={"file_name": file_name})
-        if existing['ids']:
-            collection.delete(ids=existing['ids'])
-            # Add updated chunks to the collection
-            add_documents(collection, new_chunks, new_chunk_ids, new_metadatas)
-            return JSONResponse(status_code=200, content={"message": "File updated successfully.", "file_name": file_name})
-        else:
-            raise HTTPException(status_code=404, detail="File not found.")
+        collection.delete(ids=existing['ids'])
+
+        # Add updated chunks to the collection
+        add_documents(collection, new_chunks, new_chunk_ids, new_metadatas)
+
+        return JSONResponse(status_code=200, content={"message": "File updated successfully.", "file_name": file_name})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while updating the file: {str(e)}")
-
-@upload_router.post("/update/{file_name}")
-async def update_file(request: Request, file_name: str, content: str = Form(...)):
-    # Delete existing entries
-    results = collection.get(where={"file_name": file_name})
-    if results['ids']:
-        collection.delete(ids=results['ids'])
-        # Re-process the updated content
-        chunks = chunk_text(content)
-        chunk_ids = [str(uuid.uuid4()) for _ in chunks]
-        metadatas = [{"file_name": file_name} for _ in chunks]
-        # Add updated chunks to the collection
-        add_documents(collection, chunks, chunk_ids, metadatas)
-        return templates.TemplateResponse("update_success.html", {"request": request, "file_name": file_name})
-    else:
-        raise HTTPException(status_code=404, detail="File not found.")
     
 @upload_router.get("/", response_class=HTMLResponse)
 async def upload_page(request: Request):
