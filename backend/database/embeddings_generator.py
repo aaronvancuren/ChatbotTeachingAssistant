@@ -1,9 +1,7 @@
 #ChatGPT was used to help write this code
-import os
 import openai
 from openai import OpenAI
 import logging
-from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

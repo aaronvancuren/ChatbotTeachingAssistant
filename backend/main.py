@@ -2,27 +2,24 @@
 
 import os
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi_msal import MSALAuthorization, MSALClientConfig
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
-from fastapi.staticfiles import StaticFiles
-
 from backend.api.routes.web import web_router
 from backend.api.routes.openai import openai_router
-
-#
-client_config = MSALClientConfig()
-msal_auth = MSALAuthorization(client_config)
+from backend.api.routes.auth import msal_auth
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
 # Set up FastAPI settings
 app = FastAPI()
 
-#
+# Add Routes
 app.include_router(web_router)
 app.include_router(openai_router)
 app.include_router(msal_auth.router)
 
+# Set up pathing to CSS/JS files for Jinja2 Templates
 app.mount('/static', StaticFiles(directory='frontend/static'), name='static')
 
 # Allow CORS for local development (adjust origins as needed)
@@ -34,13 +31,15 @@ app.add_middleware(
     allow_headers=["Accept", "Accept-Language", "Content-Language", "Content-Type"],
     allow_credentials=True, # When True allow_origins, allow_methods and allow_headers cannot be set to ['*']
     expose_headers=[],
-    max_age=600
+    max_age=600,
 )
 
+# Enable Session Management
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.getenv("MS_SECRET"),
+    secret_key=os.getenv("SESSION_SECRET_KEY"),
 )
 
+# Enables secure HTTPS connections for production
 if os.getenv("environment") == "production":
     app.add_middleware(HTTPSRedirectMiddleware)
