@@ -3,6 +3,9 @@ from backend.api.authentication.Microsoft import get_user_context
 from backend.core.templates import page_templates
 from fastapi import APIRouter, Request
 
+from backend.database.database_class_sections import get_user_classes
+from backend.models.classes import ClassSection
+
 web_router = APIRouter()
 #region Endpoint Pages
 
@@ -22,6 +25,7 @@ async def homepage(request : Request):
         Index Web Page Response
     """
     userContext = await get_user_context(request) # User Authentication information
+    userContext['classList'] = await get_user_classes(userContext['user_id'])
     return page_templates.TemplateResponse('index.html', {"request": request, **userContext})
 
 # The Chat Page

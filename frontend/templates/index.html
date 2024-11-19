@@ -1,16 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-    
-    {% include './elements/HTML_Head.html' %}
 
-    <body>
+{% include './elements/HTML_Head.html' %}
 
-        {% include './elements/Header_General.html' %}
+<body>
 
-        <main>
-            {% if loggedin %}
-                <a href="./chat">Go to Chat</a>
+    {% include './elements/Header_General.html' %}
+
+    <main>
+        {% if loggedin %}
+        <div class="root">
+            {% include './elements/Main_ClassCards.html' %}
+        </div>
+        {% else %}
+        <div class="root">
+            <div>
+                <h1>Welcome!</h1>
+                <p>Thanks to the emerging technology of artificial intelligence, students and teachers
+                    are now able to do much more than previously. PFW is proud to offer a collection of AI
+                    based tools to help students and professors engage with the technology and their classes.
+                </p>
+            </div>
+            <div>
+                <h2>Meet the TAs</h2>
+                <div class="card-group">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">TA Victor</h5>
+                            <p class="card-text">Hi! I'm Victor! I can't wait to help you with your homework!</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">TA John</h5>
+                            <p class="card-text">Hi! I'm John! I can't wait to help you with your homework!</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">TA Hedy</h5>
+                            <p class="card-text">Hi! I'm Hedy! I can't wait to help you with your homework!</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">TA Henrietta</h5>
+                            <p class="card-text">Hi! I'm Henrietta! I can't wait to help you with your homework!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {% endif %}
-        </main>
-    </body>
+    </main>
+</body>
+
 </html>
