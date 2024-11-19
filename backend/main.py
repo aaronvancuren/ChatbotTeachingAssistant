@@ -4,6 +4,7 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -38,3 +39,6 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("MS_SECRET"),
 )
+
+if os.getenv("environment") == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
