@@ -1,13 +1,9 @@
 """TODO: update docstring"""
 from backend.api.routes.auth import get_context
 from backend.database.database_class_sections import get_user_classes
-from backend.models.classes import ClassSection
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi_msal.models import IDTokenClaims, TokenStatus
-
-from backend.database.database_class_sections import get_user_classes
-from backend.models.classes import ClassSection
 
 web_router = APIRouter()
 
@@ -30,7 +26,12 @@ async def homepage(request : Request, context: dict = Depends(get_context)):
     Returns:
         Index Web Page Response
     """
-    context.update("class_list", get_user_classes(context["token_claims"]["user_id"]))
+    if context.get("id_token") is not None:
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
+        if claims is not None and claims.validate_token() == TokenStatus.VALID:
+            context.update({"display_name": claims.display_name})
+            context.update({"class_list": get_user_classes(claims.user_id)})
+
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
@@ -45,10 +46,11 @@ async def chatpage(request : Request, context: dict = Depends(get_context)):
         Chat Web Page Response if the user has authenticated. Otherwise, it
         will return a 401 error page.
     """
-    claims = IDTokenClaims(**(context.get("token_claims")))
-    if(claims.validate_token() == TokenStatus.VALID):
-        return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
-        
+    if context.get("id_token") is not None:
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
+        if(claims is not None and claims.validate_token() == TokenStatus.VALID):
+            return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
+
     return await Error_401(request, context)
 
 #endregion

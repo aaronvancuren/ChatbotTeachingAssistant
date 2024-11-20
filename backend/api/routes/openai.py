@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException
 from openai import OpenAI, _exceptions
 from pydantic import BaseModel
 from typing import List, Dict, Tuple
+from fastapi_msal.models import IDTokenClaims
 
 client = OpenAI()
 openai_router = APIRouter()
@@ -29,8 +30,8 @@ async def chat(request: ChatRequest) -> str:
         OpenAI response
     """
     try:
-        user_id = ast.literal_eval(request.context)["token_claims"]["user_id"]
-        
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(ast.literal_eval(request.context)['id_token'])
+        user_id = claims.user_id        
         conversation: List[Tuple[str, str]] = conversations.get(user_id, [])
         if not conversation:
             conversations.update({user_id: conversation})
