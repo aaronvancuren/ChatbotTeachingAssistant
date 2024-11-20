@@ -10,10 +10,9 @@ import docx
 from pptx import Presentation
 from bs4 import BeautifulSoup
 from striprtf.striprtf import rtf_to_text
-import tiktoken  # For tokenization and chunking
 
 # Import LangChain's text splitter
-from langchain.text_splitter import RecursiveCharacterTextSplitter, TokenTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter, TokenTextSplitter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

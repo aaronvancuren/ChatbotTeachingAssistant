@@ -1,7 +1,7 @@
 #ChatGPT was used to help write this code
+import logging
 import openai
 from openai import OpenAI
-import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
