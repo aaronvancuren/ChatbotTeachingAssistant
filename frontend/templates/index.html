@@ -8,7 +8,7 @@
         {% include './elements/Header_General.html' %}
 
         <main>
-            {% if loggedin %}
+            {% if context.logged_in %}
                 <a href="./chat">Go to Chat</a>
             {% endif %}
         </main>

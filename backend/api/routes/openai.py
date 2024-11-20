@@ -2,55 +2,56 @@
 
 import os
 import json
+import ast
 
-from openai import OpenAI, _exceptions
 from fastapi import APIRouter, HTTPException
-from typing import List, Tuple
+from openai import OpenAI, _exceptions
 from pydantic import BaseModel
+from typing import List, Dict, Tuple
 
 client = OpenAI()
 openai_router = APIRouter()
 
 class ChatRequest(BaseModel):
-    chatbot: List[Tuple[str, str]]
     user_content: str
+    openai_model: str
+    context: str
 
-conversations = [dict[str,ChatRequest]]
+conversations: Dict[str,List[Tuple[str, str]]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         message: User chat input
-    
+
     Returns:
         OpenAI response
     """
     try:
-        messages = []
-        for input_text, response_text in request.chatbot:
-            messages.append({'role': 'user', 'content': input_text})
-            messages.append({'role': 'assistant', 'content': response_text})
+        user_id = ast.literal_eval(request.context)["token_claims"]["user_id"]
+        
+        conversation: List[Tuple[str, str]] = conversations.get(user_id, [])
+        if not conversation:
+            conversations.update({user_id: conversation})
 
-        # Adds the user input to the conversation
-        messages.append({'role': 'user', 'content': request.user_content})
-
+        conversation.append({'role': 'user', 'content': request.user_content})
+        
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
-            messages=messages,
-            model=request.teaching_assistant, # os.getenv("OPENAI_MODEL"),
+            messages=conversation,
+            model=request.openai_model,
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
-            temperature=0.7,
-            # TODO add user field once user authentication is figured out
+            temperature=0.7
         )
 
-        # Adds the user input and ChatGPT response to the conversation
-        request.chatbot.append((request.user_content, response.choices[0].message.content.strip()))
-        
+        # Adds the ChatGPT response to the conversation
+        conversation.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+
         # Returns the conversation to the frontend to display
-        return json.dumps(request.chatbot)
+        return json.dumps(conversation)
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.

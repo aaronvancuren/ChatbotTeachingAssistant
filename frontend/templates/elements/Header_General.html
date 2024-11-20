@@ -7,7 +7,7 @@
         </span>
     </a>
 
-    {% if loggedin %}
+    {% if context.logged_in %}
         {% include './elements/Header_LoggedIn.html' %}
     {% else %}
         {% include './elements/Header_LoggedOut.html' %}
