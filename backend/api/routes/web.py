@@ -1,8 +1,13 @@
 """TODO: update docstring"""
 from backend.api.routes.auth import get_context
+from backend.database.database_class_sections import get_user_classes
+from backend.models.classes import ClassSection
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi_msal.models import IDTokenClaims, TokenStatus
+
+from backend.database.database_class_sections import get_user_classes
+from backend.models.classes import ClassSection
 
 web_router = APIRouter()
 
@@ -24,7 +29,8 @@ async def homepage(request : Request, context: dict = Depends(get_context)):
     
     Returns:
         Index Web Page Response
-    """    
+    """
+    context.update("class_list", get_user_classes(context["token_claims"]["user_id"]))
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page

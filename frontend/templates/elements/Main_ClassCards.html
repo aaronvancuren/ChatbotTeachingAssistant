@@ -1,0 +1,12 @@
+<div class="card-deck">
+    {% for class in context.class_list %}
+    <div class="card" style="width:fit-content; margin: 10px">
+        <img src="{{class.splash}}" class="card-img-top" alt="Course Splash Image" style="height: 100%; width: 300px; display: block;">
+        <div class="card-body">
+            <h5 class="card-title">{{class.name}}</h5>
+            <p class="card-text">{{class.professor}}</p>
+            <a href="/chat?classID={{class.id}}" class="btn btn-outline-primary">Chat with the TA</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
