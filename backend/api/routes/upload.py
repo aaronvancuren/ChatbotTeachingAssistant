@@ -1,14 +1,12 @@
 from fastapi import APIRouter, File, UploadFile, Form, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 import uuid
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import (
     initialize_chromadb,
     get_or_create_collection,
-    add_documents,
-    update_entry,
-    delete_entry,
+    add_documents
 )
 
 # Initialize templates directory
