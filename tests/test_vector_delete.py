@@ -1,12 +1,13 @@
 import unittest
+import textwrap
 from unittest.mock import patch, MagicMock
 
 # Import the functions under test
-from backend.database.vector_CRUD import delete_embedding_by_title, delete_embedding_by_id
+from backend.database.postgre_crud_ops import delete_embedding_by_title, delete_embedding_by_id
 
 class TestDeleteEmbedding(unittest.TestCase):
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_title_success(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -23,18 +24,16 @@ class TestDeleteEmbedding(unittest.TestCase):
 
         # Assertions
         self.assertTrue(result)
-        mock_cursor.execute.assert_called_once_with(
-            """
-                DELETE FROM course_materials
-                WHERE title = %s;
-            """,
-            (title,)
-        )
+        expected_sql_query = textwrap.dedent("""
+            DELETE FROM course_materials
+            WHERE title = %s;
+        """)
+        mock_cursor.execute.assert_called_once_with(expected_sql_query, (title,))
         mock_conn.commit.assert_called_once()
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_title_no_record_found(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -51,18 +50,16 @@ class TestDeleteEmbedding(unittest.TestCase):
 
         # Assertions
         self.assertFalse(result)
-        mock_cursor.execute.assert_called_once_with(
-            """
-                DELETE FROM course_materials
-                WHERE title = %s;
-            """,
-            (title,)
-        )
+        expected_sql_query = textwrap.dedent("""
+            DELETE FROM course_materials
+            WHERE title = %s;
+        """)
+        mock_cursor.execute.assert_called_once_with(expected_sql_query, (title,))
         mock_conn.commit.assert_called_once()
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_title_db_connection_failure(self, mock_get_db_connection):
         # Mock get_db_connection to return None
         mock_get_db_connection.return_value = None
@@ -74,7 +71,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         # Assertions
         self.assertFalse(result)
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_title_exception(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -95,7 +92,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_id_success(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -112,18 +109,16 @@ class TestDeleteEmbedding(unittest.TestCase):
 
         # Assertions
         self.assertTrue(result)
-        mock_cursor.execute.assert_called_once_with(
-            """
-                DELETE FROM course_materials
-                WHERE id = %s;
-            """,
-            (record_id,)
-        )
+        expected_sql_query = textwrap.dedent("""
+            DELETE FROM course_materials
+            WHERE id = %s;
+        """)
+        mock_cursor.execute.assert_called_once_with(expected_sql_query, (record_id,))
         mock_conn.commit.assert_called_once()
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_id_no_record_found(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
@@ -140,18 +135,16 @@ class TestDeleteEmbedding(unittest.TestCase):
 
         # Assertions
         self.assertFalse(result)
-        mock_cursor.execute.assert_called_once_with(
-            """
-                DELETE FROM course_materials
-                WHERE id = %s;
-            """,
-            (record_id,)
-        )
+        expected_sql_query = textwrap.dedent("""
+            DELETE FROM course_materials
+            WHERE id = %s;
+        """)
+        mock_cursor.execute.assert_called_once_with(expected_sql_query, (record_id,))
         mock_conn.commit.assert_called_once()
         mock_conn.close.assert_called_once()
         mock_cursor.close.assert_called_once()
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_id_db_connection_failure(self, mock_get_db_connection):
         # Mock get_db_connection to return None
         mock_get_db_connection.return_value = None
@@ -163,7 +156,7 @@ class TestDeleteEmbedding(unittest.TestCase):
         # Assertions
         self.assertFalse(result)
 
-    @patch('backend.database.vector_CRUD.get_db_connection')
+    @patch('backend.database.postgre_crud_ops.get_db_connection')
     def test_delete_embedding_by_id_exception(self, mock_get_db_connection):
         # Mock the database connection and cursor
         mock_conn = MagicMock()
