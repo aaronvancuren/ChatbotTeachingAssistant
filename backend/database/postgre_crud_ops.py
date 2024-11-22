@@ -22,6 +22,10 @@ def insert_embeddings_into_db(text_chunks):
     Returns:
         list: A list of IDs of the inserted records.
     """
+    if not text_chunks:
+        logging.error("No text chunks provided for embeddings generation.")
+        return None  # Return None explicitly
+    
     # Generate embeddings
     embeddings = get_embeddings(text_chunks)
     logging.info("Embeddings generated successfully.")
@@ -61,11 +65,11 @@ def insert_embeddings_into_db(text_chunks):
 
     try:
         # Use execute_values for batch insertion
-        insert_query = """
+        insert_query = textwrap.dedent("""
             INSERT INTO course_materials (title, content, embedding)
             VALUES %s
             RETURNING id;
-        """
+        """)
 
         # Execute batch insertion
         execute_values(
@@ -85,6 +89,7 @@ def insert_embeddings_into_db(text_chunks):
     except Exception as e:
         logging.error(f"Database insertion error: {e}")
         conn.rollback()
+        return None
     finally:
         # Close the cursor and connection
         cur.close()
