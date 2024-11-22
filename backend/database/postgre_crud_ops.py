@@ -5,7 +5,7 @@ import logging
 import textwrap
 
 from backend.database.embeddings_generator import get_embeddings
-from backend.database.databaseConnection import get_db_connection 
+from backend.database.postgre_db_connection import get_db_connection 
 
 embedding_vector_length = 1536
 
