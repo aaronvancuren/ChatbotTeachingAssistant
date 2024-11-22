@@ -1,5 +1,4 @@
 #ChatGPT was used to create sections of this code
-import os
 import magic  # Requires the 'python-magic' library
 import logging
 from io import BytesIO
@@ -12,6 +11,9 @@ from pptx import Presentation
 from bs4 import BeautifulSoup
 from striprtf.striprtf import rtf_to_text
 import tiktoken  # For tokenization and chunking
+
+# Import LangChain's text splitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, TokenTextSplitter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,18 +38,28 @@ def clean_text(text):
     # Additional cleaning steps can be added here
     return text
 
-def chunk_text(text, max_tokens=1000):
+def chunk_text(text, method='recursive', chunk_size=1000, chunk_overlap=200):
     """
-    Splits text into chunks suitable for embeddings based on token count.
+    Splits text into chunks using LangChain's text splitters.
+
+    Parameters:
+    - method: 'recursive' or 'token'
+    - chunk_size: Size of each chunk (characters or tokens)
+    - chunk_overlap: Overlap between chunks (characters or tokens)
     """
     text = clean_text(text)
-    tokenizer = tiktoken.get_encoding("cl100k_base")
-    tokens = tokenizer.encode(text)
-    chunks = []
-    for i in range(0, len(tokens), max_tokens):
-        chunk_tokens = tokens[i:i + max_tokens]
-        chunk = tokenizer.decode(chunk_tokens)
-        chunks.append(chunk)
+    if method == 'token':
+        text_splitter = TokenTextSplitter(
+            encoding_name="cl100k_base",
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+    else:
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+    chunks = text_splitter.split_text(text)
     return chunks
 
 # Extraction functions
@@ -179,5 +191,6 @@ def process_file(file_bytes, filename):
         logging.error(error_message)
         raise ValueError(error_message)
 
-    chunks = chunk_text(text)
+    # Use LangChain's text splitter instead of custom chunking
+    chunks = chunk_text(text, method='token', chunk_size=1000, chunk_overlap=200)
     return chunks
