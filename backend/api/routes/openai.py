@@ -24,10 +24,10 @@ conversations: Dict[str,List[Tuple[str, str]]] = {}
 async def chat(request: ChatRequest) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
-        message: User chat input
+        ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
 
     Returns:
-        OpenAI response
+        List[Tuple[str,str]]: conversation updated with the response from OpenAI
     """
     try:
         claims: IDTokenClaims = IDTokenClaims.decode_id_token(ast.literal_eval(request.context)['id_token'])
