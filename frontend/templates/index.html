@@ -8,7 +8,7 @@
     {% include './elements/Header_General.html' %}
 
     <main>
-        {% if loggedin %}
+        {% if context.logged_in %}
         <div class="root">
             {% include './elements/Main_ClassCards.html' %}
         </div>

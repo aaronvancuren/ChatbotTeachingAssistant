@@ -1,12 +1,14 @@
 """TODO: update docstring"""
-from backend.api.authentication.Microsoft import get_user_context
-from backend.core.templates import page_templates
-from fastapi import APIRouter, Request
-
+from backend.api.routes.auth import get_context
 from backend.database.database_class_sections import get_user_classes
-from backend.models.classes import ClassSection
+from fastapi import APIRouter, Request, Depends
+from fastapi.templating import Jinja2Templates
+from fastapi_msal.models import IDTokenClaims, TokenStatus
 
 web_router = APIRouter()
+
+page_templates = Jinja2Templates(directory='frontend/templates')
+
 #region Endpoint Pages
 
 # Note: Any page will need to follow this format:
@@ -15,7 +17,7 @@ web_router = APIRouter()
 
 # The homepage
 @web_router.get("/")
-async def homepage(request : Request):
+async def homepage(request : Request, context: dict = Depends(get_context)):
     """
     Main index page of application
     Args:
@@ -24,13 +26,17 @@ async def homepage(request : Request):
     Returns:
         Index Web Page Response
     """
-    userContext = await get_user_context(request) # User Authentication information
-    userContext['classList'] = await get_user_classes(userContext['user_id'])
-    return page_templates.TemplateResponse('index.html', {"request": request, **userContext})
+    if context.get("id_token") is not None:
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
+        if claims is not None and claims.validate_token() == TokenStatus.VALID:
+            context.update({"display_name": claims.display_name})
+            context.update({"class_list": get_user_classes(claims.user_id)})
+
+    return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
 @web_router.get("/chat")
-async def chatpage(request : Request):
+async def chatpage(request : Request, context: dict = Depends(get_context)):
     """
     Chat page of application
     Args:
@@ -40,16 +46,18 @@ async def chatpage(request : Request):
         Chat Web Page Response if the user has authenticated. Otherwise, it
         will return a 401 error page.
     """
-    userContext = await get_user_context(request)
-    if userContext["user_id"] == None:
-        return await Error_401(request, userContext)
-    else:
-        return page_templates.TemplateResponse('chat.html', {"request": request, **userContext})
+    if context.get("id_token") is not None:
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
+        if(claims is not None and claims.validate_token() == TokenStatus.VALID):
+            return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
+
+    return await Error_401(request, context)
+
 #endregion
 
 #region Error Pages
 
-async def Error_401(request: Request, user_context):
+async def Error_401(request: Request, context: dict):
     """
     401 page of application
     Args:
@@ -59,6 +67,6 @@ async def Error_401(request: Request, user_context):
     Returns:
         401 error page
     """
-    return page_templates.TemplateResponse('/errors/401.html', {"request": request, **user_context})
+    return page_templates.TemplateResponse('/errors/401.html', {"request": request, "context": context})
 
 #endregion

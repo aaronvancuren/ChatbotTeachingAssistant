@@ -1,9 +1,9 @@
 import chromadb
-from chromadb import Documents, Embeddings
-from openai import OpenAI
-from typing import List, Dict
 import logging
 import os
+
+from openai import OpenAI
+from typing import List, Dict
 
 openai = OpenAI()
 

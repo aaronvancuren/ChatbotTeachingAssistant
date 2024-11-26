@@ -83,6 +83,12 @@ Create a `.env` file from the `template.env` file.
 
 Follow the below instructions for obtaining sensitive environment variables.
 
+#### Microsoft Entra Environment Variables
+- Go to [Microsoft Entra](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/973d0063-2640-4751-9edf-4a103b364b8f)
+- Click "New client secret"
+- Update the "Description" to identify the secret
+- Update the "Expires" as needed.
+
 #### OpenAI Environment Variables
 - Go to [OpenAI Platform](https://platform.openai.com/settings/organization/api-keys) to create an API key.
 - Click "Create new secret key"
@@ -92,13 +98,13 @@ Follow the below instructions for obtaining sensitive environment variables.
 
 ![OPENAI_API_KEY](README/OPENAI_API_KEY.png)
 
-#### Microsoft Entra Environment Variables
-- Go to [Microsoft Entra](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Credentials/appId/973d0063-2640-4751-9edf-4a103b364b8f)
-- Click "New client secret"
-- Update the "Description" to identify the secret
-- Update the "Expires" as needed.
-
 ![client_credential](README/client_credential.png)
+
+#### Session Management
+- Run the following command to generate a secret key
+  ```
+  openssl rand -hex 32
+  ```
 
 # How to Run
 

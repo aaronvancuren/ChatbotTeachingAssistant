@@ -2,9 +2,10 @@
 <html lang="en">
 
     {% include './elements/HTML_Head.html' %}
-    <script src="../static/js/chat.js"></script>
+    <script src="../static/js/chat.js"></script>    
     <link rel="stylesheet" href="../static/css/chat.css"/>
 <body>
+    <input hidden id="context" value="{{context}}">
 
     {% include './elements/Header_General.html' %}
 
@@ -29,11 +30,11 @@
     </main>
     <div class="chat-box">
         <form id="input" onsubmit="AskQuestion();return false;" method="post">
-            <select title="Base Model: GPT 3.5 Turbo" name="teaching_assistant" id="teaching_assistant" required onchange="updateDisclaimer()">
-                <option title="Base Model: GPT 3.5 Turbo" value="gpt-3.5-turbo" selected>Victor (GPT-3.5-Turbo)</option>
-                <option title="Base Model: GPT 4o Mini" value="gpt-4o-mini">John (GPT-4o-Mini)</option>
-                <option title="Base Model: GPT 4o" value="gpt-4o">Hedy (GPT-4o)</option>
-                <option title="Base Model: GPT o1 (Preview)" value="o1-preview">Henrietta (o1-Preview)</option>
+            <select title="Select OpenAI Model" name="openai_model" id="openai_model" required onchange="updateDisclaimer()">
+                <option title="GPT 3.5 Turbo" value="gpt-3.5-turbo" selected>Victor (GPT-3.5-Turbo)</option>
+                <option title="GPT 4o Mini" value="gpt-4o-mini">John (GPT-4o-Mini)</option>
+                <option title="GPT 4o" value="gpt-4o">Hedy (GPT-4o)</option>
+                <option title="GPT o1 (Preview)" value="o1-preview">Henrietta (o1-Preview)</option>
             </select>
             <input id="question" name="question" type="text" required placeholder="What's your question?"/><br>
             <p class="text-from left" id="disclaimer">Victor is an AI and will occassionally make mistakes.</p>
