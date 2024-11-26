@@ -1,8 +1,9 @@
 """Module provides an entry point to the application"""
 
 import os
-from dotenv import load_dotenv
 import uvicorn
+
+from dotenv import load_dotenv
 
 # Load the environment variables from .env
 load_dotenv()

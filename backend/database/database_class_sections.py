@@ -2,7 +2,7 @@ import uuid
 
 from backend.models.classes import ClassSection
 
-async def get_user_classes(UserID : str) -> list[ClassSection]:
+def get_user_classes(UserID : str) -> list[ClassSection]:
     """
     Returns a list of classes a given UserID is a part of
     Args:

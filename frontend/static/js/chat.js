@@ -1,13 +1,11 @@
-var chatbot = [];
-
 function AskQuestion() {
     $.ajax({
         type: "POST",
         url: "/ask",
         data: JSON.stringify({
-            chatbot: chatbot,
             user_content: document.getElementById("question").value,
-            teaching_assistant: document.getElementById('teaching_assistant').value
+            openai_model: document.getElementById('openai_model').value,
+            context: document.getElementById('context').value
         }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
@@ -17,9 +15,9 @@ function AskQuestion() {
             "Content-Type": "application/json"
         },
         success: function(data) {
-            chatbot = JSON.parse(data);
+            conversation = JSON.parse(data);
             createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
-            createChatBubble(chatbot[chatbot.length - 1][1], ["btm-left", "teaching_assistant"]);
+            createChatBubble(conversation.at(-1)["content"], ["btm-left", "teaching_assistant"]);
             document.getElementById("question").value = "";
         },
         statusCode:  {
@@ -41,7 +39,7 @@ function createChatBubble(dialogue, classes){
     chatWrapper = document.createElement("p");
     
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.innerText = `${document.getElementById('teaching_assistant').options[document.getElementById('teaching_assistant').selectedIndex].text} says...`;
+        chatWrapper.innerText = `${document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].text} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
