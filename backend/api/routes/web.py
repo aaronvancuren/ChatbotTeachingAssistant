@@ -54,7 +54,9 @@ async def chatpage(request : Request, chatID : str, context: dict = Depends(get_
         if(claims is not None and claims.validate_token() == TokenStatus.VALID):
             context.update({"display_name": claims.display_name})
             context.update({"conversation_list": get_user_conversations(claims.user_id)})
-            context.update({"conversation_data": next((convo for convo in get_user_conversations(claims.user_id) if str(convo.id) == chatID), None)})
+            context.update({"conversation_data": next(
+                (convo for convo in get_user_conversations(claims.user_id) 
+                 if str(convo.id) == chatID), None)})
 
             return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
 

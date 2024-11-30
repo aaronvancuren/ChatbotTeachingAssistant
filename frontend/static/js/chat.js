@@ -19,6 +19,9 @@ function addChat() {
                 child.classList.remove('active');
             }
             host.insertBefore(newChat, host.firstChild);
+            while (document.getElementById('conversation').children.length > 1) {
+                document.getElementById('conversation').removeChild(document.getElementById('conversation').lastChild);
+            }
         },
         statusCode:  {
             405: (value) => {
