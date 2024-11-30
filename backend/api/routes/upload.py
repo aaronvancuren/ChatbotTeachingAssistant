@@ -18,28 +18,18 @@ collection = get_or_create_collection(client, 'file_collection')
 
 upload_router = APIRouter(prefix="/files")
 
-accepted_content_types = [
-        'text/plain',
-        'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        'text/html',
-        'application/rtf'
-    ]
-
-
 @upload_router.get("/upload", response_class=HTMLResponse)
 async def get_upload_form(request: Request):
     return templates.TemplateResponse("upload_form.html", {"request": request})
 
 @upload_router.post("/upload")
 async def upload_file_api(file: UploadFile = File(...)):
-    if file.content_type not in accepted_content_types:
-        raise HTTPException(status_code=400, detail="Unsupported file type.")
-
     try:
         content = await file.read()
         chunks = process_file(content, file.filename)
+
+        if chunks == None:
+            raise HTTPException(status_code=400, detail="Unsupported file type")
 
         if not chunks:
             raise HTTPException(status_code=400, detail="Failed to extract text from the file.")
@@ -85,13 +75,12 @@ async def update_file_api(
 
     try:
         if file:
-            # Update via file upload
-            if file.content_type not in accepted_content_types:
-                raise HTTPException(status_code=400, detail="Unsupported file type.")
-
             # Read the new file content
             new_content = await file.read()
             new_chunks = process_file(new_content, file.filename)
+
+            if new_chunks == None:
+                raise HTTPException(status_code=400, detail="Unsupported file type")
 
             if not new_chunks:
                 raise HTTPException(status_code=400, detail="Failed to extract text from the uploaded file.")
