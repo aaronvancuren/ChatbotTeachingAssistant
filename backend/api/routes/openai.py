@@ -10,6 +10,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Tuple
 from fastapi_msal.models import IDTokenClaims
 
+import backend.database.database_user_conversations
+
 client = OpenAI()
 openai_router = APIRouter()
 
@@ -17,8 +19,9 @@ class ChatRequest(BaseModel):
     user_content: str
     openai_model: str
     context: str
+    currentConversation: str
 
-conversations: Dict[str,List[Tuple[str, str]]] = {}
+conversations: Dict[str,Dict[str,List[Tuple[str, str]]]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest) -> str:
@@ -31,16 +34,17 @@ async def chat(request: ChatRequest) -> str:
     """
     try:
         claims: IDTokenClaims = IDTokenClaims.decode_id_token(ast.literal_eval(request.context)['id_token'])
-        user_id = claims.user_id        
-        conversation: List[Tuple[str, str]] = conversations.get(user_id, [])
-        if not conversation:
+        user_id = claims.user_id     
+        conversation: Dict[str, List[Tuple[str, str]]] = conversations.get(user_id, [])
+        currentConversation: List[Tuple[str, str]] = conversation.get(request.currentConversation, [])
+        if not currentConversation:
             conversations.update({user_id: conversation})
 
-        conversation.append({'role': 'user', 'content': request.user_content})
+        currentConversation.append({'role': 'user', 'content': request.user_content})
         
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
-            messages=conversation,
+            messages=currentConversation,
             model=request.openai_model,
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
@@ -49,7 +53,11 @@ async def chat(request: ChatRequest) -> str:
         )
 
         # Adds the ChatGPT response to the conversation
-        conversation.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+        currentConversation.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+
+        next((convo 
+              for convo in backend.database.database_user_conversations.DEMO_LIST(claims.user_id)
+                if str(convo.id) == request.currentConversation), []).discussion = currentConversation
 
         # Returns the conversation to the frontend to display
         return json.dumps(conversation)
