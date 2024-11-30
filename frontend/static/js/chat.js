@@ -1,3 +1,36 @@
+function addChat() {
+    $.ajax({
+        type: "GET",
+        url: "/addChat",    
+        headers: {
+            "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "frame-ancestors 'none'",
+            "X-Frame-Options": "DENY",
+        },
+        success: function(data) {
+            host = document.getElementById('convos');
+            newChat = document.createElement('a');
+            newChat.classList.add('active');
+            newChat.classList.add('temporary');
+            newChat.href = `/chat?chatID=${data.id}`;
+            newChat.innerText = 'New Chat';
+            for (const child of host.children) {
+                child.classList.remove('active');
+            }
+            host.insertBefore(newChat, host.firstChild);
+        },
+        statusCode:  {
+            405: (value) => {
+                alert("Error: " + JSON.parse(value.responseText).detail);
+            },
+            401: (value) => {
+                alert("Error 401: Unauthorised");
+            }
+        }
+    })    
+}
+
 function AskQuestion() {
     $.ajax({
         type: "POST",
@@ -5,7 +38,8 @@ function AskQuestion() {
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
             openai_model: document.getElementById('openai_model').value,
-            context: document.getElementById('context').value
+            context: document.getElementById('context').value,
+            currentConversation: new URLSearchParams(window.location.search).get('chatID')
         }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
