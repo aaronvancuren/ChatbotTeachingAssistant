@@ -23,6 +23,27 @@
                         </div>
                     </div>
                 </div>
+                {% for dialogue in context.conversation_data.discussion %}
+                    {% if dialogue['role'] == 'user' %}
+                    <div class="talk-bubble right">
+                        <p class="text-from right">You asked...</p>
+                        <div class="tri-right btm-right student">
+                            <div class="talktext">
+                                <p>{{dialogue['content']}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="talk-bubble left">
+                        <p class="text-from left">TA Says...</p>
+                        <div class="tri-right btm-left teaching_assistant">
+                            <div class="talktext">
+                                <p>{{dialogue['content']}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
             <br>
         </div>
@@ -33,7 +54,7 @@
             <select title="Select OpenAI Model" name="openai_model" id="openai_model" required onchange="updateDisclaimer()">
                 <option title="GPT 3.5 Turbo" value="gpt-3.5-turbo" selected>Victor (GPT-3.5-Turbo)</option>
                 <option title="GPT 4o Mini" value="gpt-4o-mini">John (GPT-4o-Mini)</option>
-                <option title="GPT 4o" value="gpt-4o">Hedy (GPT-4o)</option>
+                <option title="GPT 4o" value="chatgpt-4o-latest">Hedy (GPT-4o)</option>
                 <option title="GPT o1 (Preview)" value="o1-preview">Henrietta (o1-Preview)</option>
             </select>
             <input id="question" name="question" type="text" required placeholder="What's your question?"/><br>

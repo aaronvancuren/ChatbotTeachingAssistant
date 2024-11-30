@@ -5,7 +5,7 @@
         <div class="card-body">
             <h5 class="card-title">{{class.name}}</h5>
             <p class="card-text">{{class.professor}}</p>
-            <a href="/chat?classID={{class.id}}" class="btn btn-outline-primary">Chat with the TA</a>
+            <a href="/chat?chatID={{context.conversation_list[0].id}}" class="btn btn-outline-primary">Chat with the TA</a>
         </div>
     </div>
     {% endfor %}
