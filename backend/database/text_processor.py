@@ -1,20 +1,23 @@
 #ChatGPT was used to create sections of this code
-import os
-import magic  # Requires the 'python-magic' library
 import logging
 from io import BytesIO
 from pathlib import Path
 
+import magic  # Requires the 'python-magic' library
+
 # Import libraries for extracting text from various file types
 import PyPDF2
 import docx
-from pptx import Presentation
 from bs4 import BeautifulSoup
+from pptx import Presentation
 from striprtf.striprtf import rtf_to_text
-import tiktoken  # For tokenization and chunking
+
+# Import LangChain's text splitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter, TokenTextSplitter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
 
 def detect_mime_type(file_bytes):
     """
@@ -27,115 +30,121 @@ def detect_mime_type(file_bytes):
         logging.error(f"Error detecting MIME type: {e}")
         return None
 
+
 def clean_text(text):
     """
     Cleans the text by removing unwanted characters or formatting.
     """
     # Remove zero-width spaces
-    text = text.replace('\u200b', '')
-    # Additional cleaning steps can be added here
-    return text
+    return text.replace('\u200b', '')
 
-def chunk_text(text, max_tokens=1000):
+
+def chunk_text(text, method='recursive', chunk_size=1000, chunk_overlap=200):
     """
-    Splits text into chunks suitable for embeddings based on token count.
+    Splits text into chunks using LangChain's text splitters.
+
+    Parameters:
+    - method: 'recursive' or 'token'
+    - chunk_size: Size of each chunk (characters or tokens)
+    - chunk_overlap: Overlap between chunks (characters or tokens)
     """
     text = clean_text(text)
-    tokenizer = tiktoken.get_encoding("cl100k_base")
-    tokens = tokenizer.encode(text)
-    chunks = []
-    for i in range(0, len(tokens), max_tokens):
-        chunk_tokens = tokens[i:i + max_tokens]
-        chunk = tokenizer.decode(chunk_tokens)
-        chunks.append(chunk)
-    return chunks
+    if method == 'token':
+        text_splitter = TokenTextSplitter(
+            encoding_name="cl100k_base",
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+    else:
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+    return text_splitter.split_text(text)
 
-# Extraction functions
+
+def handle_extraction_errors(func):
+    """
+    Decorator to handle exceptions and logging in extraction functions.
+    """
+    def wrapper(file_bytes):
+        try:
+            return func(file_bytes)
+        except Exception as e:
+            logging.error(f"Error in {func.__name__}: {e}")
+            return ''
+    return wrapper
+
+
+@handle_extraction_errors
 def extract_text_from_pdf(file_bytes):
     """
     Extracts text from a PDF file.
     """
-    try:
-        pdf_reader = PyPDF2.PdfReader(BytesIO(file_bytes))
-        text = ''
-        for page in pdf_reader.pages:
-            text += page.extract_text() or ''
-        return text
-    except Exception as e:
-        logging.error(f"Error extracting text from PDF: {e}")
-        return ''
+    pdf_reader = PyPDF2.PdfReader(BytesIO(file_bytes))
+    text = ''
+    for page in pdf_reader.pages:
+        text += page.extract_text() or ''
+    return text
 
+
+@handle_extraction_errors
 def extract_text_from_docx(file_bytes):
     """
     Extracts text from a DOCX file.
     """
-    try:
-        document = docx.Document(BytesIO(file_bytes))
-        text = '\n'.join([para.text for para in document.paragraphs])
-        return text
-    except Exception as e:
-        logging.error(f"Error extracting text from DOCX: {e}")
-        return ''
+    document = docx.Document(BytesIO(file_bytes))
+    return '\n'.join([para.text for para in document.paragraphs])
 
+
+@handle_extraction_errors
 def extract_text_from_txt(file_bytes):
     """
     Extracts text from a TXT file.
     """
-    try:
-        text = file_bytes.decode('utf-8', errors='ignore')
-        return text
-    except Exception as e:
-        logging.error(f"Error extracting text from TXT: {e}")
-        return ''
+    return file_bytes.decode('utf-8', errors='ignore')
 
+
+@handle_extraction_errors
 def extract_text_from_pptx(file_bytes):
     """
     Extracts text from a PPTX file.
     """
-    try:
-        presentation = Presentation(BytesIO(file_bytes))
-        text_runs = []
-        for slide in presentation.slides:
-            for shape in slide.shapes:
-                if hasattr(shape, "text"):
-                    text_runs.append(shape.text)
-        return '\n'.join(text_runs)
-    except Exception as e:
-        logging.error(f"Error extracting text from PPTX: {e}")
-        return ''
+    presentation = Presentation(BytesIO(file_bytes))
+    text_runs = []
+    for slide in presentation.slides:
+        for shape in slide.shapes:
+            if hasattr(shape, "text"):
+                text_runs.append(shape.text)
+    return '\n'.join(text_runs)
 
+
+@handle_extraction_errors
 def extract_text_from_html(file_bytes):
     """
     Extracts text from an HTML file.
     """
-    try:
-        soup = BeautifulSoup(file_bytes, 'html.parser')
-        text = soup.get_text(separator='\n')
-        return text
-    except Exception as e:
-        logging.error(f"Error extracting text from HTML: {e}")
-        return ''
+    soup = BeautifulSoup(file_bytes, 'html.parser')
+    return soup.get_text(separator='\n')
 
+
+@handle_extraction_errors
 def extract_text_from_rtf(file_bytes):
     """
     Extracts text from an RTF file.
     """
-    try:
-        text = rtf_to_text(file_bytes.decode('utf-8', errors='ignore'))
-        return text
-    except Exception as e:
-        logging.error(f"Error extracting text from RTF: {e}")
-        return ''
+    return rtf_to_text(file_bytes.decode('utf-8', errors='ignore'))
 
-# Now define the mappings
-extension_to_mime = {
-    '.pdf': 'application/pdf',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.txt': 'text/plain',
-    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    '.html': 'text/html',
-    '.htm': 'text/html',
-    '.rtf': 'application/rtf',
+
+# Mappings from extensions and MIME types to extractor functions
+extension_to_extractor = {
+    '.pdf': extract_text_from_pdf,
+    '.docx': extract_text_from_docx,
+    '.txt': extract_text_from_txt,
+    '.pptx': extract_text_from_pptx,
+    '.html': extract_text_from_html,
+    '.htm': extract_text_from_html,
+    '.rtf': extract_text_from_rtf,
     # Add more mappings as needed
 }
 
@@ -149,35 +158,33 @@ mime_type_to_extractor = {
     # Add more mappings as needed
 }
 
+
 def process_file(file_bytes, filename):
     """
     Main function to process a file: detects file type, extracts text, and chunks it.
     """
     extension = Path(filename).suffix.lower()
-    expected_mime = extension_to_mime.get(extension)
-    detected_mime = detect_mime_type(file_bytes)
-
-    if expected_mime != detected_mime:
-        if expected_mime is not None:
-            logging.warning(f"MIME type mismatch for file '{filename}': Expected '{expected_mime}', Detected '{detected_mime}'")
-        mime_type = detected_mime or expected_mime
-    else:
-        mime_type = expected_mime
-
-    extractor = mime_type_to_extractor.get(mime_type)
+    extractor = extension_to_extractor.get(extension)
 
     if extractor:
-        logging.info(f"Using extractor for MIME type: {mime_type}")
-        text = extractor(file_bytes)
+        logging.info(f"Using extractor for file extension: '{extension}'")
     else:
-        error_message = f"No extractor found for MIME type '{mime_type}' or extension '{extension}'."
+        detected_mime = detect_mime_type(file_bytes)
+        extractor = mime_type_to_extractor.get(detected_mime)
+        if extractor:
+            logging.info(f"Using extractor for MIME type: '{detected_mime}'")
+        else:
+            error_message = (f"No extractor found for file '{filename}' "
+                             f"with extension '{extension}' and MIME type '{detected_mime}'.")
+            logging.error(error_message)
+            return None
+
+    text = extractor(file_bytes)
+    if not text:
+        error_message = f"No text extracted from file '{filename}'."
         logging.error(error_message)
         return None
 
-    if not text:
-        error_message = f"Could not extract text from file '{filename}'."
-        logging.error(error_message)
-        raise ValueError(error_message)
-
-    chunks = chunk_text(text)
+    # Use LangChain's text splitter
+    chunks = chunk_text(text, method='token', chunk_size=1000, chunk_overlap=200)
     return chunks

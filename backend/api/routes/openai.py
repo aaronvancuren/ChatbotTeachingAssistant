@@ -2,11 +2,13 @@
 
 import os
 import json
+import ast
 
-from openai import OpenAI, _exceptions
 from fastapi import APIRouter, HTTPException
-from typing import List, Tuple
+from openai import OpenAI, _exceptions
 from pydantic import BaseModel
+from typing import List, Dict, Tuple
+from fastapi_msal.models import IDTokenClaims
 
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 
@@ -16,28 +18,30 @@ chorma_client = initialize_chromadb(True,'backend/chromadb_store')
 collection = get_or_create_collection(chorma_client, 'file_collection')
 
 class ChatRequest(BaseModel):
-    chatbot: List[Tuple[str, str]]
     user_content: str
-    teaching_assistant: str
+    openai_model: str
+    context: str
+
+conversations: Dict[str,List[Tuple[str, str]]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
-        message: User chat input
-    
+        ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
+
     Returns:
-        OpenAI response
+        List[Tuple[str,str]]: conversation updated with the response from OpenAI
     """
     try:
-        messages = []
-        for input_text, response_text in request.chatbot:
-            messages.append({'role': 'user', 'content': input_text})
-            messages.append({'role': 'assistant', 'content': response_text})
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(ast.literal_eval(request.context)['id_token'])
+        user_id = claims.user_id        
+        conversation: List[Tuple[str, str]] = conversations.get(user_id, [])
+        if not conversation:
+            conversations.update({user_id: conversation})
 
-        # Adds the user input to the conversation
-        messages.append({'role': 'user', 'content': request.user_content})
-
+        conversation.append({'role': 'user', 'content': request.user_content})
+        
         relevant_docs = nearest_neighbor_search(collection=collection,input_text=request.user_content, n_results=3)
 
         if relevant_docs:
@@ -50,20 +54,19 @@ async def chat(request: ChatRequest) -> str:
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
-            messages=messages,
-            model=request.teaching_assistant, # os.getenv("OPENAI_MODEL"),
+            messages=conversation,
+            model=request.openai_model,
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
-            temperature=0.7,
-            # TODO add user field once user authentication is figured out
+            temperature=0.7
         )
 
-        # Adds the user input and ChatGPT response to the conversation
-        request.chatbot.append((request.user_content, response.choices[0].message.content.strip()))
-        
+        # Adds the ChatGPT response to the conversation
+        conversation.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+
         # Returns the conversation to the frontend to display
-        return json.dumps(request.chatbot)
+        return json.dumps(conversation)
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.

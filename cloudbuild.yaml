@@ -1,0 +1,12 @@
+logsBucket: gs://chatbot-teaching-assistant-build-logs
+
+options:
+  logging: GCS_ONLY
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/chatbot-teaching-assistant', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/chatbot-teaching-assistant']
+images:
+  - 'gcr.io/$PROJECT_ID/chatbot-teaching-assistant'
