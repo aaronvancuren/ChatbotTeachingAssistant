@@ -14,7 +14,7 @@ from backend.database.chroma_database import nearest_neighbor_search, get_or_cre
 
 client = OpenAI()
 openai_router = APIRouter()
-chorma_client = initialize_chromadb(True,'backend/chromadb_store')
+chorma_client = initialize_chromadb()
 collection = get_or_create_collection(chorma_client, 'file_collection')
 
 class ChatRequest(BaseModel):
@@ -50,7 +50,7 @@ async def chat(request: ChatRequest) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            messages.append({'role': 'system', 'content': system_message})
+            conversation.append({'role': 'system', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
