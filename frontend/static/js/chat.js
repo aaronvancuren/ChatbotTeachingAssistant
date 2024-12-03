@@ -42,7 +42,7 @@ function AskQuestion() {
             user_content: document.getElementById("question").value,
             openai_model: document.getElementById('openai_model').value,
             context: document.getElementById('context').value,
-            currentConversation: new URLSearchParams(window.location.search).get('chatID')
+            currentConversation: new URLSearchParams(window.location.search).get('chatID').toString()
         }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie

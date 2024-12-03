@@ -33,6 +33,7 @@ async def chat(request: ChatRequest) -> str:
         List[Tuple[str,str]]: conversation updated with the response from OpenAI
     """
     try:
+        print(request.currentConversation)
         claims: IDTokenClaims = IDTokenClaims.decode_id_token(ast.literal_eval(request.context)['id_token'])
         user_id = claims.user_id     
         conversation: Dict[str, List[Tuple[str, str]]] = conversations.get(user_id, [])
