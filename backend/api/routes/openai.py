@@ -45,8 +45,6 @@ async def chat(request: ChatRequest) -> str:
         relevant_docs = nearest_neighbor_search(collection=collection,input_text=request.user_content, n_results=3)
 
         if relevant_docs:
-            # You can choose to add these as system messages or prepend to the user messages
-            # Here, we'll add them as a system message to provide context to the assistant
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
