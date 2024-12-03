@@ -1,0 +1,30 @@
+{% extends "upload_base.html" %}
+
+{% block content %}
+    <!-- Message Display Area -->
+    <div id="message-container"></div>
+
+    <!-- Upload Form -->
+    <form id="upload-form">
+        <label for="file">Choose a file to upload:</label>
+        <input type="file" id="file" accept=".txt,.pdf,.doc,.docx,.html,.css" name="file" required>
+        <button type="submit">Upload</button>
+    </form>
+
+    <!-- List of Files -->
+    <h2>Uploaded Files</h2>
+    <ul id="file-list">
+        {% for file_name in file_names %}
+            <li id="file-{{ file_name | replace(' ', '_') | replace('/', '_') | replace('\\', '_') }}">
+                {{ file_name }}
+                <!-- Delete Button -->
+                <button onclick="deleteFile('{{ file_name }}')">Delete</button>
+                <!-- Update Button -->
+                <button onclick="initiateUpdate('{{ file_name }}')">Update</button>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Hidden File Input for Updates -->
+    <input type="file" id="update-file-input" accept=".txt,.pdf,.doc,.docx,.html,.css" style="display: none;" onchange="handleUpdateFile(event)">
+{% endblock %}
