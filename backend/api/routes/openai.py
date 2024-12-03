@@ -10,8 +10,12 @@ from pydantic import BaseModel
 from typing import List, Dict, Tuple
 from fastapi_msal.models import IDTokenClaims
 
+from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
+
 client = OpenAI()
 openai_router = APIRouter()
+chroma_client = initialize_chromadb()
+collection = get_or_create_collection(chroma_client, 'file_collection')
 
 class ChatRequest(BaseModel):
     user_content: str
@@ -38,6 +42,14 @@ async def chat(request: ChatRequest) -> str:
 
         conversation.append({'role': 'user', 'content': request.user_content})
         
+        relevant_docs = nearest_neighbor_search(collection=collection,input_text=request.user_content, n_results=3)
+
+        if relevant_docs:
+            system_message = "Relevant information:\n"
+            for idx, doc in enumerate(relevant_docs, 1):
+                system_message += f"{idx}. {doc['content']}\n"
+            conversation.append({'role': 'system', 'content': system_message})
+
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=conversation,
