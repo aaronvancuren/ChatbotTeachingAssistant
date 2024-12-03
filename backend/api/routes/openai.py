@@ -14,7 +14,7 @@ from backend.database.chroma_database import nearest_neighbor_search, get_or_cre
 
 client = OpenAI()
 openai_router = APIRouter()
-chorma_client = initialize_chromadb()
+choroma_client = initialize_chromadb()
 collection = get_or_create_collection(chorma_client, 'file_collection')
 
 class ChatRequest(BaseModel):
