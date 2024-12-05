@@ -177,6 +177,135 @@ python -m unittest test_module.TestClass
 ```bash
 python -m unittest test_module.TestClass.test_method
 ```
+# Setting up PostgreSQL Locally
+Windows Install:
+
+  Step 1: Download the Installer
+    - Visit the official PostgreSQL download page: https://www.postgresql.org/download/windows/
+    - Click on the "Download the installer" link, which will take you to the EnterpriseDB installer page.
+    - Choose the version you want (e.g., PostgreSQL 16 is prefered for Google Cloud deployment) and download the appropriate installer for your system (32-bit or 64-bit).
+
+  Step 2: Run the Installer
+    - Locate the downloaded .exe file and double-click to run it.
+    - If prompted by User Account Control (UAC), click "Yes" to allow the installer to make changes.
+
+  Step 3: Follow the Installation Wizard
+    1. Welcome Screen: Click "Next".
+    2.Installation Directory:
+      - Choose the directory where you want to install PostgreSQL (default is usually fine).
+      - Click "Next".
+    3. Select Components:
+      - Ensure all components are selected (PostgreSQL Server, pgAdmin 4, Stack Builder).
+      - Click "Next".
+    4. Data Directory:
+      - Choose where you want the data to be stored (default is fine).
+      - Click "Next".
+    5. Set Password:
+      - IMPORTANT: Enter a password for the PostgreSQL superuser(postgres).
+      - Remember this password for later use.
+      - Click "Next".
+    6. Port Number:
+      - Default port is 5432.
+      - Click "Next".
+    7. Locale Settings:
+      - Leave as default unless you have specific locale requirements.
+      - Click "Next".
+    8. Ready to Install:
+      - Review the settings and click "Next" to begin the installation.
+    9. Completing the Setup:
+      - Wait for insatllation to complete.
+      - Uncheck "Stack Builder" unless you need to install additional tools.
+
+  Step 4: Verify the Intallation:
+    - Open pgAdmmin 4 (a graphical administration tool for PostgreSQL).
+    - You can find it in the Start Menu under PostgreSQL.
+    - When prompted, enter the password you set for the postgres user. 
+
+macOS Install:
+
+  Option 1: Using the EnterpriseDB Installer
+    Step 1: Download the Installer
+      - Visit https://www.postgresql.org/download/macosx/
+      - Download the macOS installer from EnterpriseDB.
+    
+    Step 2: Run the Installer
+      - Open the downloaded .dmg file and run the installer package.
+      - Follow the installation prompts, similar to the Windows installation.
+      - Set a password for the postgres user when prompted.
+  
+  Option 2: Using Homebrew
+    Step 1: Install Homebrew (if already not installed)
+      - Open terminal and run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    
+    Step 2: Install PostgreSQL
+      - Open terminal and run:
+        -brew update
+        -brew install postgresql
+    
+    Step 3: Initialize and Start PostgreSQL
+      - Open terminal and run the following (only if it's your first time) to initialize:
+        - initdb /usr/local/var/postgres
+      - Open terminal and run the following to start PostgreSQL
+        - brew services start postgresql
+    
+    Step 4: Verify the Installation
+      - Connect to PostgreSQL using the psql command-line tool:
+        - psql postgres
+      - If successful, you'll see the PostgreSQL prompt.
+
+Linux Install:
+
+  Step 1: Update the Package List
+    -sudo apt update
+  Step 2: Install PostgreSQL
+    -sudo apt install postgresql postgresql-contrib
+  Step 3: Verrify the Installation
+    -sudo -i -u postgres
+    -psql
+
+Setting Up the Database:
+
+  By default, PostgreSQL creates a superuser called postgres. We'll create a new database and user for our application.
+
+  Step 1: Access the PostgreSQL Shell
+    - For Windows and macOS using pgAdmin: You can execute SQL queries directly.
+    - For command-line access use the following (Switch to the postgres user):
+      - sudo -i -u postgres
+    - To access psql from the postgres user:
+      - psql
+
+  Step 2: Create a New Database
+    - CREATE DATABASE chatbot_db;
+
+  Step 3: Create a New User
+    - CREATE USER chatbot_user WITH PASSWORD 'your_password';
+    - Replace 'your_password' with a strong password.
+
+  Step 4: Grant Privileges
+    - GRANT ALL PRIVILEGES ON DATABASE chatbot_db TO chatbot_user;
+  
+  Step 5: Exit psql (if using command line)
+    - \q
+
+Initializing the Schema:
+
+  Step 1: Connect to the Database
+    - psql -U chatbot_user -d chatbot_db
+    - Enter your password when prompted.
+  
+  Step 2: Execute the Schema Script
+    - \i /path/to/ChatbotTeachingAssistant/database/scripts/initialize_tables.sql
+    - Replace /path/to with the explicit pathing to the ChatbotTeachingAssistant for your machine
+  
+  Step 3: Verrify the Tables
+    - List the tables:
+      - \dt
+    - Check the schema of the table:
+      - \d users
+
+Configuring Environment Variables:
+
+  Step 1: Set the required EVs found in the .env file with information created in previous steps. 
 
 # Setting Up Google Cloud
 - Go to [Google Cloud](https://console.cloud.google.com/)
