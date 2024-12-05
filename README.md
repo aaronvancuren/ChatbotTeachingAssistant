@@ -14,7 +14,7 @@ This guide will help you set up the Chatbot Teaching Assistant application.
 
 ## Prerequisites
 
-- [**Python 3.12**](https://www.python.org/downloads/release/python-3127/) isntalled.
+- [**Python 3.12**](https://www.python.org/downloads/release/python-3127/) installed.
 - [**Docker**](https://docs.docker.com/desktop/setup/install/windows-install/) installed.
 
 ## Installation Steps
