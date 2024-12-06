@@ -81,6 +81,7 @@ header {
 header img {
     width: auto;
     height: 3.5ch;
+    margin: .5em;
 }
 
 header h1 {
@@ -103,7 +104,7 @@ header #login p {
     text-align: right;
 }
 
-header #login h1 {
+header #login .h1 {
     border-radius: 100%;
     margin: 1ch;
 }
