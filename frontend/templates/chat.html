@@ -2,7 +2,10 @@
 <html lang="en">
 
     {% include './elements/HTML_Head.html' %}
+
     <script src="../static/js/chat.js"></script>    
+    <script type="text/javascript" src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+
     <link rel="stylesheet" href="../static/css/chat.css"/>
 <body>
     <input hidden id="context" value="{{context}}">
@@ -28,18 +31,18 @@
                     <div class="talk-bubble right">
                         <p class="text-from right">You asked...</p>
                         <div class="tri-right btm-right student">
-                            <div class="talktext">
-                                <p>{{dialogue['content']}}</p>
-                            </div>
+                            <article class="talktext">
+                                {{dialogue['content']}}
+                            </article>
                         </div>
                     </div>
                     {% else %}
                     <div class="talk-bubble left">
                         <p class="text-from left">TA Says...</p>
                         <div class="tri-right btm-left teaching_assistant">
-                            <div class="talktext">
-                                <p>{{dialogue['content']}}</p>
-                            </div>
+                            <article class="talktext">
+                                {{dialogue['content']}}
+                            </article>
                         </div>
                     </div>
                     {% endif %}
@@ -59,7 +62,7 @@
                 <option title="GPT o1 (Preview) (Coming Soon)" value="o1-preview" disabled>Henrietta (o1-Preview)</option>
             </select>
             <input id="question" name="question" type="text" required placeholder="What's your question?"/><br>
-            <p class="text-from left" style="padding-top: .25em;" id="disclaimer">Victor is an AI and will occassionally make mistakes.</p>
+            <p class="text-from left" style="bottom:15px;" id="disclaimer">Victor is an AI and will occassionally make mistakes.</p>
         </form>
     </div>
 </body>
