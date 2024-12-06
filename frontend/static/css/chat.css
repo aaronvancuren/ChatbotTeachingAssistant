@@ -165,11 +165,15 @@
 .teaching_assistant {
     background-color: var(--pfw-gold-rumble);
     border-color: var(--pfw-gold-rumble);
+
+    justify-items: left;
 }
 
 .student {
     background-color: var(--pfw-black-tusk);
     border-color: var(--pfw-black-tusk);
+
+    justify-items: right;
 }
 
 .talktext {

@@ -1,3 +1,11 @@
+window.addEventListener("load", () => {
+    let preloads = document.querySelectorAll('article');
+    for (let i = 0; i < preloads.length; i++) {
+        preloads[i].innerHTML = RenderMarkdown(preloads[i].innerHTML.trim());
+    }
+    preloads[preloads.length-1].scrollIntoView({ behavior: "smooth", block:"end" });
+});
+
 function addChat() {
     $.ajax({
         type: "GET",
@@ -94,13 +102,17 @@ function createChatBubble(dialogue, classes){
     displayContainer = document.createElement("div");
     displayContainer.classList.add("talktext");
 
-    dialogueContainer = document.createElement("p");
-    dialogueContainer.innerText = dialogue;
-    
-    displayContainer.appendChild(dialogueContainer);
+    displayContainer.innerHTML = RenderMarkdown(dialogue);
+
     container.appendChild(displayContainer);
     containerWrapper.appendChild(container);
     wrapper.appendChild(containerWrapper);
+    containerWrapper.scrollIntoView({ behavior: "smooth", block:"end" });
+}
+
+function RenderMarkdown(text) {
+    let markdownToHTML = new showdown.Converter();
+    return markdownToHTML.makeHtml(text);
 }
 
 function updateDisclaimer(){
