@@ -116,8 +116,8 @@ function RenderMarkdown(text) {
 }
 
 function updateDisclaimer(){
-    let target = document.getElementById('Disclaimer')
-    let newVal = document.getElementById('teaching_assistant').options[document.getElementById('teaching_assistant').selectedIndex].text;
-    target.innerText = target.innerText.replace(/[^\s]*/, newVal);
-    document.getElementById('teaching_assistant').title = document.getElementById('TAs').options[document.getElementById('teaching_assistant').selectedIndex].title;
+    let target = document.getElementById('disclaimer')
+    let newVal = document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].text;
+    target.innerText = newVal + " is an AI and will occassionally make mistakes.";
+    document.getElementById('openai_model').title = document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].title;
 }
