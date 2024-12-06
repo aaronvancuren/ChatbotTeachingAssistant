@@ -8,7 +8,7 @@ def CreateSampleClassSections(num = 1):
     for i in range(0, num):
         tmpClass = ClassSection()
         tmpClass.id = uuid.uuid4()                          # Replace with UUID of Class
-        tmpClass.name = "Example Class " + str(i)                     # Replace with Name of Class
+        tmpClass.name = "Example Class " + str(i + 1)                     # Replace with Name of Class
         tmpClass.professor_id = "Example Professor" + str(i)         # Replace with Professor of Class
         tmpClass.section = str(i)                                # Replace with Section of Class
         tmpClass.teaching_assistant_id = "Example Student " + str(i)  # Replace with TA
