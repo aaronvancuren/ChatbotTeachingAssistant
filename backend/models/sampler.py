@@ -22,10 +22,10 @@ def CreateSampleConversation():
     EXAMPLE_CONVERSATION = Conversation()
     EXAMPLE_CONVERSATION.id = uuid.uuid4()
     EXAMPLE_CONVERSATION.name = "Introduction"                      # Replace with Name of conversation
-    EXAMPLE_CONVERSATION.classID = uuid.uuid4()                     # Replace with UUID of Class
+    EXAMPLE_CONVERSATION.classID = uuid.uuid4()                     # Replace with UUID of conversation
     EXAMPLE_CONVERSATION.discussion = []
     EXAMPLE_CONVERSATION.discussion.append({'role': 'user', 'content': 'Hello! Can you introduce yourself?'})
-    EXAMPLE_CONVERSATION.discussion.append({'role': 'assistant', 'content': 'My name is Victor. I am an AI created by OpenAI.'})
+    EXAMPLE_CONVERSATION.discussion.append({'role': 'assistant', 'content': 'My name is Victor. I am an AI created by OpenAI. What assignments can I help you with today?'})
 
     tmpList.append(EXAMPLE_CONVERSATION)
     return tmpList

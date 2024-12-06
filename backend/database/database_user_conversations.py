@@ -22,6 +22,6 @@ def add_user_conversation(UserID : str):
     tmpConvo = Conversation()
     tmpConvo.id = uuid.uuid4()
     tmpConvo.name = "New Chat"                      # Replace with Name of conversation
-    tmpConvo.classID = uuid.uuid4()                     # Replace with UUID of Class
+    tmpConvo.classID = uuid.uuid4()                 # Replace with UUID of conversation
     DEMO_LIST.append(tmpConvo)                      # Replace with DATABASE CALLS
     return tmpConvo
