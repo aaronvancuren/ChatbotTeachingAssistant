@@ -12,8 +12,12 @@ from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
 from backend.database.database_user_conversations import DEMO_LIST
 
+from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
+
 client = OpenAI()
 openai_router = APIRouter()
+chroma_client = initialize_chromadb()
+collection = get_or_create_collection(chroma_client, 'file_collection')
 
 class ChatRequest(BaseModel, Request):
     user_content: str
@@ -41,13 +45,21 @@ async def chat(request: ChatRequest) -> str:
         if (not conversations.get(user_id, [])):    # For Testing
             conversations[user_id] = DEMO_LIST
 
-        conversation: List[Conversation] = conversations.get(user_id, [])        
-        currentConversation: Conversation = next((convo for convo in conversation if str(convo.id) == reqBody['currentConversation']), [])
+        conversation: List[Conversation] = conversations.get(user_id, [])
+        currentConversation: Conversation = next((convo for convo in conversation if str(convo.id) == reqBody['currentConversation']), Conversation())
 
         if not currentConversation:
-            conversations.update({user_id: conversation})
+            conversation.append(currentConversation)
 
         currentConversation.discussion.append({'role': 'user', 'content': reqBody['user_content']})
+
+        relevant_docs = nearest_neighbor_search(collection=collection,input_text=reqBody['user_content'], n_results=3)
+
+        if relevant_docs:
+            system_message = "Relevant information:\n"
+            for idx, doc in enumerate(relevant_docs, 1):
+                system_message += f"{idx}. {doc['content']}\n"
+            conversation.append({'role': 'system', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
