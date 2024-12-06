@@ -242,3 +242,8 @@
 
 /* End Source: https://codepen.io/Founts/pen/AJyVOr */
 /*#endregion*/
+
+pre {
+    white-space: pre-wrap; 
+    word-break: break-word; 
+}
