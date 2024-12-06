@@ -1,5 +1,4 @@
 import uuid
-from typing import List, Dict, Tuple
 
 from backend.models.converstation import Conversation
 from backend.models.classes import ClassSection
