@@ -59,7 +59,7 @@ async def chat(request: ChatRequest) -> str:
         # Moderation API Call
         try:
             moderation_response = client.moderations.create(
-                model="omni-moderation-latest",
+                model=os.getenv("OPENAI_MODERATIONS_MODEL"),
                 input=reqBody['user_content']
             )
 
