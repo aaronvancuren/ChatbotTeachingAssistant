@@ -1,3 +1,51 @@
+window.addEventListener("load", () => {
+    let preloads = document.querySelectorAll('article');
+    for (let i = 0; i < preloads.length; i++) {
+        preloads[i].innerHTML = RenderMarkdown(preloads[i].innerHTML.trim());
+    }
+    preloads[preloads.length-1].scrollIntoView({ behavior: "smooth", block:"end" });
+});
+
+function addChat() {
+    $.ajax({
+        type: "GET",
+        url: "/addChat",    
+        headers: {
+            "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "frame-ancestors 'none'",
+            "X-Frame-Options": "DENY",
+        },
+        success: function(data) {
+            host = document.getElementById('convos');
+            newChat = document.createElement('a');
+            newChat.classList.add('active');
+            newChat.classList.add('temporary');
+            newChat.href = `/chat?chatID=${data}`;
+            newChat.innerText = 'New Chat';
+            for (const child of host.children) {
+                child.classList.remove('active');
+            }
+            host.insertBefore(newChat, host.firstChild);
+            while (document.getElementById('conversation').children.length > 1) {
+                document.getElementById('conversation').removeChild(document.getElementById('conversation').lastChild);
+            }
+
+            let updateChat = new URLSearchParams(window.location.search);
+            updateChat.set('chatID', data);
+            window.history.replaceState('', '', window.location.origin + window.location.pathname + '?' + updateChat.toString());
+        },
+        statusCode:  {
+            405: (value) => {
+                alert("Error: " + JSON.parse(value.responseText).detail);
+            },
+            401: (value) => {
+                alert("Error 401: Unauthorised");
+            }
+        }
+    })    
+}
+
 function AskQuestion() {
     $.ajax({
         type: "POST",
@@ -5,7 +53,8 @@ function AskQuestion() {
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
             openai_model: document.getElementById('openai_model').value,
-            context: document.getElementById('context').value
+            context: document.getElementById('context').value,
+            currentConversationId: new URLSearchParams(window.location.search).get('chatID').toString()
         }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
@@ -57,18 +106,22 @@ function createChatBubble(dialogue, classes){
     displayContainer = document.createElement("div");
     displayContainer.classList.add("talktext");
 
-    dialogueContainer = document.createElement("p");
-    dialogueContainer.innerText = dialogue;
-    
-    displayContainer.appendChild(dialogueContainer);
+    displayContainer.innerHTML = RenderMarkdown(dialogue);
+
     container.appendChild(displayContainer);
     containerWrapper.appendChild(container);
     wrapper.appendChild(containerWrapper);
+    containerWrapper.scrollIntoView({ behavior: "smooth", block:"end" });
+}
+
+function RenderMarkdown(text) {
+    let markdownToHTML = new showdown.Converter();
+    return markdownToHTML.makeHtml(text);
 }
 
 function updateDisclaimer(){
-    let target = document.getElementById('Disclaimer')
-    let newVal = document.getElementById('teaching_assistant').options[document.getElementById('teaching_assistant').selectedIndex].text;
-    target.innerText = target.innerText.replace(/[^\s]*/, newVal);
-    document.getElementById('teaching_assistant').title = document.getElementById('TAs').options[document.getElementById('teaching_assistant').selectedIndex].title;
+    let target = document.getElementById('disclaimer')
+    let newVal = document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].text;
+    target.innerText = newVal + " is an AI and will occassionally make mistakes.";
+    document.getElementById('openai_model').title = document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].title;
 }

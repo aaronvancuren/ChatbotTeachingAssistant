@@ -2,7 +2,13 @@
     <div>
         <h1>CS 460</h1>
         <div class="chatList">
-            <a class="active">New Chat</a>
+            <a onclick="addChat()" id="addChat"></a>
+            <hr>
+            <div id="convos">
+                {% for conversation in context.conversation_list %}
+                    <a href="/chat?chatID={{conversation.id}}" class="{{  'active' if conversation.id == context.conversation_data.id else '' }}">{{conversation.name}}</a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
