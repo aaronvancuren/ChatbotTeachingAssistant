@@ -2,13 +2,15 @@
 
 import os
 import json
-import ast
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from openai import OpenAI, _exceptions
 from pydantic import BaseModel
-from typing import List, Dict, Tuple
-from fastapi_msal.models import IDTokenClaims
+from typing import List, Dict
+
+from backend.models.converstation import Conversation
+from backend.api.routes.auth import msal_auth
+from backend.database.database_user_conversations import DEMO_LIST
 
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 
@@ -17,12 +19,13 @@ openai_router = APIRouter()
 chroma_client = initialize_chromadb()
 collection = get_or_create_collection(chroma_client, 'file_collection')
 
-class ChatRequest(BaseModel):
+class ChatRequest(Request):
     user_content: str
     openai_model: str
     context: str
+    currentConversationId: str
 
-conversations: Dict[str,List[Tuple[str, str]]] = {}
+conversations: Dict[str,List[Conversation]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest) -> str:
@@ -31,29 +34,37 @@ async def chat(request: ChatRequest) -> str:
         ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
 
     Returns:
-        List[Tuple[str,str]]: conversation updated with the response from OpenAI
+        str: conversation updated with the response from OpenAI as a JSON string
     """
     try:
-        claims: IDTokenClaims = IDTokenClaims.decode_id_token(ast.literal_eval(request.context)['id_token'])
-        user_id = claims.user_id        
-        conversation: List[Tuple[str, str]] = conversations.get(user_id, [])
-        if not conversation:
-            conversations.update({user_id: conversation})
+        reqBody = await request.json()
 
-        conversation.append({'role': 'user', 'content': request.user_content})
-        
-        relevant_docs = nearest_neighbor_search(collection=collection,input_text=request.user_content, n_results=3)
+        user_session = await msal_auth.handler.get_token_from_session(request)
+        user_id = user_session.id_token_claims.user_id
+
+        if (not conversations.get(user_id, [])):    # For Testing
+            conversations[user_id] = DEMO_LIST
+
+        userConversation: List[Conversation] = conversations.get(user_id, [])
+        currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), Conversation())
+
+        if not currentConversation:
+            userConversation.append(currentConversation)
+
+        currentConversation.discussion.append({'role': 'user', 'content': reqBody['user_content']})
+
+        relevant_docs = nearest_neighbor_search(collection=collection,input_text=reqBody['user_content'], n_results=3)
 
         if relevant_docs:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            conversation.append({'role': 'system', 'content': system_message})
+            userConversation.append({'role': 'system', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
-            messages=conversation,
-            model=request.openai_model,
+            messages=currentConversation.discussion,
+            model=reqBody['openai_model'],
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
@@ -61,10 +72,10 @@ async def chat(request: ChatRequest) -> str:
         )
 
         # Adds the ChatGPT response to the conversation
-        conversation.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+        currentConversation.discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
 
         # Returns the conversation to the frontend to display
-        return json.dumps(conversation)
+        return json.dumps(currentConversation.discussion)
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.
