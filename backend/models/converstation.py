@@ -8,5 +8,5 @@ class Conversation:
     discussion: List[Tuple[str, str]]
 
     def __init__(self):
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
         self.discussion = []

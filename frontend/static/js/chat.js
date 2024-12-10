@@ -21,7 +21,7 @@ function addChat() {
             newChat = document.createElement('a');
             newChat.classList.add('active');
             newChat.classList.add('temporary');
-            newChat.href = `/chat?chatID=${data.id}`;
+            newChat.href = `/chat?chatID=${data}`;
             newChat.innerText = 'New Chat';
             for (const child of host.children) {
                 child.classList.remove('active');
@@ -30,6 +30,10 @@ function addChat() {
             while (document.getElementById('conversation').children.length > 1) {
                 document.getElementById('conversation').removeChild(document.getElementById('conversation').lastChild);
             }
+
+            let updateChat = new URLSearchParams(window.location.search);
+            updateChat.set('chatID', data);
+            window.history.replaceState('', '', window.location.origin + window.location.pathname + '?' + updateChat.toString());
         },
         statusCode:  {
             405: (value) => {
@@ -50,7 +54,7 @@ function AskQuestion() {
             user_content: document.getElementById("question").value,
             openai_model: document.getElementById('openai_model').value,
             context: document.getElementById('context').value,
-            currentConversation: new URLSearchParams(window.location.search).get('chatID').toString()
+            currentConversationId: new URLSearchParams(window.location.search).get('chatID').toString()
         }),        
         headers: {
             "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie

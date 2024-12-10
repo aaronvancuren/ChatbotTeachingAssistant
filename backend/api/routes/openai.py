@@ -19,11 +19,11 @@ openai_router = APIRouter()
 chroma_client = initialize_chromadb()
 collection = get_or_create_collection(chroma_client, 'file_collection')
 
-class ChatRequest(BaseModel, Request):
+class ChatRequest(Request):
     user_content: str
     openai_model: str
     context: str
-    currentConversation: str
+    currentConversationId: str
 
 conversations: Dict[str,List[Conversation]] = {}
 
@@ -37,7 +37,7 @@ async def chat(request: ChatRequest) -> str:
         str: conversation updated with the response from OpenAI as a JSON string
     """
     try:
-        reqBody = json.loads(await request.body())
+        reqBody = await request.json()
 
         user_session = await msal_auth.handler.get_token_from_session(request)
         user_id = user_session.id_token_claims.user_id
@@ -45,11 +45,11 @@ async def chat(request: ChatRequest) -> str:
         if (not conversations.get(user_id, [])):    # For Testing
             conversations[user_id] = DEMO_LIST
 
-        conversation: List[Conversation] = conversations.get(user_id, [])
-        currentConversation: Conversation = next((convo for convo in conversation if str(convo.id) == reqBody['currentConversation']), Conversation())
+        userConversation: List[Conversation] = conversations.get(user_id, [])
+        currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), Conversation())
 
         if not currentConversation:
-            conversation.append(currentConversation)
+            userConversation.append(currentConversation)
 
         currentConversation.discussion.append({'role': 'user', 'content': reqBody['user_content']})
 
@@ -59,7 +59,7 @@ async def chat(request: ChatRequest) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            conversation.append({'role': 'system', 'content': system_message})
+            userConversation.append({'role': 'system', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(

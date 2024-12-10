@@ -104,11 +104,6 @@ header #login p {
     text-align: right;
 }
 
-header #login .h1 {
-    border-radius: 100%;
-    margin: 1ch;
-}
-
 header a {
     display: flex;
     align-items: center;
