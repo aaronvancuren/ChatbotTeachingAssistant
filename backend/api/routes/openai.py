@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from openai import OpenAI, _exceptions
 from pydantic import BaseModel
 from typing import List, Dict
-
+from backend.database.database_class_sections import get_user_classes
 from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
 from backend.database.database_user_conversations import DEMO_LIST
@@ -20,15 +20,6 @@ openai_router = APIRouter()
 chroma_client = initialize_chromadb()
 collection = get_or_create_collection(chroma_client, 'file_collection')
 
-initial_prompt = (
-    "You are a helpful teaching assistant."
-    "You should offer students guidance to help students understand the material. "
-    "You should not provide students with direct solutions to problems. "
-    "You should maintain a polite and supportive tone."
-    "If you do not know the answer to a quetstion tell the student that you do not know and instruct them on where to find more information."
-    "Only answer questions relevant to the course material."
-    ""
-                 )
 
 class ChatRequest(Request):
     user_content: str
@@ -59,26 +50,25 @@ async def chat(request: ChatRequest) -> str:
         userConversation: List[Conversation] = conversations.get(user_id, [])
         currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), Conversation())
 
-        if not currentConversation:
-            userConversation.append(currentConversation)
 
-        conversation.append({'role': 'system', 'content': initial_prompt})
-
-        if not request.user_content.strip():
+        currentConversation.discussion.append({'role': 'system', 'content': get_user_classes(user_id)[0].prompt})
+    
+        if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
         # Moderation API Call
         try:
             moderation_response = client.moderations.create(
                 model="omni-moderation-latest",
-                input=request.user_content
+                input=reqBody['user_content']
             )
-            print(moderation_response.results)
+
             if moderation_response.results and moderation_response.results[0].flagged:
-                return JSONResponse(content={
-                    "message": "Your input violates our content guidelines. Please modify your question and try again.",
-                    "flagged_categories": moderation_response.results[0].categories
-                })
+                 # Adds the ChatGPT response to the conversation
+                currentConversation.discussion.append({'role': 'assistant', 'content': "I can't answer that"})
+
+                # Returns the conversation to the frontend to display
+                return json.dumps(currentConversation.discussion)
 
         except (KeyError, IndexError, AttributeError) as e:
             raise HTTPException(status_code=500, detail=f"Moderation API returned an unexpected response: {str(e)}")
@@ -109,16 +99,18 @@ async def chat(request: ChatRequest) -> str:
         # Adds the ChatGPT response to the conversation
         currentConversation.discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
 
-        # Returns the conversation to the frontend to display
+ # Returns the conversation to the frontend to display
         return json.dumps(currentConversation.discussion)
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
-        return json.dumps({"error": "APIConnectionError", "message": str(e)})
+        print(e.__cause__)  # an underlying Exception, likely raised within httpx.
     except _exceptions.RateLimitError as e:
         print("A 429 status code was received; we should back off a bit.")
-        return json.dumps({"error": "RateLimitError", "message": str(e)})
+        print(e.status_code)
     except _exceptions.APIStatusError as e:
         print("Another non-200-range status code was received")
-        return json.dumps({"error": "APIStatusError", "status_code": e.status_code, "message": str(e.message)})
+        print(e.status_code)
+        print(e.response)
+        print(e.message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
