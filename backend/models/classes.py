@@ -5,3 +5,4 @@ class ClassSection:
     professor_id: str
     teaching_assistant_id: str
     splash: str     # Splash Image
+    prompt: str

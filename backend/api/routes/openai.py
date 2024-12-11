@@ -4,10 +4,11 @@ import os
 import json
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 from openai import OpenAI, _exceptions
 from pydantic import BaseModel
 from typing import List, Dict
-
+from backend.database.database_class_sections import get_user_classes
 from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
 from backend.database.database_user_conversations import DEMO_LIST
@@ -18,6 +19,7 @@ client = OpenAI()
 openai_router = APIRouter()
 chroma_client = initialize_chromadb()
 collection = get_or_create_collection(chroma_client, 'file_collection')
+
 
 class ChatRequest(Request):
     user_content: str
@@ -48,9 +50,32 @@ async def chat(request: ChatRequest) -> str:
         userConversation: List[Conversation] = conversations.get(user_id, [])
         currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), Conversation())
 
-        if not currentConversation:
-            userConversation.append(currentConversation)
 
+        currentConversation.discussion.append({'role': 'system', 'content': get_user_classes(user_id)[0].prompt})
+    
+        if not reqBody['user_content'].strip():
+                raise HTTPException(status_code=400, detail="The input content cannot be empty.")
+
+        # Moderation API Call
+        try:
+            moderation_response = client.moderations.create(
+                model=os.getenv("OPENAI_MODERATIONS_MODEL"),
+                input=reqBody['user_content']
+            )
+
+            if moderation_response.results and moderation_response.results[0].flagged:
+                 # Adds the ChatGPT response to the conversation
+                currentConversation.discussion.append({'role': 'assistant', 'content': "I can't answer that"})
+
+                # Returns the conversation to the frontend to display
+                return json.dumps(currentConversation.discussion)
+
+        except (KeyError, IndexError, AttributeError) as e:
+            raise HTTPException(status_code=500, detail=f"Moderation API returned an unexpected response: {str(e)}")
+
+        except _exceptions.APIError as e:
+            raise HTTPException(status_code=502, detail=f"Moderation API error: {str(e)}")
+                
         currentConversation.discussion.append({'role': 'user', 'content': reqBody['user_content']})
 
         relevant_docs = nearest_neighbor_search(collection=collection,input_text=reqBody['user_content'], n_results=3)
@@ -74,7 +99,7 @@ async def chat(request: ChatRequest) -> str:
         # Adds the ChatGPT response to the conversation
         currentConversation.discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
 
-        # Returns the conversation to the frontend to display
+ # Returns the conversation to the frontend to display
         return json.dumps(currentConversation.discussion)
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")

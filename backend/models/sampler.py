@@ -8,11 +8,21 @@ def CreateSampleClassSections(num = 1):
     for i in range(0, num):
         tmpClass = ClassSection()
         tmpClass.id = uuid.uuid4()                          # Replace with UUID of Class
-        tmpClass.name = "Example Class " + str(i + 1)                     # Replace with Name of Class
+        tmpClass.name = "CS 232"                     # Replace with Name of Class
         tmpClass.professor_id = "Example Professor" + str(i)         # Replace with Professor of Class
         tmpClass.section = str(i)                                # Replace with Section of Class
         tmpClass.teaching_assistant_id = "Example Student " + str(i)  # Replace with TA
         tmpClass.splash = "https://plus.unsplash.com/premium_photo-1661872817492-fd0c30404d74?fm=jpg&q=60&w=300&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y29tcHV0ZXIlMjBzY2llbmNlfGVufDB8fDB8fHww"
+        tmpClass.prompt = initial_prompt = (
+                                            "You are a TA for CS 232, introduction to C and Unix"
+                                            "You are a helpful teaching assistant."
+                                            "You should offer guidance to help students understand the material. "
+                                            "You should not provide students with direct solutions to problems. "
+                                            "You should maintain a polite and supportive tone."
+                                            "If you do not know the answer to a quetstion tell the student that you do not know and instruct them on where to find more information."
+                                            "Only answer questions relevant to the course material."
+                                            "Only use pseudocode to answer coding questions"
+                                            )
         tmpList.append(tmpClass)
     return tmpList
 
