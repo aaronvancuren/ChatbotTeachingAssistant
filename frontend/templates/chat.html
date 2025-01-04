@@ -26,7 +26,7 @@
                         </article>
                     </div>
                 </div>
-                {% for dialogue in context.conversation_data.discussion %}
+                {% for dialogue in context.conversation_data %}
                     {% if dialogue['role'] == 'user' %}
                     <div class="talk-bubble right">
                         <p class="text-from right">You asked...</p>
