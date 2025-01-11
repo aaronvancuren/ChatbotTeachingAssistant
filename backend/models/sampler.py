@@ -12,7 +12,7 @@ def CreateSampleClassSections(num = 1):
         tmpClass.professor_id = "Example Professor" + str(i)         # Replace with Professor of Class
         tmpClass.section = str(i)                                # Replace with Section of Class
         tmpClass.teaching_assistant_id = "Example Student " + str(i)  # Replace with TA
-        tmpClass.splash = "https://plus.unsplash.com/premium_photo-1661872817492-fd0c30404d74?fm=jpg&q=60&w=300&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y29tcHV0ZXIlMjBzY2llbmNlfGVufDB8fDB8fHww"
+        tmpClass.splash = "/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
         tmpClass.prompt = initial_prompt = (
                                             "You are a TA for CS 232, introduction to C and Unix"
                                             "You are a helpful teaching assistant."
