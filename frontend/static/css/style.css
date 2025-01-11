@@ -45,28 +45,21 @@ To ensure Level AA standards, please see page 50 of the document referenced earl
     padding: 0;
     scroll-behavior: smooth;
     text-decoration: none !important;
-    color: inherit !important;
-}
-
-.root {
-    margin: 1em;
-    padding: 1em;
+    color: inherit;
 }
 
 body {
     overflow-x: hidden;
+    background-color: var(--primary-pfw-white);
 }
 
 main {
-    background-color: var(--primary-pfw-white);
     overflow-x: hidden;
     overflow-y: hidden;
 }
 
 header {
     display: flex;
-    top: 0;
-    height: 3em;
     width: 100%;
     position: sticky;
     background-color: var(--pfw-gold-tassel);
@@ -74,58 +67,6 @@ header {
     justify-content: space-between;
     justify-items: center;
     align-content: center;
-    padding: 1ch;
+    padding: .25ch;
     z-index: 1;
-}
-
-header img {
-    width: auto;
-    height: 3.5ch;
-    margin: .5em;
-}
-
-header h1 {
-    font-weight: bold;
-    font-size: xx-large;
-}
-
-header #select_class select {
-    width: 20ch;
-    height: 3ch;
-}
-
-header #login {
-    display: flex;
-    height: 100%;
-}
-
-header #login p {
-    font-style: italic;
-    text-align: right;
-}
-
-header a {
-    display: flex;
-    align-items: center;
-}
-
-header a span {
-    padding: 1ch;
-}
-
-/*Scroll Bar*/
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #aaa;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #888;
 }

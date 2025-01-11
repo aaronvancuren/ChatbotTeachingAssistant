@@ -1,14 +1,20 @@
-<header>
-    
-    <a href="/">
-        <img src="https://cdn-icons-png.flaticon.com/512/46/46955.png" alt="logo"/>
-        <h1>AutoTA</h1>
-    </a>
+<header class="bd-header d-flex align-items-stretch mb-3">
+    <div class="container d-flex align-items-center">
+        <a class="d-flex align-items-center text-white mb-0 fs-4" href="/">
+            <h3 class="bi bi-backpack2 d-flex align-items-center text-white"></h3>
+            <h1 class="d-flex align-items-center text-white">&nbsp;AutoTA</h1>
+        </a>
 
-    {% if context.logged_in %}
-        {% include './elements/Header_LoggedIn.html' %}
-    {% else %}
-        {% include './elements/Header_LoggedOut.html' %}
-    {% endif %}
-
+        {% if context.logged_in %}
+        <div class="ms-auto d-flex align-items-center text-white mb-0">
+            <p class="link-light" style="margin: 1ch;">Welcome {{ context.display_name }}</p>
+            <a class="ms-auto link-light">
+                <i class="bi bi-person-circle"
+                    style="text-align:center; margin: 1ch; font-weight: bold; font-size: xx-large;"></i>
+            </a>
+        </div>
+        {% else %}
+        <a href="/login" class="ms-auto link-light">Login</a>
+        {% endif %}
+    </div>
 </header>

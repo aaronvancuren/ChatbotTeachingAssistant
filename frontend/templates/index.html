@@ -3,54 +3,96 @@
 
 {% include './elements/HTML_Head.html' %}
 
-<body>
+<body class="alert-light">
 
     {% include './elements/Header_General.html' %}
 
-    <main>
+    <main class="container-fluid">
         {% if context.logged_in %}
-        <div class="root">
+        <div class="container">
+            <h2 class="text-center">Your Classes</h2>
             {% include './elements/Main_ClassCards.html' %}
+            <hr>
         </div>
         {% else %}
-        <div class="root">
-            <div>
-                <h1>Welcome!</h1>
-                <p>Thanks to the emerging technology of artificial intelligence, students and teachers
-                    are now able to do much more than previously. PFW is proud to offer a collection of AI
-                    based tools to help students and professors engage with the technology and their classes.
-                </p>
+        <div>
+            <div class="px-4 pt-5 my-5 text-center border-bottom">
+                <h1 class="display-4 fw-bold text-body-emphasis">Welcome!</h1>
+                <div class="col-lg-6 mx-auto">
+                    <p class="lead mb-4">Thanks to the emerging technology of artificial intelligence, students and
+                        teachers are now able to do much more than previously. PFW is proud to offer a collection of AI
+                        based tools to help students and professors engage with the technology and their classes.</p>
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+                        <a class="btn btn-outline-primary btn-lg px-4 me-sm-3" href="/login">Login <i
+                                class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="overflow-hidden" style="max-height: 30vh;">
+                    <div class="container px-5">
+                        <img src="/static/assets/splash.png" class="img-fluid border rounded-3 shadow-lg mb-4"
+                            alt="Splash image" width="700" height="500" loading="lazy">
+                    </div>
+                </div>
             </div>
-            <div>
-                <h2>Meet the TAs</h2>
-                <div class="card-group">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">TA Victor</h5>
-                            <p class="card-text">Hi! I'm Victor! I can't wait to help you with your homework!</p>
+        </div>
+        {% endif %}
+        <div class="container">
+            <h2>Meet your TAs</h2>
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-6 w-75 row row-cols-1 row-cols-md-4 g-4">
+                    <div class="col">
+                        <div class="card h-100">
+                            <img src="/static/assets/Port_Victor.jpeg" class="card-img-top" alt="TA Victor Portrait">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center clearfix">
+                                    <h5 class="card-title">TA Victor</h5>
+                                    <h5 class="ms-auto badge rounded-pill text-bg-info">He/Him</h5>
+                                </div>
+                                <p class="card-text">Hi! I'm Victor! I can't wait to help you with your homework!</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">TA John</h5>
-                            <p class="card-text">Hi! I'm John! I can't wait to help you with your homework!</p>
+                    <div class="col">
+                        <div class="card h-100">
+                            <img src="/static/assets/Port_John.jpeg" class="card-img-top" alt="TA John Portrait">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center clearfix">
+                                    <h5 class="card-title">TA John</h5>
+                                    <h5 class="ms-auto badge rounded-pill text-bg-info">He/Him</h5>
+                                </div>
+                                <p class="card-text">Hi! I'm John! I can't wait to help you with your homework!</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">TA Hedy</h5>
-                            <p class="card-text">Hi! I'm Hedy! I can't wait to help you with your homework!</p>
+                    <div class="col">
+                        <div class="card h-100">
+                            <img src="/static/assets/Port_Hedy.jpeg" class="card-img-top" alt="TA Hedy Portrait">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center clearfix">
+                                    <h5 class="card-title">TA Hedy</h5>
+                                    <h5 class="ms-auto badge rounded-pill text-bg-info">She/Her</h5>
+                                </div>
+                                <p class="card-text">Hi! I'm Hedy! I can't wait to help you with your homework!</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">TA Henrietta</h5>
-                            <p class="card-text">Hi! I'm Henrietta! I can't wait to help you with your homework!</p>
+                    <div class="col">
+                        <div class="card h-100">
+                            <img src="/static/assets/Port_Henrietta.jpeg" class="card-img-top"
+                                alt="TA Henrietta Portrait">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center clearfix">
+                                    <h5 class="card-title">TA Henrietta</h5>
+                                    <h5 class="ms-auto badge rounded-pill text-bg-info">She/Her</h5>
+                                </div>
+                                <p class="card-text">Hi! I'm Henrietta! I can't wait to help you with your homework!</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            {% endif %}
+        </div>
+        {% include './elements/Footer_General.html' %}
     </main>
 </body>
 
