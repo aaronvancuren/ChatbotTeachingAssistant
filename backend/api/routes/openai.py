@@ -84,7 +84,7 @@ async def chat(request: ChatRequest) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            userConversation.append({'role': 'system', 'content': system_message})
+            currentConversation.discussion.append({'role': 'system', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
