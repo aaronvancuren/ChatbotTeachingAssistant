@@ -3,15 +3,17 @@
 import os
 import json
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from openai import OpenAI, _exceptions
 from pydantic import BaseModel
 from typing import List, Dict
+from datetime import date
 from backend.database.database_class_sections import get_user_classes
 from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
 from backend.database.database_user_conversations import DEMO_LIST
+from backend.api.routes.chat_limit import check_chat_limit
 
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 
@@ -30,7 +32,7 @@ class ChatRequest(Request):
 conversations: Dict[str,List[Conversation]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
-async def chat(request: ChatRequest) -> str:
+async def chat(request: ChatRequest, response: Response) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
@@ -38,6 +40,42 @@ async def chat(request: ChatRequest) -> str:
     Returns:
         str: conversation updated with the response from OpenAI as a JSON string
     """
+
+    # Retrieve the usage cookie
+    usage_cookie = request.cookies.get("chat_usage")
+
+    # Parse cookie or initialize new data
+    if usage_cookie:
+        usage_data = json.loads(usage_cookie)
+    else:
+        usage_data = {"count": 0, "last_reset_date": str(date.today())}
+
+    today = str(date.today())
+
+    # Check if it's a new day and reset if needed
+    if usage_data["last_reset_date"] != today:
+        usage_data["count"] = 0  # Reset chat count
+        usage_data["last_reset_date"] = today
+
+    # Check if the user has reached the daily limit
+    if usage_data["count"] >= int(os.getenv("CHAT_LIMIT")):
+        raise HTTPException(
+            status_code=429,
+            detail="You have reached your daily chat limit. Please try again tomorrow.",
+        )
+
+    # Increment the chat count
+    usage_data["count"] += 1
+
+    # Update the cookie in the response
+    response.set_cookie(
+        key="chat_usage",
+        value=json.dumps(usage_data),
+        httponly=True,  # Prevent client-side access to the cookie
+        samesite="Lax",  # Restrict cross-origin access
+        max_age=86400,  # Cookie expires in 1 day
+    )
+
     try:
         reqBody = await request.json()
 
@@ -52,7 +90,7 @@ async def chat(request: ChatRequest) -> str:
 
 
         currentConversation.discussion.append({'role': 'system', 'content': get_user_classes(user_id)[0].prompt})
-    
+
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
