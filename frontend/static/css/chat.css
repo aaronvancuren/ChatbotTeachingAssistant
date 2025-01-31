@@ -114,22 +114,21 @@
     max-height: 30%;
     overflow-x: auto;
     margin: .5ch;
-    position:absolute;
+    position:fixed;
     left: 22%;
 }
 
 #openai_model {
     width: 15em;
-    top: 4em;
+    top: 5em;
     padding:.25ch .5ch .25ch .5ch;
 }
 
 #question {
-    width: 65%;
-    right: 10%;
-    position:absolute;
+    width: 75%;
+    right: 5em;
+    position:fixed;
     bottom: 5%;
-    padding: .25ch .5ch .25ch .5ch;
 }
 
 /*#region Chat bubbles*/
@@ -137,7 +136,7 @@
 .talk-bubble {
     display: inline-block;
     position: relative;
-    width: 80%;
+    max-width: 75%;
     height: auto;
     margin: 1em;
     align-self: flex-start;
@@ -167,6 +166,8 @@
     border-color: var(--pfw-gold-rumble);
 
     justify-items: left;
+    border-radius: 5em;
+
 }
 
 .student {
@@ -174,6 +175,7 @@
     border-color: var(--pfw-black-tusk);
 
     justify-items: right;
+    border-radius: 5em;
 }
 
 .talktext {
@@ -184,8 +186,7 @@
 
 .talktext p {
     /* remove webkit p margins */
-    -webkit-margin-before: 0em;
-    -webkit-margin-after: 0em;
+    margin: .1em;
 }
 
 /*Right triangle, placed bottom right side slightly in*/
@@ -199,6 +200,7 @@
     bottom: -40px;
     border: 20px solid;
     border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+    z-index: -100;
 }
 
 .tri-right.btm-right:after {
@@ -207,10 +209,11 @@
     width: 0;
     height: 0;
     left: auto;
-    right: 0px;
+    right: 2.5em;
     bottom: -20px;
     border: 12px solid;
     border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+    z-index: -100;
 }
 
 /*Right triangle, placed bottom left side slightly in*/
@@ -225,6 +228,7 @@
     bottom: -40px;
     border: 32px solid;
     border-color: transparent transparent transparent var(--pfw-gold-rumble);
+    z-index: -100;
 }
 
 .tri-right.btm-left:after {
@@ -232,12 +236,13 @@
     position: absolute;
     width: 0;
     height: 0;
-    left: 0;
+    left: 2.5em;;
     right: auto;
     top: auto;
     bottom: -20px;
     border: 22px solid;
     border-color: transparent transparent transparent var(--pfw-gold-rumble);
+    z-index: -100;
 }
 
 /* End Source: https://codepen.io/Founts/pen/AJyVOr */

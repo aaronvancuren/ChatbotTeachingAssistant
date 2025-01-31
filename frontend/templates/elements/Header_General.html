@@ -1,4 +1,4 @@
-<header class="bd-header d-flex align-items-stretch mb-3">
+<header class="bd-header d-flex align-items-stretch">
     <div class="container d-flex align-items-center">
         <a class="d-flex align-items-center text-white mb-0 fs-4" href="/">
             <h3 class="bi bi-backpack2 d-flex align-items-center text-white"></h3>
@@ -8,10 +8,20 @@
         {% if context.logged_in %}
         <div class="ms-auto d-flex align-items-center text-white mb-0">
             <p class="link-light" style="margin: 1ch;">Welcome {{ context.display_name }}</p>
-            <a class="ms-auto link-light">
-                <i class="bi bi-person-circle"
-                    style="text-align:center; margin: 1ch; font-weight: bold; font-size: xx-large;"></i>
-            </a>
+            <div class="dropdown text-end">
+                <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"
+                        style="text-align:center; margin: 1ch; font-weight: bold; font-size: xx-large;"></i>
+                </a>
+                <ul class="dropdown-menu text-small">
+                    <li><a class="dropdown-item">Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+                </ul>
+            </div>
         </div>
         {% else %}
         <a href="/login" class="ms-auto link-light">Login</a>

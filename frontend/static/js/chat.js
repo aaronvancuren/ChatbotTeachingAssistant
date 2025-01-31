@@ -53,7 +53,6 @@ function AskQuestion() {
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
             openai_model: document.getElementById('openai_model').value,
-            context: document.getElementById('context').value,
             currentConversationId: new URLSearchParams(window.location.search).get('chatID').toString()
         }),        
         headers: {
@@ -65,9 +64,10 @@ function AskQuestion() {
         },
         success: function(data) {
             conversation = JSON.parse(data);
-            createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
+            document.getElementById("LOADER").display = "none";
             createChatBubble(conversation.at(-1)["content"], ["btm-left", "teaching_assistant"]);
             document.getElementById("question").value = "";
+            document.getElementById("question").disabled = false;
         },
         statusCode:  {
             405: (value) => {
@@ -77,7 +77,13 @@ function AskQuestion() {
                 alert("Error 401: Unauthorised");
             }
         }
-    })
+    });
+    createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
+    document.getElementById("question").disabled = true;
+    document.getElementById("LOADER").display = "block";
+    try {
+        document.removeChild(document.getElementById("EMPTY"));
+    } catch {}
 }
 
 function createChatBubble(dialogue, classes){
