@@ -13,7 +13,6 @@ from backend.database.database_class_sections import get_user_classes
 from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
 from backend.database.database_user_conversations import DEMO_LIST
-from backend.api.routes.chat_limit import check_chat_limit
 
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 
