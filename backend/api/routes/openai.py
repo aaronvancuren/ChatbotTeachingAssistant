@@ -49,12 +49,10 @@ async def chat(request: ChatRequest, response: Response) -> str:
     else:
         usage_data = {"count": 0, "last_reset_date": str(date.today())}
 
-    today = str(date.today())
-
     # Check if it's a new day and reset if needed
-    if usage_data["last_reset_date"] != today:
+    if usage_data["last_reset_date"] != str(date.today()):
         usage_data["count"] = 0  # Reset chat count
-        usage_data["last_reset_date"] = today
+        usage_data["last_reset_date"] = str(date.today())
 
     # Check if the user has reached the daily limit
     if usage_data["count"] >= int(os.getenv("CHAT_LIMIT")):
