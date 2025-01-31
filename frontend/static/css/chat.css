@@ -166,7 +166,7 @@
     border-color: var(--pfw-gold-rumble);
 
     justify-items: left;
-    border-radius: 5em;
+    border-radius: 2.5em;
 
 }
 
@@ -175,11 +175,11 @@
     border-color: var(--pfw-black-tusk);
 
     justify-items: right;
-    border-radius: 5em;
+    border-radius: 2.5em;
 }
 
 .talktext {
-    padding: 1em;
+    padding: 1.5em;
     text-align: left;
     line-height: 1.5em;
 }

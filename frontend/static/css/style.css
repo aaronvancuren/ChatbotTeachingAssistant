@@ -70,3 +70,7 @@ header {
     padding: .25ch;
     z-index: 1;
 }
+
+.hidden {
+    display: none !important;
+}

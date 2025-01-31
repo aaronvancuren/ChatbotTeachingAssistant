@@ -64,7 +64,7 @@ function AskQuestion() {
         },
         success: function(data) {
             conversation = JSON.parse(data);
-            document.getElementById("LOADER").display = "none";
+            document.getElementById("LOADING").classList.add("hidden");
             createChatBubble(conversation.at(-1)["content"], ["btm-left", "teaching_assistant"]);
             document.getElementById("question").value = "";
             document.getElementById("question").disabled = false;
@@ -80,7 +80,7 @@ function AskQuestion() {
     });
     createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
     document.getElementById("question").disabled = true;
-    document.getElementById("LOADER").display = "block";
+    document.getElementById("LOADING").classList.remove("hidden");
     try {
         document.removeChild(document.getElementById("EMPTY"));
     } catch {}
