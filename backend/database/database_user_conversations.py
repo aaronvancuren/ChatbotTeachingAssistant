@@ -1,5 +1,6 @@
 import uuid
 
+from backend.database.database_class_sections import get_user_classes
 from backend.models.converstation import Conversation
 from backend.models.sampler import CreateSampleConversation
 
@@ -17,9 +18,9 @@ def get_user_conversations(UserID : str) -> list[Conversation]:
     return DEMO_LIST                                # Replace with DATABASE CALLS
     
 
-def add_user_conversation(UserID : str):
+def add_user_conversation(UserID : str, model="gpt-3.5-turbo"):
 
-    tmpConvo = Conversation()
+    tmpConvo = Conversation(assistant=model,class_prompt=get_user_classes(UserID)[0].prompt)
     tmpConvo.id = uuid.uuid4()
     tmpConvo.name = "New Chat"                      # Replace with Name of conversation
     tmpConvo.classID = uuid.uuid4()                 # Replace with UUID of conversation
