@@ -83,11 +83,9 @@ async def chat(request: ChatRequest, response: Response) -> str:
             conversations[user_id] = DEMO_LIST
 
         userConversation: List[Conversation] = conversations.get(user_id, [])
-        currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), Conversation())
-
-
-        currentConversation.discussion.append({'role': 'system', 'content': get_user_classes(user_id)[0].prompt})
-
+        currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
+                                                 Conversation(assistant=reqBody['openai_model'],
+                                                     class_prompt=get_user_classes(user_id)[0].prompt))
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
@@ -119,7 +117,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            userConversation.append({'role': 'system', 'content': system_message})
+            currentConversation.discussion.append({'role': 'system', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
@@ -128,14 +126,15 @@ async def chat(request: ChatRequest, response: Response) -> str:
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
-            temperature=0.7
+            temperature=0.7,
+            user=user_id
         )
 
         # Adds the ChatGPT response to the conversation
         currentConversation.discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
 
  # Returns the conversation to the frontend to display
-        return json.dumps(currentConversation.discussion)
+        return json.dumps(currentConversation.getDiscussion())
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.
