@@ -75,6 +75,11 @@ function AskQuestion() {
             },
             429: (value) => {
                 document.getElementById("LOADING").classList.add("hidden");
+                createChatBubble("I'm really glad you reached out to discuss this, but unfortunately, I have to wrap up now. If you'd like to continue, you can reach out to the professor or the other TA.", ["btm-left", "teaching_assistant"]);
+                document.getElementById("question").value = "";
+            },
+            500: (value) => {
+                document.getElementById("LOADING").classList.add("hidden");
                 createChatBubble("Unfortunately, I can't answer that question right now. Please try again later.", ["btm-left", "teaching_assistant"]);
                 document.getElementById("question").value = "";
             }

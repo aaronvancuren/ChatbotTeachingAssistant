@@ -70,7 +70,7 @@ async def addChat(request: Request, context: dict = Depends(get_context)):
     if context.get("id_token") is not None:
         claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
         if(claims is not None and claims.validate_token() == TokenStatus.VALID):
-            newConvo = add_user_conversation(claims.user_id)
+            newConvo = add_user_conversation(claims.user_id, "gpt-4o-mini")
             return PlainTextResponse(str(newConvo.id))
 
     return await Error_401(request, context)

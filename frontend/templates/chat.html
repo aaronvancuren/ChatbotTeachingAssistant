@@ -17,7 +17,7 @@
 
         <div id="content">
             <div id="conversation">
-                {% if not context.conversation_data.discussion %}
+                {% if not context.conversation_data %}
                 <div id="EMPTY" class="container my-auto">
                     <div class="p-3 text-center text-muted bg-body border border-dashed rounded-5">
                         <h1 style="font-size:56pt">👋</h1>
@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 {% else %}
-                {% for dialogue in context.conversation_data.discussion %}
+                {% for dialogue in context.conversation_data %}
                 {% if dialogue['role'] == 'user' %}
                 <div class="talk-bubble right">
                     <p class="text-from right">You asked...</p>
