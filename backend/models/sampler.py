@@ -13,24 +13,24 @@ def CreateSampleClassSections(num = 1):
         tmpClass.section = "CS 232-01"                                # Replace with Section of Class
         tmpClass.teaching_assistant_id = "Example Student " + str(i)  # Replace with TA
         tmpClass.splash = "/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
-        tmpClass.prompt = initial_prompt = (
-                                            "You are a TA for CS 232, introduction to C and Unix"
-                                            "You are a helpful teaching assistant."
-                                            "You should offer guidance to help students understand the material. "
-                                            "You should not provide students with direct solutions to problems. "
-                                            "You should maintain a polite and supportive tone."
-                                            "If you do not know the answer to a quetstion tell the student that you do not know and instruct them on where to find more information."
-                                            "Only answer questions relevant to the course material."
-                                            "Only use pseudocode to answer coding questions"
-                                            )
+        tmpClass.prompt = (
+            "You are a TA for CS 232, introduction to C and Unix"
+            "You are a helpful teaching assistant."
+            "You should offer guidance to help students understand the material. "
+            "You should not provide students with direct solutions to problems. "
+            "You should maintain a polite and supportive tone."
+            "If you do not know the answer to a question, tell the student that you do not know and instruct them on where to find more information."
+            "Only answer questions relevant to the course material."
+            "Only use pseudocode to answer coding questions"
+        )
         tmpList.append(tmpClass)
     return tmpList
 
 def CreateSampleConversation():
     tmpList = []
     
-    EXAMPLE_CONVERSATION = Conversation()
-    EXAMPLE_CONVERSATION.name = "New Chat"                      # Replace with Name of conversation
+    EXAMPLE_CONVERSATION = Conversation("gpt-4o-mini")
+    EXAMPLE_CONVERSATION.name = "CS 232 Help"                      # Replace with Name of conversation
     EXAMPLE_CONVERSATION.classID = uuid.uuid4()                     # Replace with UUID of conversation
 
     tmpList.append(EXAMPLE_CONVERSATION)

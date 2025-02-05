@@ -7,6 +7,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi_msal.models import IDTokenClaims, TokenStatus
 from fastapi.responses import PlainTextResponse
 
+from backend.models.converstation import Conversation
+
 web_router = APIRouter()
 
 page_templates = Jinja2Templates(directory='frontend/templates')
@@ -56,7 +58,7 @@ async def chatpage(request : Request, chatID : str, context: dict = Depends(get_
             context.update({"conversation_list": get_user_conversations(claims.user_id)})
             context.update({"conversation_data": next(
                 (convo for convo in get_user_conversations(claims.user_id) 
-                 if str(convo.id) == chatID), None)})
+                 if str(convo.id) == chatID), Conversation(class_prompt=get_user_classes(claims.user_id)[0].prompt)).getDiscussion()})
             context.update({"chatID": chatID})
 
             return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})

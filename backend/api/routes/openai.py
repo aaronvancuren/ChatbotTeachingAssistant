@@ -3,11 +3,12 @@
 import os
 import json
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from openai import OpenAI, _exceptions
 from pydantic import BaseModel
 from typing import List, Dict
+from datetime import date
 from backend.database.database_class_sections import get_user_classes
 from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
@@ -30,7 +31,7 @@ class ChatRequest(Request):
 conversations: Dict[str,List[Conversation]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
-async def chat(request: ChatRequest) -> str:
+async def chat(request: ChatRequest, response: Response) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
@@ -38,6 +39,40 @@ async def chat(request: ChatRequest) -> str:
     Returns:
         str: conversation updated with the response from OpenAI as a JSON string
     """
+
+    # Retrieve the usage cookie
+    usage_cookie = request.cookies.get("chat_usage")
+
+    # Parse cookie or initialize new data
+    if usage_cookie:
+        usage_data = json.loads(usage_cookie)
+    else:
+        usage_data = {"count": 0, "last_reset_date": str(date.today())}
+
+    # Check if it's a new day and reset if needed
+    if usage_data["last_reset_date"] != str(date.today()):
+        usage_data["count"] = 0  # Reset chat count
+        usage_data["last_reset_date"] = str(date.today())
+
+    # Check if the user has reached the daily limit
+    if usage_data["count"] >= int(os.getenv("CHAT_LIMIT")):
+        raise HTTPException(
+            status_code=429,
+            detail="You have reached your daily chat limit. Please try again tomorrow.",
+        )
+
+    # Increment the chat count
+    usage_data["count"] += 1
+
+    # Update the cookie in the response
+    response.set_cookie(
+        key="chat_usage",
+        value=json.dumps(usage_data),
+        httponly=True,  # Prevent client-side access to the cookie
+        samesite="Lax",  # Restrict cross-origin access
+        max_age=86400,  # Cookie expires in 1 day
+    )
+
     try:
         reqBody = await request.json()
 
@@ -48,11 +83,8 @@ async def chat(request: ChatRequest) -> str:
             conversations[user_id] = DEMO_LIST
 
         userConversation: List[Conversation] = conversations.get(user_id, [])
-        currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), Conversation())
-
-
-        currentConversation.discussion.append({'role': 'system', 'content': get_user_classes(user_id)[0].prompt})
-    
+        currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
+                                                 Conversation(assistant=os.getenv("OPENAI_MODEL"), class_prompt=get_user_classes(user_id)[0].prompt))
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
@@ -84,7 +116,7 @@ async def chat(request: ChatRequest) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            userConversation.append({'role': 'system', 'content': system_message})
+            currentConversation.discussion.append({'role': 'system', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
@@ -93,14 +125,15 @@ async def chat(request: ChatRequest) -> str:
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
-            temperature=0.7
+            temperature=0.7,
+            user=user_id
         )
 
         # Adds the ChatGPT response to the conversation
         currentConversation.discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
 
  # Returns the conversation to the frontend to display
-        return json.dumps(currentConversation.discussion)
+        return json.dumps(currentConversation.getDiscussion())
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.
