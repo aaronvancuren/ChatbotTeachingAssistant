@@ -19,8 +19,7 @@ function addChat() {
         success: function(data) {
             host = document.getElementById('convos');
             newChat = document.createElement('a');
-            newChat.classList.add('active');
-            newChat.classList.add('temporary');
+            newChat.classList.add('btn', 'btn-secondary', 'active', 'temporary');
             newChat.href = `/chat?chatID=${data}`;
             newChat.innerText = 'New Chat';
             for (const child of host.children) {
@@ -52,11 +51,9 @@ function AskQuestion() {
         url: "/ask",
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
-            openai_model: document.getElementById('openai_model').value,
             currentConversationId: new URLSearchParams(window.location.search).get('chatID').toString()
         }),        
         headers: {
-            "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
             "X-Content-Type-Options": "nosniff",
             "Content-Security-Policy": "frame-ancestors 'none'",
             "X-Frame-Options": "DENY",
@@ -75,6 +72,11 @@ function AskQuestion() {
             },
             401: (value) => {
                 alert("Error 401: Unauthorised");
+            },
+            429: (value) => {
+                document.getElementById("LOADING").classList.add("hidden");
+                createChatBubble("Unfortunately, I can't answer that question right now. Please try again later.", ["btm-left", "teaching_assistant"]);
+                document.getElementById("question").value = "";
             }
         }
     });
@@ -82,7 +84,7 @@ function AskQuestion() {
     document.getElementById("question").disabled = true;
     document.getElementById("LOADING").classList.remove("hidden");
     try {
-        document.removeChild(document.getElementById("EMPTY"));
+        document.getElementById("EMPTY").remove();
     } catch {}
 }
 
@@ -94,7 +96,7 @@ function createChatBubble(dialogue, classes){
     chatWrapper = document.createElement("p");
     
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.innerText = `${document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].text} says...`;
+        chatWrapper.innerText = `John says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
@@ -117,17 +119,29 @@ function createChatBubble(dialogue, classes){
     container.appendChild(displayContainer);
     containerWrapper.appendChild(container);
     wrapper.appendChild(containerWrapper);
+    if (classes.includes('teaching_assistant')) {
+
+        feedbackWrapper = document.createElement("div");
+        feedbackWrapper.classList.add("feedback");
+
+        speak = document.createElement("a");
+        speak.classList.add("bi", "bi-volume-up");
+
+        good = document.createElement("a");
+        good.classList.add("bi", "bi-hand-thumbs-up");
+
+        bad = document.createElement("a");
+        bad.classList.add("bi", "bi-hand-thumbs-down");
+
+        feedbackWrapper.appendChild(speak);
+        feedbackWrapper.appendChild(bad);
+        feedbackWrapper.appendChild(good);
+        wrapper.appendChild(feedbackWrapper);
+    }
     containerWrapper.scrollIntoView({ behavior: "smooth", block:"end" });
 }
 
 function RenderMarkdown(text) {
     let markdownToHTML = new showdown.Converter();
     return markdownToHTML.makeHtml(text);
-}
-
-function updateDisclaimer(){
-    let target = document.getElementById('disclaimer')
-    let newVal = document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].text;
-    target.innerText = newVal + " is an AI and will occassionally make mistakes.";
-    document.getElementById('openai_model').title = document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].title;
 }

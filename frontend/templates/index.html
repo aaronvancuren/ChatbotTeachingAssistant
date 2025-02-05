@@ -10,8 +10,10 @@
     <main class="container-fluid">
         {% if context.logged_in %}
         <div class="container">
-            <h2 class="text-center">Your Classes</h2>
+            <h2 class="py-3">Your Classes</h2>
+            <div class="container p-2" style="background-color: white;">
             {% include './elements/Main_ClassCards.html' %}
+            </div>
             <hr>
         </div>
         {% else %}

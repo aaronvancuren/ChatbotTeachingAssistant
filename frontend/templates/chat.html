@@ -7,7 +7,7 @@
 <script type="text/javascript" src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
 
     <link rel="stylesheet" href="../static/css/chat.css"/>
-<body>
+<body class="bg-body-tertiary" style="overflow:hidden">
 
     {% include './elements/Header_General.html' %}
 
@@ -19,8 +19,8 @@
             <div id="conversation">
                 {% if not context.conversation_data.discussion %}
                 <div id="EMPTY" class="container my-auto">
-                    <div class="position-relative p-5 text-center text-muted bg-body border border-dashed rounded-5">
-                        <h1 style="font-size:64pt">👋</h1>
+                    <div class="p-3 text-center text-muted bg-body border border-dashed rounded-5">
+                        <h1 style="font-size:56pt">👋</h1>
                         <h1 class="text-body-emphasis">Hi {{ context.display_name }}</h1>
                         <p class="col-lg-6 mx-auto mb-4">
                             Need some help with something? Let's figure it out together!
@@ -28,15 +28,15 @@
                         <div>
                             <h5>Examples</h5>
                             <div class="list-group d-grid gap-2">
-                                <p class="list-group-item rounded-3 py-3 bg-light-subtle">
+                                <button class="list-group-item rounded-3 py-3 bg-light-subtle btn" onclick="document.getElementById('question').value = 'How does an array work in C?'; AskQuestion();">
                                     How does an array work in C?
-                                </p>
-                                <p class="list-group-item rounded-3 py-3 bg-light-subtle">
+                                </button>
+                                <button class="list-group-item rounded-3 py-3 bg-light-subtle btn" onclick="document.getElementById('question').value = 'What are pointers?'; AskQuestion();">
                                     What are pointers?
-                                </p>
-                                <p class="list-group-item rounded-3 py-3 bg-light-subtle">
+                                </button>
+                                <button class="list-group-item rounded-3 py-3 bg-light-subtle btn" onclick="document.getElementById('question').value = 'When is my final?'; AskQuestion();">
                                     When is my final?
-                                </p>
+                                </button>
                             </div>
 
                         </div>
@@ -55,46 +55,41 @@
                 </div>
                 {% else %}
                 <div class="talk-bubble left ">
-                    <p class="text-from left">TA Says...</p>
+                    <p class="text-from left">John Says...</p>
                     <div class="tri-right btm-left teaching_assistant">
                         <article class="talktext">
                             {{dialogue['content']}}
                         </article>
                     </div>
                 </div>
+                <div class="feedback">
+                    <a class="bi bi-volume-up" style="font-size:larger"></a>
+                    <a class="bi bi-hand-thumbs-down" style="font-size:medium" ></a>
+                    <a class="bi bi-hand-thumbs-up" style="font-size:medium" ></a>
+                </div>
                 {% endif %}
                 {% endfor %}
                 {% endif %}
                 <br>
             </div>
-            <div id="LOADING" class="talk-bubble left hidden" style="width:8em" aria-hidden="true">
+            <div id="LOADING" class="talk-bubble left hidden" style="width:8em; bottom: 12vh" aria-hidden="true">
                 <p class="text-from left">Thinking...</p>
                 <div class="tri-right btm-left teaching_assistant">
                     <article class="talktext">
                         <div class="placeholder-glow d-flex">
-                            <p class="placeholder col-12 rounded-pill"></p>
-                            <p class="placeholder col-12 rounded-pill"></p>
-                            <p class="placeholder col-12 rounded-pill"></p>
-                            <p class="placeholder col-12 rounded-pill"></p>
-                            <p class="placeholder col-12 rounded-pill"></p>
+                            <p class="placeholder col-2 rounded-pill"></p>
+                            <p class="placeholder col-2 rounded-pill"></p>
+                            <p class="placeholder col-2 rounded-pill"></p>
+                            <p class="placeholder col-2 rounded-pill"></p>
+                            <p class="placeholder col-2 rounded-pill"></p>
                         </div>
                     </article>
                 </div>
             </div>
             <div class="chat-box">
                 <form id="input" onsubmit="AskQuestion();return false;" method="post">
-                    <select class="form-select" title="Select OpenAI Model" name="openai_model" id="openai_model" required
-                        onchange="updateDisclaimer()">
-                        <option title="Choose a model to help you with an assignment" style="font-size: small;" value=""
-                            disabled>Choose a TA</option>
-                        <option title="GPT 3.5 Turbo" value="gpt-3.5-turbo" selected>Victor (GPT-3.5-Turbo)</option>
-                        <option title="GPT 4o Mini" value="gpt-4o-mini">John (GPT-4o-Mini)</option>
-                        <option title="GPT 4o (Coming Soon)" value="chatgpt-4o-latest" disabled>Hedy (GPT-4o)</option>
-                        <option title="GPT o1 (Preview) (Coming Soon)" value="o1-preview" disabled>Henrietta (o1-Preview)
-                        </option>
-                    </select>
                     <input class="form-control" id="question" name="question" type="text" required placeholder="What's your question?" /><br>
-                    <p class="text-from left" style="bottom:3%;" id="disclaimer">Victor is an AI and will occassionally make
+                    <p class="text-from left" style="bottom:3%;" id="disclaimer">John is an AI and will occassionally make
                         mistakes.</p>
                 </form>
             </div>

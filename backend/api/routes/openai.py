@@ -89,7 +89,7 @@ async def chat(request: ChatRequest) -> str:
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=currentConversation.discussion,
-            model=reqBody['openai_model'],
+            model=os.getenv("OPENAI_MODEL"),
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=None,
