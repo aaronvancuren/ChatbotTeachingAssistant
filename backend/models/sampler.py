@@ -8,9 +8,9 @@ def CreateSampleClassSections(num = 1):
     for i in range(0, num):
         tmpClass = ClassSection()
         tmpClass.id = uuid.uuid4()                          # Replace with UUID of Class
-        tmpClass.name = "CS 232"                     # Replace with Name of Class
-        tmpClass.professor_id = "Example Professor" + str(i)         # Replace with Professor of Class
-        tmpClass.section = str(i)                                # Replace with Section of Class
+        tmpClass.name = "Intro to C and Unix"                     # Replace with Name of Class
+        tmpClass.professor_id = "Zesheng Chen"        # Replace with Professor of Class
+        tmpClass.section = "CS 232-01"                                # Replace with Section of Class
         tmpClass.teaching_assistant_id = "Example Student " + str(i)  # Replace with TA
         tmpClass.splash = "/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
         tmpClass.prompt = initial_prompt = (
