@@ -1,5 +1,6 @@
 """Contains OpenAI API calls"""
 
+import base64
 import os
 import json
 
@@ -45,9 +46,9 @@ async def chat(request: ChatRequest, response: Response) -> str:
 
     # Parse cookie or initialize new data
     if usage_cookie:
-        usage_data = json.loads(usage_cookie)
+        usage_data = json.loads(base64.b64decode(usage_cookie[::-1][1:-2]).decode())
     else:
-        usage_data = {"count": 0, "last_reset_date": str(date.today())}
+        usage_data = {"count": 0, "max": os.getenv("CHAT_LIMIT"), "last_reset_date": str(date.today())}
 
     # Check if it's a new day and reset if needed
     if usage_data["last_reset_date"] != str(date.today()):
@@ -67,8 +68,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
     # Update the cookie in the response
     response.set_cookie(
         key="chat_usage",
-        value=json.dumps(usage_data),
-        httponly=True,  # Prevent client-side access to the cookie
+        value=base64.b64encode(bytes(json.dumps(usage_data).encode('utf-8')))[::-1],
         samesite="Lax",  # Restrict cross-origin access
         max_age=86400,  # Cookie expires in 1 day
     )

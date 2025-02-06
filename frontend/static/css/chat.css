@@ -121,19 +121,8 @@
     margin: .5ch;
     position:fixed;
     left: 22%;
-}
-
-#openai_model {
-    width: 15em;
-    top: 5em;
-    padding:.25ch .5ch .25ch .5ch;
-}
-
-#question {
-    width: 75%;
-    right: 5em;
-    position:fixed;
-    bottom: 5%;
+    width: 75vw;
+    bottom: 5vh;
 }
 
 /*#region Chat bubbles*/
@@ -257,7 +246,7 @@
 pre {
     white-space: pre-wrap; 
     word-break: break-word; 
-    background-color: #5e5e5e55;
+    background-color: #9e9e9e55;
     border-radius: .25em;
     padding: 1em;
 }

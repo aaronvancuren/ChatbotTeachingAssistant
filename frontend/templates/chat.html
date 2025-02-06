@@ -86,11 +86,18 @@
                     </article>
                 </div>
             </div>
-            <div class="chat-box">
+            <div class="chat-box position-relative">
                 <form id="input" onsubmit="AskQuestion();return false;" method="post">
-                    <input class="form-control" id="question" name="question" type="text" required placeholder="What's your question?" /><br>
+                    <div class="mx-auto">
+                        <input class="form-control" id="question" name="question" type="text" required placeholder="What's your question?" />
+                        <label class="text-from right bi bi-arrow-right" style="z-index: 100; font-size:medium; padding:1.5vh; pointer-events:none !important"></label>
+                        <br>
+                    </div>
+                    <div style="pointer-events: none;">
                     <p class="text-from left" style="bottom:3%;" id="disclaimer">John is an AI and will occassionally make
                         mistakes.</p>
+                        <p class="text-from right" style="bottom:3%;" id="counter">10/10</p>
+                    </div>
                 </form>
             </div>
     </main>

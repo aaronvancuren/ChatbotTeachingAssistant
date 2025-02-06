@@ -148,5 +148,11 @@ function createChatBubble(dialogue, classes){
 
 function RenderMarkdown(text) {
     let markdownToHTML = new showdown.Converter();
+    UpdateChatNum();
     return markdownToHTML.makeHtml(text);
+}
+
+function UpdateChatNum() {
+    let log = JSON.parse(atob(document.cookie.split('=')[1].slice(2).split("").reverse().join("").slice(1)))
+    document.getElementById("counter").innerHTML = 'Daily Questions Left: ' + (log.max - log.count) + '/' + log.max;
 }
