@@ -14,8 +14,9 @@ This guide will help you set up the Chatbot Teaching Assistant application.
 
 ## Prerequisites
 
-- [**Python 3.12**](https://www.python.org/downloads/release/python-3127/) isntalled.
+- [**Python 3.12**](https://www.python.org/downloads/release/python-3127/) installed.
 - [**Docker**](https://docs.docker.com/desktop/setup/install/windows-install/) installed.
+- [**Postgres 17+**](https://www.postgresql.org/download/) installed.
 
 ## Installation Steps
 
@@ -105,6 +106,58 @@ Follow the below instructions for obtaining sensitive environment variables.
   ```
   openssl rand -hex 32
   ```
+
+### 5. Set Up PostgreSQL
+
+#### Connect to the Cloud
+
+##### Obtain SQL Instance Public IP Address
+- Go to Google Cloud SQL
+- Locate the 'chatbot-teaching-assistant-database' SQL Instance
+- Obtain the Public IP Address
+
+![Google Cloud SQL Instance](README/PostgresCloudStep1.png)
+![Public IP Address](README/PostgresCloudStep2.png)
+
+##### Add Personal IP Address to Authorize IP Addresses
+- Click the Instance
+- Go to the "connections" Section
+- Go to the "Networking" Tab
+- Click "Add a Network" and Enter IP Address
+
+If you are adding an off-campus IP Address, delete the authorized IP Adress after use to limit security threats.
+
+![Connections Tab](README/PostgresCloudStep3.png)
+![Add IP Address](README/PostgresCloudStep4.png)
+
+##### Connect Using pgAdmin 4 (PostgreSQL GUI)
+
+- Register Server (name does not matter)
+- Set Host Name (Public IP Address)
+- Enter Username and Password
+
+![Register Server](README/PostgresCloudStep5.png)
+![Connection Details](README/PostgresCloudStep6.png)
+
+#### Connect to Local Instance
+
+##### Create Server & Database
+Details do not matter since this is for local use only.
+
+- Create Server Group
+- Create Database
+
+![Create Server Group](README/PostgresLocalStep1.png)
+![Create Database](README/PostgresLocalStep2.png)
+
+##### Run Database Scripts
+- Open a Query Tool (will have to start from the default postres database)
+- Run the create_type scripts in any order
+- Run the create_table users and courses scripts in any order
+- Run the create_table user_courses and user_conversations scripts in any order
+- Run the create_table_messages script
+
+![Open Query Tool](README/PostgresLocalStep3.png)
 
 # How to Run
 
