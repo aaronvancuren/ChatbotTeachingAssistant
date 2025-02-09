@@ -1,178 +1,326 @@
-let currentUpdateFileName = null;
+// ------------------------------
+// DRAG-AND-DROP & MULTI-FILE UPLOAD
+// ------------------------------
+// DOM Elements
+// ------------------------------
+// DRAG-AND-DROP & MULTI-FILE QUEUE
+// ------------------------------
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+const fileQueueEl = document.getElementById("fileQueue");
+const removeAllBtn = document.getElementById("removeAllBtn"); // <-- NEW
+const uploadBtn = document.getElementById("uploadBtn");
+const progressBar = document.getElementById("uploadProgress");
+const uploadResult = document.getElementById("uploadResult");
 
-// Handle Upload Form Submission
-document.getElementById('upload-form').addEventListener('submit', async function(event) {
-    event.preventDefault(); // Prevent default form submission
+const allowedExtensions = [".txt", ".pdf", ".doc", ".docx", ".html", ".css"];
 
-    const formData = new FormData();
-    const fileField = document.getElementById('file');
+// A DataTransfer that holds all staged files
+let combinedFilesDataTransfer = new DataTransfer();
 
-    formData.append('file', fileField.files[0]);
-
-    try {
-        showLoading();
-        const response = await fetch('/files/upload', {
-            method: 'POST',
-            body: formData
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            showMessage(result.message, 'success');
-            addFileToList(result.file_name);
-            fileField.value = ''; // Clear the file input
-        } else {
-            showMessage(result.detail, 'error');
-        }
-    } catch (error) {
-        showMessage('An unexpected error occurred.', 'error');
-        console.error('Error:', error);
-    } finally {
-        hideLoading();
-    }
+// 1) Dropzone click => open file dialog
+dropzone.addEventListener("click", () => {
+  fileInput.click();
 });
 
-// Function to Display Messages
-function showMessage(message, type) {
-    const messageContainer = document.getElementById('message-container');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.innerText = message;
-    messageContainer.appendChild(messageDiv);
+// 2) Drag & Drop
+dropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropzone.classList.add("bg-info", "text-white");
+});
+dropzone.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  dropzone.classList.remove("bg-info", "text-white");
+});
+dropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropzone.classList.remove("bg-info", "text-white");
 
-    // Remove message after 5 seconds
-    setTimeout(() => {
-        if (messageDiv.parentNode === messageContainer) {
-            messageContainer.removeChild(messageDiv);
-        }
-    }, 5000);
+  for (const file of e.dataTransfer.files) {
+    const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+    if (allowedExtensions.includes(extension)) {
+      combinedFilesDataTransfer.items.add(file);
+    } else {
+      alert(`"${file.name}" is not an allowed file type.`);
+    }
+  }
+  fileInput.files = combinedFilesDataTransfer.files;
+
+  displayQueuedFiles(fileInput.files);
+});
+
+// 3) File dialog selection
+fileInput.addEventListener("change", (e) => {
+  for (const file of e.target.files) {
+    const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+    if (allowedExtensions.includes(extension)) {
+      combinedFilesDataTransfer.items.add(file);
+    } else {
+      alert(`"${file.name}" is not an allowed file type.`);
+    }
+  }
+  fileInput.files = combinedFilesDataTransfer.files;
+  displayQueuedFiles(fileInput.files);
+});
+
+// 4) Display the queued files with a Remove button
+function displayQueuedFiles(fileList) {
+  fileQueueEl.innerHTML = "";
+
+  if (!fileList.length) {
+    const li = document.createElement("li");
+    li.className = "list-group-item text-muted";
+    li.textContent = "No files queued";
+    fileQueueEl.appendChild(li);
+    return;
+  }
+
+  for (let i = 0; i < fileList.length; i++) {
+    const file = fileList[i];
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
+    li.textContent = file.name;
+
+    // "Remove" button for single file
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "btn btn-danger btn-sm ms-3";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", () => removeFileFromQueue(i));
+
+    li.appendChild(removeBtn);
+    fileQueueEl.appendChild(li);
+  }
 }
 
-// Function to Add a File to the List
-function addFileToList(fileName) {
-    const fileList = document.getElementById('file-list');
-    const listItem = document.createElement('li');
-    // Sanitize fileName for use in ID
-    const safeFileName = fileName.replace(/[^a-zA-Z0-9-_]/g, '_');
-    listItem.id = `file-${safeFileName}`;
-    listItem.innerHTML = `
-        ${fileName}
-        <button onclick="deleteFile('${encodeURIComponent(fileName)}')">Delete</button>
-        <button onclick="initiateUpdate('${encodeURIComponent(fileName)}')">Update</button>
-    `;
-    fileList.appendChild(listItem);
+// 5) Remove a single file from the queue
+function removeFileFromQueue(index) {
+  const newDataTransfer = new DataTransfer();
+
+  const currentFiles = combinedFilesDataTransfer.files;
+  for (let i = 0; i < currentFiles.length; i++) {
+    if (i !== index) {
+      newDataTransfer.items.add(currentFiles[i]);
+    }
+  }
+
+  combinedFilesDataTransfer = newDataTransfer;
+  fileInput.files = combinedFilesDataTransfer.files;
+  displayQueuedFiles(fileInput.files);
 }
 
-// Function to Delete a File
+// 6) "Remove All" button => clear entire queue
+removeAllBtn.addEventListener("click", removeAllFromQueue);
+
+function removeAllFromQueue() {
+  // Optionally ask for confirmation
+  // if (!confirm("Remove all queued files?")) return;
+
+  combinedFilesDataTransfer = new DataTransfer(); // new empty
+  fileInput.value = ""; // reset the file input
+  displayQueuedFiles([]); // refresh UI
+}
+
+// 7) Click "Upload"
+uploadBtn.addEventListener("click", async () => {
+  if (!fileInput.files.length) {
+    alert("No files to upload.");
+    return;
+  }
+
+  // Optional: show spinner in button
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = `Uploading...
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+
+  // Reset progress
+  updateProgress(0);
+
+  // Build FormData
+  const formData = new FormData();
+  for (let i = 0; i < fileInput.files.length; i++) {
+    formData.append("files", fileInput.files[i]);
+  }
+
+  try {
+    const response = await fetch("/files/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Upload failed.");
+    }
+
+    updateProgress(100);
+    const data = await response.json();
+    showUploadResult(data.uploaded_files);
+
+    // Clear queue on success
+    removeAllFromQueue(); 
+    // or do combinedFilesDataTransfer = new DataTransfer() etc.
+    // location.reload();
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+    alert(`Error: ${error.message}`);
+  } finally {
+    // Re-enable upload button
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = "Upload";
+  }
+});
+
+// Helper: update progress bar
+function updateProgress(value) {
+  progressBar.style.width = `${value}%`;
+  progressBar.textContent = `${value}%`;
+  progressBar.setAttribute("aria-valuenow", value);
+}
+
+// Helper: show results after upload
+function showUploadResult(files) {
+  uploadResult.innerHTML = "";
+  uploadResult.classList.remove("d-none");
+
+  files.forEach((file) => {
+    const li = document.createElement("li");
+    li.className = "list-group-item";
+    if (file.error) {
+      li.textContent = `Error uploading ${file.filename}: ${file.error}`;
+    } else {
+      li.textContent = `File: ${file.filename} - Uploaded Successfully`;
+    }
+    uploadResult.appendChild(li);
+  });
+}
+
+// Update progress bar
+function updateProgress(value) {
+  progressBar.style.width = `${value}%`;
+  progressBar.textContent = `${value}%`;
+  progressBar.setAttribute("aria-valuenow", value);
+}
+
+// Display result from server
+function showUploadResult(files) {
+  uploadResult.innerHTML = "";
+  uploadResult.classList.remove("d-none");
+
+  files.forEach((file) => {
+    const li = document.createElement("li");
+    li.className = "list-group-item";
+    if (file.error) {
+      li.textContent = `Error uploading ${file.filename}: ${file.error}`;
+    } else {
+      li.textContent = `File: ${file.filename} - Uploaded Successfully`;
+    }
+    uploadResult.appendChild(li);
+  });
+}
+
+// ------------------------------
+// DELETE FILE (same logic)
+// ------------------------------
 async function deleteFile(fileName) {
-    if (!confirm(`Are you sure you want to delete "${decodeURIComponent(fileName)}"?`)) {
-        return;
+  if (!confirm(`Are you sure you want to delete "${fileName}"?`)) {
+    return;
+  }
+  try {
+    const response = await fetch(`/files/delete/${fileName}`, {
+      method: "DELETE"
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || "Delete failed.");
     }
-
-    try {
-        showLoading();
-        const response = await fetch(`/files/delete/${fileName}`, {
-            method: 'DELETE'
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            showMessage(result.message, 'success');
-            removeFileFromList(fileName);
-        } else {
-            showMessage(result.detail, 'error');
-        }
-    } catch (error) {
-        showMessage('An unexpected error occurred.', 'error');
-        console.error('Error:', error);
-    } finally {
-        hideLoading();
-    }
+    // Remove from UI or reload
+    document.getElementById(`file-${sanitizeId(fileName)}`).remove();
+    alert(`File "${fileName}" has been deleted.`);
+  } catch (error) {
+    console.error(error);
+    alert(`Error deleting file: ${error.message}`);
+  }
 }
 
-// Function to Remove a File from the List
-function removeFileFromList(fileName) {
-    const safeFileName = decodeURIComponent(fileName).replace(/[^a-zA-Z0-9-_]/g, '_');
-    const listItem = document.getElementById(`file-${safeFileName}`);
-    if (listItem) {
-        listItem.remove();
-    }
-}
-
-// Function to Initiate Update
+// ------------------------------
+// UPDATE FILE (same logic)
+// ------------------------------
 function initiateUpdate(fileName) {
-    currentUpdateFileName = fileName;
-    const updateFileInput = document.getElementById('update-file-input');
-    updateFileInput.value = ''; // Reset the file input
-    updateFileInput.click(); // Open the file dialog
+  // Trigger hidden input
+  const updateInput = document.getElementById("update-file-input");
+  updateInput.setAttribute("data-filename", fileName);
+  updateInput.click();
 }
 
-// Function to Handle Update File Selection
 async function handleUpdateFile(event) {
-    const fileInput = event.target;
-    const file = fileInput.files[0];
+  const fileInput = event.target;
+  const fileName = fileInput.getAttribute("data-filename");
 
-    if (!file) {
-        // No file selected
-        return;
+  if (!fileInput.files.length) {
+    return;
+  }
+
+  const newFile = fileInput.files[0];
+  const formData = new FormData();
+  formData.append("file", newFile);
+
+  try {
+    const response = await fetch(`/files/update/${fileName}`, {
+      method: "PUT",
+      body: formData
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || "Update failed.");
     }
+    alert(`File "${fileName}" has been updated successfully.`);
+    // location.reload();
+  } catch (error) {
+    console.error(error);
+    alert(`Error updating file: ${error.message}`);
+  } finally {
+    // Reset the file input
+    fileInput.value = "";
+    fileInput.removeAttribute("data-filename");
+  }
+}
 
-    if (!currentUpdateFileName) {
-        showMessage('No file selected for update.', 'error');
-        return;
+// Utility to sanitize an ID-friendly string
+function sanitizeId(filename) {
+  return filename.replace(/\s/g, "_").replace(/[\\/]/g, "_");
+}
+
+async function deleteAllFiles() {
+    const deleteAllBtn = document.getElementById("deleteAllBtn");
+  
+    if (!confirm("Are you sure you want to delete ALL files?")) {
+      return;
     }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
+  
+    // 1) Disable the button, change text, add spinner
+    deleteAllBtn.disabled = true;
+    deleteAllBtn.innerHTML = `Deleting...
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+  
     try {
-        showLoading();
-        const response = await fetch(`/files/update/${currentUpdateFileName}`, {
-            method: 'PUT',
-            body: formData
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            showMessage(result.message, 'success');
-            // Optionally, update the file list if needed
-            // For simplicity, we can reload the page or update specific entries
-        } else {
-            showMessage(result.detail, 'error');
-        }
+      const response = await fetch("/files/delete_all", {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Failed to delete all files.");
+      }
+  
+      alert("All files have been deleted successfully.");
+      location.reload();
     } catch (error) {
-        showMessage('An unexpected error occurred.', 'error');
-        console.error('Error:', error);
+      console.error("Error deleting all files:", error);
+      alert(`Error deleting all files: ${error.message}`);
     } finally {
-        hideLoading();
-        currentUpdateFileName = null;
+      // 2) Re-enable the button and restore text/spinner
+      deleteAllBtn.disabled = false;
+      deleteAllBtn.textContent = "Delete All";
     }
-}
-
-// Loading Indicator Functions
-function showLoading() {
-    let loadingIndicator = document.getElementById('loading-indicator');
-    if (!loadingIndicator) {
-        loadingIndicator = document.createElement('div');
-        loadingIndicator.id = 'loading-indicator';
-        loadingIndicator.innerHTML = '<div class="spinner"></div>';
-        loadingIndicator.style.position = 'fixed';
-        loadingIndicator.style.top = '50%';
-        loadingIndicator.style.left = '50%';
-        loadingIndicator.style.transform = 'translate(-50%, -50%)';
-        loadingIndicator.style.zIndex = '1000';
-        loadingIndicator.style.display = 'none';
-        document.body.appendChild(loadingIndicator);
-    }
-    loadingIndicator.style.display = 'block';
-}
-
-function hideLoading() {
-    const loadingIndicator = document.getElementById('loading-indicator');
-    if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
-    }
-}
+  }
