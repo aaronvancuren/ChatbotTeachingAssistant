@@ -8,14 +8,14 @@ from backend.database.postgre_db_connection import get_db_connection
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-def create_user(user_id, username, email):
+def create_user(display_name, email, role='student'):
     """
     Inserts a new user into the users table.
 
     Args:
-        user_id (str): The user's unique ID (MS OAuth ID).
-        username (str): The user's username.
-        email (str): The user's email.
+        display_name (str): The user's display name.
+        email (str): The user's email (must be unique).
+        role (str): The user's role (defaults to 'student').
 
     Returns:
         bool: True if insertion was successful, False otherwise.
@@ -30,11 +30,11 @@ def create_user(user_id, username, email):
 
     try:
         insert_query = """
-            INSERT INTO users (id, username, email)
+            INSERT INTO users (display_name, email, role)
             VALUES (%s, %s, %s)
             ON CONFLICT (id) DO NOTHING;
         """
-        cur.execute(insert_query, (user_id, username, email))
+        cur.execute(insert_query, (display_name, email, role))
         conn.commit()
         return True
     
@@ -47,8 +47,7 @@ def create_user(user_id, username, email):
         cur.close()
         conn.close()
 
-
-def get_user_by_id(user_id):
+def read_user_by_id(user_id):
     """
     Retrieves a user from the users table by ID.
 
@@ -56,7 +55,7 @@ def get_user_by_id(user_id):
         user_id (str): The user's unique ID.
 
     Returns:
-        dict or None: User data if found, else None.
+        str or None: User data if found, else None.
     """
     conn = get_db_connection()
 
@@ -67,10 +66,14 @@ def get_user_by_id(user_id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT * FROM users WHERE id = %s;"
+        select_query = "SELECT display_name FROM users WHERE id = %s;"
         cur.execute(select_query, (user_id,))
-        user = cur.fetchone()
-        return user
+        row = cur.fetchone()
+        
+        if row is None:
+            return None
+        
+        return row['display_name']
     
     except Exception as e:
         logging.error(f"Error retrieving user: {e}")
@@ -80,12 +83,48 @@ def get_user_by_id(user_id):
         cur.close()
         conn.close()
 
-def update_user_email(user_id, new_email):
+def read_user_by_email(email):
     """
-    Updates a user's email in the users table.
+    Retrieves a user from the users table by email.
 
     Args:
-        user_id (str): The user's unique ID.
+        email (str): The user's email.
+
+    Returns:
+        str or None: User's display name if found, else None.
+    """
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return None
+    
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        select_query = "SELECT display_name FROM users WHERE email = %s;"
+        cur.execute(select_query, (email,))
+        row = cur.fetchone()
+        
+        if row is None:
+            return None
+        
+        return row['display_name']
+    
+    except Exception as e:
+        logging.error(f"Error retrieving user by email: {e}")
+        return None
+    
+    finally:
+        cur.close()
+        conn.close()
+
+def update_user_email(display_name, new_email):
+    """
+    Updates a user's email in the users table based on their display name.
+
+    Args:
+        display_name (str): The user's display name.
         new_email (str): The new email address.
 
     Returns:
@@ -100,8 +139,8 @@ def update_user_email(user_id, new_email):
     cur = conn.cursor()
 
     try:
-        update_query = "UPDATE users SET email = %s WHERE id = %s;"
-        cur.execute(update_query, (new_email, user_id))
+        update_query = "UPDATE users SET email = %s WHERE display_name = %s;"
+        cur.execute(update_query, (new_email, display_name))
         conn.commit()
         return True
     
@@ -147,51 +186,24 @@ def delete_user(user_id):
         cur.close()
         conn.close()
 
-def get_role_by_name(role_name):
+
+def create_course(display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path):
     """
-    Retrieves a role from the roles table by name.
+    Inserts a new course into the courses table.
 
     Args:
-        role_name (str): The name of the role.
+        display_name (str): The display name of the course (e.g., 'Intro to Chemistry').
+        subject (str): The subject of the course (type course_subject in DB).
+        course_number (int): The numeric course number (e.g., 101).
+        section_number (int): The numeric section number (e.g., 1).
+        title (str): The descriptive title of the course (e.g., 'Chemistry Basics').
+        model (str): The model type for the course (type model in DB).
+        prompt (str): The prompt text (optional).
+        documents_path (str): The path where documents for this course are stored.
+        image_path (str): The path to an image or logo representing this course.
 
     Returns:
-        dict or None: Role data if found, else None.
-    """
-    conn = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return None
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-
-    try:
-        select_query = "SELECT * FROM roles WHERE role_name = %s;"
-        cur.execute(select_query, (role_name,))
-        role = cur.fetchone()
-        return role
-    
-    except Exception as e:
-        logging.error(f"Error retrieving role: {e}")
-        return None
-    
-    finally:
-        cur.close()
-        conn.close()
-
-def create_class_section(classname, class_catalog, section, professor_id, teaching_assistant_id):
-    """
-    Inserts a new class section into the class_sections table.
-
-    Args:
-        classname (str): Name of the class.
-        class_catalog (str): Catalog of the class.
-        section (int): Section number.
-        professor_id (str): ID of the professor.
-        teaching_assistant_id (str): ID of the teaching assistant.
-
-    Returns:
-        int or None: ID of the newly created class section, or None if failed.
+        str or None: The UUID of the newly created course, or None if failed.
     """
     conn = get_db_connection()
 
@@ -203,17 +215,17 @@ def create_class_section(classname, class_catalog, section, professor_id, teachi
 
     try:
         insert_query = """
-            INSERT INTO class_sections (classname, class_catalog, section, professor_id, teaching_assistant_id)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO courses (display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """
-        cur.execute(insert_query, (classname, class_catalog, section, professor_id, teaching_assistant_id))
-        class_section_id = cur.fetchone()[0]
+        cur.execute(insert_query, (display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path))
+        course_id = cur.fetchone()[0]
         conn.commit()
-        return class_section_id
+        return course_id
     
     except Exception as e:
-        logging.error(f"Error creating class section: {e}")
+        logging.error(f"Error creating course: {e}")
         conn.rollback()
         return None
     
@@ -221,15 +233,15 @@ def create_class_section(classname, class_catalog, section, professor_id, teachi
         cur.close()
         conn.close()
 
-def get_class_section_by_id(class_section_id):
+def read_course_by_id(course_id):
     """
-    Retrieves a class section by ID.
+    Retrieves a course by ID.
 
     Args:
-        class_section_id (int): The ID of the class section.
+        course_id (str): The ID of the course.
 
     Returns:
-        dict or None: Class section data if found, else None.
+        dict or None: Course data if found, else None.
     """
     conn = get_db_connection()
 
@@ -240,26 +252,26 @@ def get_class_section_by_id(class_section_id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT * FROM class_sections WHERE id = %s;"
-        cur.execute(select_query, (class_section_id,))
+        select_query = "SELECT * FROM courses WHERE id = %s;"
+        cur.execute(select_query, (course_id,))
         class_section = cur.fetchone()
         return class_section
     
     except Exception as e:
-        logging.error(f"Error retrieving class section: {e}")
+        logging.error(f"Error retrieving course info: {e}")
         return None
     
     finally:
         cur.close()
         conn.close()
 
-def update_class_section_professor(class_section_id, new_professor_id):
+def update_course_title(course_id, new_title):
     """
-    Updates the professor of a class section.
+    Updates the title of a course.
 
     Args:
-        class_section_id (int): The ID of the class section.
-        new_professor_id (str): The new professor's user ID.
+        course_id (str): The ID of the course.
+        new_title (str): The new course title.
 
     Returns:
         bool: True if update was successful, False otherwise.
@@ -273,13 +285,47 @@ def update_class_section_professor(class_section_id, new_professor_id):
     cur = conn.cursor()
 
     try:
-        update_query = "UPDATE class_sections SET professor_id = %s WHERE id = %s;"
-        cur.execute(update_query, (new_professor_id, class_section_id))
+        update_query = "UPDATE courses SET title = %s WHERE id = %s;"
+        cur.execute(update_query, (new_title, course_id))
         conn.commit()
         return True
     
     except Exception as e:
-        logging.error(f"Error updating class section professor: {e}")
+        logging.error(f"Error updating course title: {e}")
+        conn.rollback()
+        return False
+    
+    finally:
+        cur.close()
+        conn.close()
+    
+def update_course_model(course_id, new_model):
+    """
+    Updates the model of a course.
+
+    Args:
+        course_id (str): The ID of the course.
+        new_model (str): The new model name.
+
+    Returns:
+        bool: True if update was successful, False otherwise.
+    """
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+    
+    cur = conn.cursor()
+
+    try:
+        update_query = "UPDATE courses SET model = %s WHERE id = %s;"
+        cur.execute(update_query, (new_model, course_id))
+        conn.commit()
+        return True
+    
+    except Exception as e:
+        logging.error(f"Error updating course model: {e}")
         conn.rollback()
         return False
     
@@ -287,12 +333,12 @@ def update_class_section_professor(class_section_id, new_professor_id):
         cur.close()
         conn.close()
 
-def delete_class_section(class_section_id):
+def delete_course(course_id):
     """
-    Deletes a class section.
+    Deletes a course from the course table.
 
     Args:
-        class_section_id (int): The ID of the class section.
+        class_section_id (str): The ID of the course.
 
     Returns:
         bool: True if deletion was successful, False otherwise.
@@ -306,13 +352,13 @@ def delete_class_section(class_section_id):
     cur = conn.cursor()
 
     try:
-        delete_query = "DELETE FROM class_sections WHERE id = %s;"
-        cur.execute(delete_query, (class_section_id,))
+        delete_query = "DELETE FROM courses WHERE id = %s;"
+        cur.execute(delete_query, (course_id,))
         conn.commit()
         return True
     
     except Exception as e:
-        logging.error(f"Error deleting class section: {e}")
+        logging.error(f"Error deleting course: {e}")
         conn.rollback()
         return False
     
@@ -320,128 +366,17 @@ def delete_class_section(class_section_id):
         cur.close()
         conn.close()
 
-def assign_role_to_user_in_class(user_id, class_section_id, role_id):
-    """
-    Assigns a role to a user in a class section.
-
-    Args:
-        user_id (str): The user's unique ID.
-        class_section_id (int): The ID of the class section.
-        role_id (int): The ID of the role.
-
-    Returns:
-        bool: True if assignment was successful, False otherwise.
-    """
-    conn = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return False
-    
-    cur = conn.cursor()
-
-    try:
-        insert_query = """
-            INSERT INTO user_class_roles (user_id, class_section_id, role_id)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (user_id, class_section_id) DO UPDATE SET role_id = %s;
-        """
-        cur.execute(insert_query, (user_id, class_section_id, role_id, role_id))
-        conn.commit()
-        return True
-    
-    except Exception as e:
-        logging.error(f"Error assigning role: {e}")
-        conn.rollback()
-        return False
-    
-    finally:
-        cur.close()
-        conn.close()
-
-def get_user_roles_in_class(user_id, class_section_id):
-    """
-    Retrieves the roles assigned to a user in a class section.
-
-    Args:
-        user_id (str): The user's unique ID.
-        class_section_id (int): The ID of the class section.
-
-    Returns:
-        list: A list of role names assigned to the user in the class.
-    """
-    conn = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return []
-    
-    cur = conn.cursor()
-
-    try:
-        select_query = """
-            SELECT r.role_name
-            FROM user_class_roles ucr
-            JOIN roles r ON ucr.role_id = r.id
-            WHERE ucr.user_id = %s AND ucr.class_section_id = %s;
-        """
-        cur.execute(select_query, (user_id, class_section_id))
-        roles = [row[0] for row in cur.fetchall()]
-        return roles
-    
-    except Exception as e:
-        logging.error(f"Error retrieving user roles: {e}")
-        return []
-    
-    finally:
-        cur.close()
-        conn.close()
-
-def remove_role_from_user_in_class(user_id, class_section_id):
-    """
-    Removes a user's role in a class section.
-
-    Args:
-        user_id (str): The user's unique ID.
-        class_section_id (int): The ID of the class section.
-
-    Returns:
-        bool: True if removal was successful, False otherwise.
-    """
-    conn = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return False
-    
-    cur = conn.cursor()
-
-    try:
-        delete_query = "DELETE FROM user_class_roles WHERE user_id = %s AND class_section_id = %s;"
-        cur.execute(delete_query, (user_id, class_section_id))
-        conn.commit()
-        return True
-    
-    except Exception as e:
-        logging.error(f"Error removing role: {e}")
-        conn.rollback()
-        return False
-    
-    finally:
-        cur.close()
-        conn.close()
-
-def create_conversation(class_section_id, user_id, summary_name=None):
+def create_user_conversation(course_id, user_id, title):
     """
     Creates a new conversation.
 
     Args:
-        class_section_id (int): The ID of the class section.
+        course_id (str): The ID of the course.
         user_id (str): The user's unique ID.
-        summary_name (str): Optional summary name for the conversation.
+        title (str): Title for the conversation.
 
     Returns:
-        int or None: The ID of the new conversation, or None if failed.
+        str or None: The ID of the new conversation, or None if failed.
     """
     conn = get_db_connection()
 
@@ -453,17 +388,17 @@ def create_conversation(class_section_id, user_id, summary_name=None):
 
     try:
         insert_query = """
-            INSERT INTO conversations (class_section_id, user_id, summary_name)
+            INSERT INTO user_conversations (course_id, user_id, title)
             VALUES (%s, %s, %s)
-            RETURNING id;
+            RETURNING conversation_id;
         """
-        cur.execute(insert_query, (class_section_id, user_id, summary_name))
+        cur.execute(insert_query, (course_id, user_id, title))
         conversation_id = cur.fetchone()[0]
         conn.commit()
         return conversation_id
     
     except Exception as e:
-        logging.error(f"Error creating conversation: {e}")
+        logging.error(f"Error creating user conversation: {e}")
         conn.rollback()
         return None
     
@@ -471,15 +406,15 @@ def create_conversation(class_section_id, user_id, summary_name=None):
         cur.close()
         conn.close()
 
-def get_conversations_by_user(user_id):
+def read_conversations_by_user(user_id):
     """
-    Retrieves all conversations for a given user.
+    Retrieves all conversations IDs for a given user.
 
     Args:
         user_id (str): The user's unique ID.
 
     Returns:
-        list: A list of conversations.
+        list: A list of conversations IDs.
     """
     conn = get_db_connection()
 
@@ -490,26 +425,28 @@ def get_conversations_by_user(user_id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT * FROM conversations WHERE user_id = %s;"
+        select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s;"
         cur.execute(select_query, (user_id,))
-        conversations = cur.fetchall()
-        return conversations
+        rows = cur.fetchall()
+        conversation_ids = [row['conversation_id'] for row in rows]
+        return conversation_ids
     
     except Exception as e:
-        logging.error(f"Error retrieving conversations: {e}")
+        logging.error(f"Error retrieving conversation ids: {e}")
         return []
     
     finally:
         cur.close()
         conn.close()
 
-def update_conversation_summary(conversation_id, new_summary_name):
+def update_conversation_title(conversation_id, course_id, new_title):
     """
-    Updates the summary name of a conversation.
+    Updates the title of a conversation.
 
     Args:
-        conversation_id (int): The ID of the conversation.
-        new_summary_name (str): The new summary name.
+        conversation_id (str): The ID of the conversation.
+        course_id (str): The ID of the course
+        new_title (str): The new title name.
 
     Returns:
         bool: True if update was successful, False otherwise.
@@ -523,13 +460,13 @@ def update_conversation_summary(conversation_id, new_summary_name):
     cur = conn.cursor()
 
     try:
-        update_query = "UPDATE conversations SET summary_name = %s WHERE id = %s;"
-        cur.execute(update_query, (new_summary_name, conversation_id))
+        update_query = "UPDATE user_conversations SET title = %s WHERE conversation_id = %s AND course_id = %s;"
+        cur.execute(update_query, (new_title, conversation_id, course_id))
         conn.commit()
         return True
     
     except Exception as e:
-        logging.error(f"Error updating conversation summary: {e}")
+        logging.error(f"Error updating conversation title: {e}")
         conn.rollback()
         return False
     
@@ -539,10 +476,10 @@ def update_conversation_summary(conversation_id, new_summary_name):
 
 def delete_conversation(conversation_id):
     """
-    Deletes a conversation and its associated messages.
+    Deletes a conversation from the user_conversation table.
 
     Args:
-        conversation_id (int): The ID of the conversation.
+        conversation_id (str): The ID of the conversation.
 
     Returns:
         bool: True if deletion was successful, False otherwise.
@@ -556,7 +493,7 @@ def delete_conversation(conversation_id):
     cur = conn.cursor()
 
     try:
-        delete_query = "DELETE FROM conversations WHERE id = %s;"
+        delete_query = "DELETE FROM user_conversations WHERE conversation_id = %s;"
         cur.execute(delete_query, (conversation_id,))
         conn.commit()
         return True
@@ -570,17 +507,17 @@ def delete_conversation(conversation_id):
         cur.close()
         conn.close()
 
-def add_message(conversation_id, msg_role, content):
+def create_message(conversation_id, prompt, response):
     """
-    Adds a message to a conversation.
+    Adds a message to the messages table.
 
     Args:
-        conversation_id (int): The ID of the conversation.
-        msg_role (str): The role of the message sender ('system', 'user', or 'assistant').
-        content (str): The message content.
+        conversation_id (str): The ID of the conversation.
+        mprompt (str): The prompt given in the conversation.
+        response (str): The response given in the conversation.
 
     Returns:
-        int or None: The ID of the new message, or None if failed.
+        str or None: The ID of the new message, or None if failed.
     """
     conn = get_db_connection()
 
@@ -592,11 +529,11 @@ def add_message(conversation_id, msg_role, content):
 
     try:
         insert_query = """
-            INSERT INTO messages (conversation_id, msg_role, content)
+            INSERT INTO messages (conversation_id, prompt, response)
             VALUES (%s, %s, %s)
             RETURNING id;
         """
-        cur.execute(insert_query, (conversation_id, msg_role, content))
+        cur.execute(insert_query, (conversation_id, prompt, response))
         message_id = cur.fetchone()[0]
         conn.commit()
         return message_id
@@ -610,15 +547,15 @@ def add_message(conversation_id, msg_role, content):
         cur.close()
         conn.close()
 
-def get_messages_in_conversation(conversation_id):
+def read_messages_from_conversation(conversation_id):
     """
-    Retrieves all messages in a conversation.
+    Retrieves all messages for a conversation.
 
     Args:
-        conversation_id (int): The ID of the conversation.
+        conversation_id (str): The ID of the conversation.
 
     Returns:
-        list: A list of messages.
+        list: A list of prompts and responses for a conversation.
     """
     conn = get_db_connection()
 
@@ -630,7 +567,7 @@ def get_messages_in_conversation(conversation_id):
 
     try:
         select_query = """
-            SELECT * FROM messages WHERE conversation_id = %s ORDER BY id ASC;
+            SELECT prompt, response FROM messages WHERE conversation_id = %s ORDER BY id ASC;
         """
         cur.execute(select_query, (conversation_id,))
         messages = cur.fetchall()
@@ -644,13 +581,13 @@ def get_messages_in_conversation(conversation_id):
         cur.close()
         conn.close()
 
-def update_message_content(message_id, new_content):
+def update_message_conversation_id(old_conversation_id, new_conversation_id):
     """
-    Updates the content of a message.
+    Updates the coversation ID of a message.
 
     Args:
-        message_id (int): The ID of the message.
-        new_content (str): The new message content.
+        old_conversation_id (str): The old conversation ID of the message.
+        new_conversation_id (str): The new conversation ID of the message.
 
     Returns:
         bool: True if update was successful, False otherwise.
@@ -664,13 +601,13 @@ def update_message_content(message_id, new_content):
     cur = conn.cursor()
 
     try:
-        update_query = "UPDATE messages SET content = %s WHERE id = %s;"
-        cur.execute(update_query, (new_content, message_id))
+        update_query = "UPDATE messages SET conversation_id = %s WHERE conversation_id = %s;"
+        cur.execute(update_query, (new_conversation_id, old_conversation_id))
         conn.commit()
         return True
     
     except Exception as e:
-        logging.error(f"Error updating message content: {e}")
+        logging.error(f"Error updating message conversation ID: {e}")
         conn.rollback()
         return False
     
@@ -683,7 +620,7 @@ def delete_message(message_id):
     Deletes a message.
 
     Args:
-        message_id (int): The ID of the message.
+        message_id (str): The ID of the message.
 
     Returns:
         bool: True if deletion was successful, False otherwise.
@@ -711,3 +648,115 @@ def delete_message(message_id):
         cur.close()
         conn.close()
 
+def create_user_course(course_id, user_id):
+    """
+    Creates a new user course.
+
+    Args:
+        course_id (str): The ID of the course.
+        user_id (str): The user's unique ID.
+
+    Returns:
+        bool: True if creation was successful, False otherwise.
+    """
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+    
+    cur = conn.cursor()
+
+    try:
+        insert_query = """
+            INSERT INTO user_courses (course_id, user_id)
+            VALUES (%s, %s)
+            ON CONFLICT (course_id, user_id) DO NOTHING
+        """
+        cur.execute(insert_query, (course_id, user_id))
+        inserted = (cur.rowcount == 1)
+        conn.commit()
+        return inserted
+    
+    except Exception as e:
+        logging.error(f"Error creating user course: {e}")
+        conn.rollback()
+        return False
+    
+    finally:
+        cur.close()
+        conn.close()
+
+def read_users_for_course(course_id):
+    """
+    Retrieves all user IDs associated with a given course.
+
+    Args:
+        course_id (str): The UUID of the course.
+
+    Returns:
+        list: A list of user IDs (UUID strings) for users linked to the specified course.
+        If no records are found or an error occurs, an empty list is returned.
+    """
+
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        select_query = """
+            SELECT user_id FROM user_courses WHERE course_id = %s;
+        """
+        cur.execute(select_query, (course_id,))
+        rows = cur.fetchall()
+
+        user_ids = [row['user_id'] for row in rows]
+        return user_ids
+    
+    except Exception as e:
+        logging.error(f"Error retrieving users for course {course_id}: {e}")
+        return []
+    
+    finally:
+        cur.close()
+        conn.close()
+
+def delete_user_course(course_id, user_id):
+    """
+    Deletes a user-course from the user_courses table.
+
+    Args:
+        course_id (str): The UUID of the course.
+        user_id (str): The UUID of the user.
+
+    Returns:
+        bool: True if deletion was successful, False otherwise.
+    """
+
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        delete_query = """
+            DELETE FROM user_courses WHERE course_id = %s AND user_id = %s;
+        """
+        cur.execute(delete_query, (course_id, user_id))
+        conn.commit()
+        return True
+    
+    except Exception as e:
+        logging.error(f"Error deleting user course: {e}")
+        conn.rollback()
+        return False
+    
+    finally:
+        cur.close()
+        conn.close()
