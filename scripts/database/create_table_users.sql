@@ -5,8 +5,8 @@
 CREATE TABLE IF NOT EXISTS public.users
 (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
-    display_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    email character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    display_name text COLLATE pg_catalog."default" NOT NULL,
+    email text COLLATE pg_catalog."default" NOT NULL,
     role role NOT NULL DEFAULT 'student'::role,
     create_at timestamp with time zone NOT NULL DEFAULT now(),
 	archived boolean NOT NULL DEFAULT false,
