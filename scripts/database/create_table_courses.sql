@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.courses
     course_number numeric(5,0) NOT NULL,
     section_number numeric(2,0) NOT NULL,
     title character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    model model NOT NULL,
+    model text COLLATE pg_catalog."default" NOT NULL,
     prompt text COLLATE pg_catalog."default",
     documents_path character varying(255) COLLATE pg_catalog."default" NOT NULL,
     image_path character varying(255) COLLATE pg_catalog."default" NOT NULL,
