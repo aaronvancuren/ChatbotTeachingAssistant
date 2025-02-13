@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS public.courses
 (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
+instructor_id uuid NOT NULL,
     display_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
     subject course_subject NOT NULL,
     course_number numeric(5,0) NOT NULL,
@@ -19,6 +20,7 @@ CREATE TABLE IF NOT EXISTS public.courses
     archived_by uuid,
     archived_at timestamp with time zone,
     CONSTRAINT courses_pkey PRIMARY KEY (id),
+    CONSTRAINT courses_instructor_id_fkey FOREIGN KEY (instructor_id),
     CONSTRAINT courses_archived_by_fkey FOREIGN KEY (archived_by)
         REFERENCES public.users (id) MATCH SIMPLE
         ON UPDATE NO ACTION
