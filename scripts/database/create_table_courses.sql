@@ -1,7 +1,5 @@
 -- Table: public.courses
 
--- DROP TABLE IF EXISTS public.courses;
-
 CREATE TABLE IF NOT EXISTS public.courses
 (
     id uuid NOT NULL DEFAULT gen_random_uuid(),

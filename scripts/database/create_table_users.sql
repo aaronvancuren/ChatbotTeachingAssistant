@@ -1,7 +1,5 @@
 -- Table: public.users
 
--- DROP TABLE IF EXISTS public.users;
-
 CREATE TABLE IF NOT EXISTS public.users
 (
     id uuid NOT NULL DEFAULT gen_random_uuid(),

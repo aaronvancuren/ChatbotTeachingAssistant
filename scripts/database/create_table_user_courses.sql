@@ -1,7 +1,5 @@
 -- Table: public.user_courses
 
--- DROP TABLE IF EXISTS public.user_courses;
-
 CREATE TABLE IF NOT EXISTS public.user_courses
 (
     user_id uuid NOT NULL,

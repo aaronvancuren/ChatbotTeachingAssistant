@@ -1,7 +1,5 @@
 -- Database: chatbot
 
--- DROP DATABASE IF EXISTS chatbot;
-
 CREATE DATABASE chatbot
     WITH
     OWNER = cloudsqlsuperuser

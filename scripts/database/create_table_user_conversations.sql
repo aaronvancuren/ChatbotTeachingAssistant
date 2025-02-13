@@ -1,7 +1,5 @@
 -- Table: public.user_conversations
 
--- DROP TABLE IF EXISTS public.user_conversations;
-
 CREATE TABLE IF NOT EXISTS public.user_conversations
 (
     conversation_id uuid NOT NULL DEFAULT gen_random_uuid(),
