@@ -3,6 +3,8 @@ import psycopg2
 import argparse
 import logging
 import os
+import re
+from psycopg2.extensions import connection
 
 # Configure logging
 logging.basicConfig(
@@ -45,6 +47,12 @@ def parse_sql_statements(sql_script):
     Note: For more complex scripts (with PL/pgSQL functions, dollar quoting, etc.)
     consider using a dedicated SQL parser.
     """
+    # Remove single-line comments (-- comment)
+    sql_script = re.sub(r'--.*', '', sql_script)
+
+    # Remove multi-line comments (/* comment */)
+    sql_script = re.sub(r'/\*.*?\*/', '', sql_script, flags=re.DOTALL)
+    
     statements = []
     statement = ""
     in_quote = False
@@ -74,7 +82,7 @@ def parse_sql_statements(sql_script):
     
     return statements
 
-def run_sql_script(conn, script_name):
+def run_sql_script(conn: connection, script_name: str):
     """
     Reads an SQL script from the database folder, splits it into individual statements,
     and executes them using the given database connection.
@@ -92,6 +100,7 @@ def run_sql_script(conn, script_name):
     logger.debug("Parsed %d statements from %s", len(statements), script_name)
 
     with conn.cursor() as cur:
+        statement: str
         for statement in statements:
             if statement.strip():
                 logger.debug("Executing statement: %s", statement)
