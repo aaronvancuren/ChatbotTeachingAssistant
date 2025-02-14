@@ -4,8 +4,8 @@ CREATE DATABASE chatbot
     WITH
     OWNER = cloudsqlsuperuser
     ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.UTF8'
-    LC_CTYPE = 'en_US.UTF8'
+    LC_COLLATE = default
+    LC_CTYPE = default
     LOCALE_PROVIDER = 'libc'
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1
