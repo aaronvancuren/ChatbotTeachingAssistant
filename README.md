@@ -141,23 +141,19 @@ If you are adding an off-campus IP Address, delete the authorized IP Adress afte
 
 #### Connect to Local Instance
 
-##### Create Server & Database
-Details do not matter since this is for local use only.
+##### Create Database Tables
+- Start a Postgres Server (see Postgres documentation)
+- Create a user named 'teaching-assistant' with CREATEDB permissions. (see Postgres documentation)
 
-- Create Server Group
-- Create Database
+    note: this is dependency because the scripts were created for the cloud database which uses a teaching-assistant user.
+- Run the 'create_tables.py' script found in the /scripts/database directory
 
-![Create Server Group](README/PostgresLocalStep1.png)
-![Create Database](README/PostgresLocalStep2.png)
+Example:
+```bash
+python create_tables.py --host localhost --port 5432 --dbname chatbot --user teaching-assistant --password your-password
+```
 
-##### Run Database Scripts
-- Open a Query Tool (will have to start from the default postres database)
-- Run the create_type scripts in any order
-- Run the create_table users and courses scripts in any order
-- Run the create_table user_courses and user_conversations scripts in any order
-- Run the create_table_messages script
-
-![Open Query Tool](README/PostgresLocalStep3.png)
+note: host, port, dbname, and user are optional as those are the default values.
 
 # How to Run
 
