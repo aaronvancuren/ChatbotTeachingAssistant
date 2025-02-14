@@ -18,7 +18,10 @@ CREATE TABLE IF NOT EXISTS public.courses
     archived_by uuid,
     archived_at timestamp with time zone,
     CONSTRAINT courses_pkey PRIMARY KEY (id),
-    CONSTRAINT courses_instructor_id_fkey FOREIGN KEY (instructor_id),
+    CONSTRAINT courses_instructor_id_fkey FOREIGN KEY (instructor_id)
+        REFERENCES public.users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE RESTRICT,
     CONSTRAINT courses_archived_by_fkey FOREIGN KEY (archived_by)
         REFERENCES public.users (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -59,7 +62,7 @@ COMMENT ON COLUMN public.courses.documents_path
 
 COMMENT ON COLUMN public.courses.image_path
     IS 'Path to course display image';
-	
+
 -- Index: course_codes
 
 -- DROP INDEX IF EXISTS public.course_codes;
@@ -68,7 +71,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS course_codes
     ON public.courses USING btree
     (subject ASC NULLS LAST, course_number ASC NULLS LAST, section_number ASC NULLS LAST)
     TABLESPACE pg_default;
-	
+
 -- Index: fki_courses_archived_by_fkey
 
 -- DROP INDEX IF EXISTS public.fki_courses_archived_by_fkey;
