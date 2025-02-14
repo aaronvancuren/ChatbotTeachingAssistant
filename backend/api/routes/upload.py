@@ -1,9 +1,13 @@
-from fastapi import APIRouter, File, UploadFile, Form, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+import os
+from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from typing import List
 import uuid
-
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi_msal import IDTokenClaims
+from fastapi_msal.models import TokenStatus
+from backend.api.errors import HTTPError
+from backend.api.routes.auth import ACCESS_REQUIRED, get_context, validate_user
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import (
     initialize_chromadb,
@@ -35,13 +39,15 @@ async def upload_page(request: Request):
         file_names.add(metadata['file_name'])
 
     # Pass list of file names into the template
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
     return templates.TemplateResponse(
         "upload_index.html", 
         {"request": request, "file_names": file_names}
     )
 
 @upload_router.post("/upload")
-async def upload_file_api(files: List[UploadFile] = File(...)):
+async def upload_file_api(request: Request, files: List[UploadFile] = File(...)):
     """
     Accept multiple files at once, process them, 
     and add them to the ChromaDB collection if they do not already exist.
@@ -49,7 +55,11 @@ async def upload_file_api(files: List[UploadFile] = File(...)):
     results = []
 
     for file in files:
-        try:
+    
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
+    try:
             content = await file.read()
             chunks = process_file(content, file.filename)
 
@@ -97,7 +107,10 @@ async def upload_file_api(files: List[UploadFile] = File(...)):
     return {"uploaded_files": results}
 
 @upload_router.delete("/delete/{file_name}")
-async def delete_file_api(file_name: str):
+async def delete_file_api(file_name: str, request: Request):
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
     """
     Deletes all chunks associated with the given file_name.
     """
@@ -131,6 +144,9 @@ async def update_file_api(
     Updates a file by replacing its existing chunks with new ones.
     Can accept either a file or raw text content.
     """
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+
     # Check if the file exists in the database
     existing = collection.get(where={"file_name": file_name})
     if not existing['ids']:
@@ -171,7 +187,20 @@ async def update_file_api(
             content={"message": "File updated successfully.", "file_name": file_name}
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"An error occurred while updating the file: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"An error occurred while updating the file: {str(e)}")
+    
+@upload_router.get("/", response_class=HTMLResponse)
+async def upload_page(request: Request):
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+
+    documents = collection.get()
+
+    # Extract unique file names from the metadatas
+    file_names = set()
+    for metadata in documents.get('metadatas', []):
+        file_names.add(metadata['file_name'])
+
+    # Pass the list of file names to the template
+    return templates.TemplateResponse("upload_index.html", {"request": request, "file_names": file_names})

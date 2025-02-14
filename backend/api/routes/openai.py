@@ -1,5 +1,6 @@
 """Contains OpenAI API calls"""
 
+import base64
 import os
 import json
 
@@ -45,9 +46,9 @@ async def chat(request: ChatRequest, response: Response) -> str:
 
     # Parse cookie or initialize new data
     if usage_cookie:
-        usage_data = json.loads(usage_cookie)
+        usage_data = json.loads(base64.b64decode(usage_cookie[::-1][1:-2]).decode())
     else:
-        usage_data = {"count": 0, "last_reset_date": str(date.today())}
+        usage_data = {"count": 0, "max": os.getenv("CHAT_LIMIT"), "last_reset_date": str(date.today())}
 
     # Check if it's a new day and reset if needed
     if usage_data["last_reset_date"] != str(date.today()):
@@ -67,8 +68,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
     # Update the cookie in the response
     response.set_cookie(
         key="chat_usage",
-        value=json.dumps(usage_data),
-        httponly=True,  # Prevent client-side access to the cookie
+        value=base64.b64encode(bytes(json.dumps(usage_data).encode('utf-8')))[::-1],
         samesite="Lax",  # Restrict cross-origin access
         max_age=86400,  # Cookie expires in 1 day
     )
@@ -84,8 +84,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
 
         userConversation: List[Conversation] = conversations.get(user_id, [])
         currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
-                                                 Conversation(assistant=reqBody['openai_model'],
-                                                     class_prompt=get_user_classes(user_id)[0].prompt))
+                                                 Conversation(assistant=reqBody['openai_model'], class_prompt=get_user_classes(user_id)[0].prompt))
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
@@ -117,7 +116,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            currentConversation.discussion.append({'role': 'system', 'content': system_message})
+            currentConversation.discussion.append({'role': 'developer', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
@@ -125,8 +124,9 @@ async def chat(request: ChatRequest, response: Response) -> str:
             model=reqBody['openai_model'],
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
-            stop=None,
+            stop=['\0'],
             temperature=0.7,
+            store=True,
             user=user_id
         )
 
