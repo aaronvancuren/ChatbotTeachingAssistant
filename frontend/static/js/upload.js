@@ -158,8 +158,6 @@ uploadBtn.addEventListener("click", async () => {
 
     // Clear queue on success
     removeAllFromQueue(); 
-    // or do combinedFilesDataTransfer = new DataTransfer() etc.
-    // location.reload();
 
   } catch (error) {
     console.error("Upload Error:", error);

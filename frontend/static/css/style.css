@@ -129,3 +129,26 @@ header a span {
 ::-webkit-scrollbar-thumb:hover {
     background: #888;
 }
+
+/* A custom "gold" button */
+.btn-gold {
+    background-color: var(--pfw-gold-tassel);
+    color: var(--primary-pfw-black);
+  }
+  
+  /* Hover state */
+  .btn-gold:hover {
+    background-color: var(--pfw-gold-summit);
+    color: var(--primary-pfw-white);
+    border: 2px solid var(--pfw-black-footprints);
+  }
+  
+  /* A custom "black" button */
+  .btn-black {
+    background-color: var(--primary-pfw-black);
+    color: var(--primary-pfw-white);
+  }
+  
+  .btn-black:hover {
+    background-color: var(--pfw-black-footprints);
+  }
