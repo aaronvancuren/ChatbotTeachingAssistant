@@ -84,7 +84,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
 
         userConversation: List[Conversation] = conversations.get(user_id, [])
         currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
-                                                 Conversation(assistant=os.getenv("OPENAI_MODEL"), class_prompt=get_user_classes(user_id)[0].prompt))
+                                                 Conversation(assistant=reqBody['openai_model'], class_prompt=get_user_classes(user_id)[0].prompt))
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
