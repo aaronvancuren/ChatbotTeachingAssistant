@@ -14,8 +14,9 @@ This guide will help you set up the Chatbot Teaching Assistant application.
 
 ## Prerequisites
 
-- [**Python 3.12**](https://www.python.org/downloads/release/python-3127/) isntalled.
+- [**Python 3.12**](https://www.python.org/downloads/release/python-3127/) installed.
 - [**Docker**](https://docs.docker.com/desktop/setup/install/windows-install/) installed.
+- [**Postgres 17+**](https://www.postgresql.org/download/) installed.
 
 ## Installation Steps
 
@@ -105,6 +106,54 @@ Follow the below instructions for obtaining sensitive environment variables.
   ```
   openssl rand -hex 32
   ```
+
+### 5. Set Up PostgreSQL
+
+#### Connect to the Cloud
+
+##### Obtain SQL Instance Public IP Address
+- Go to Google Cloud SQL
+- Locate the 'chatbot-teaching-assistant-database' SQL Instance
+- Obtain the Public IP Address
+
+![Google Cloud SQL Instance](README/PostgresCloudStep1.png)
+![Public IP Address](README/PostgresCloudStep2.png)
+
+##### Add Personal IP Address to Authorize IP Addresses
+- Click the Instance
+- Go to the "connections" Section
+- Go to the "Networking" Tab
+- Click "Add a Network" and Enter IP Address
+
+If you are adding an off-campus IP Address, delete the authorized IP Adress after use to limit security threats.
+
+![Connections Tab](README/PostgresCloudStep3.png)
+![Add IP Address](README/PostgresCloudStep4.png)
+
+##### Connect Using pgAdmin 4 (PostgreSQL GUI)
+
+- Register Server (name does not matter)
+- Set Host Name (Public IP Address)
+- Enter Username and Password
+
+![Register Server](README/PostgresCloudStep5.png)
+![Connection Details](README/PostgresCloudStep6.png)
+
+#### Connect to Local Instance
+
+##### Create Database Tables
+- Start a Postgres Server (see Postgres documentation)
+- Create a user named 'teaching-assistant' with CREATEDB permissions. (see Postgres documentation)
+
+    note: this is dependency because the scripts were created for the cloud database which uses a teaching-assistant user.
+- Run the 'create_tables.py' script found in the /scripts/database directory
+
+Example:
+```bash
+python create_tables.py --host localhost --port 5432 --dbname chatbot --user teaching-assistant --password your-password
+```
+
+note: host, port, dbname, and user are optional as those are the default values.
 
 # How to Run
 
