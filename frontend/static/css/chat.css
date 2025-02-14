@@ -2,24 +2,29 @@
 
 .host {
     padding: 5% 15% 5% 15%;
+    overflow: hidden !important;
 }
 
 #host {
     display: table;
     width: 100%;
     height: 100%;
+    overflow: hidden !important;
 }
 
 #sidebar {
     display: table-cell;
-    height: 100%;
-    width: 20%;
+    top: 15vh;
+    left: 2.5vw;
+    height: 80vh;
+    width: 17.5vw;
     vertical-align: top;
-    background-color: var(--pfw-black-footprints);
+    background-color: var(--pfw-black-tusk);
     position: fixed;
     color: var(--primary-pfw-white);
 
     overflow-y: auto;
+    border-radius: 2.5em;
 }
 
 #sidebar h1 {
@@ -45,13 +50,13 @@
     display: block;
 }
 
-.chatList .active {
+.active {
     text-align: right;
     color: var(--primary-pfw-black) !important;
-    background-color: var(--pfw-black-fog);
+    background-color: var(--pfw-gold-tassel) !important;
 }
 
-.chatList .temporary {
+.temporary {
     font-style: italic;
 }
 
@@ -94,7 +99,7 @@
     flex-direction: column;
     align-items: flex-end;
     margin: auto;
-    top: 2em;
+    top: .5em;
     width: 100%;
     height: 70vh;
     overflow-y: auto;
@@ -108,28 +113,24 @@
     margin: auto;
 }
 
+#openai_model {
+    position: fixed;
+    top: 10vh;
+    height: 2em !important;
+    padding: 0 .5em;
+    width: auto !important;
+}
+
 .chat-box #input * {
     height: auto;
     min-height: 3ch;
     max-height: 30%;
     overflow-x: auto;
     margin: .5ch;
-    position:absolute;
+    position:fixed;
     left: 22%;
-}
-
-#openai_model {
-    width: 15em;
-    top: 4em;
-    padding:.25ch .5ch .25ch .5ch;
-}
-
-#question {
-    width: 65%;
-    right: 10%;
-    position:absolute;
-    bottom: 5%;
-    padding: .25ch .5ch .25ch .5ch;
+    width: 75vw;
+    bottom: 5vh;
 }
 
 /*#region Chat bubbles*/
@@ -137,7 +138,7 @@
 .talk-bubble {
     display: inline-block;
     position: relative;
-    width: 80%;
+    max-width: 75%;
     height: auto;
     margin: 1em;
     align-self: flex-start;
@@ -148,6 +149,8 @@
     font-size: small;
     width: 100%;
     padding-top: 1.25em;
+    padding-left: 2.25em;
+    padding-right: 2.25em;
     margin-bottom: 0 !important;
     user-select: none;
     z-index: -1;
@@ -163,29 +166,30 @@
 }
 
 .teaching_assistant {
-    background-color: var(--pfw-gold-rumble);
-    border-color: var(--pfw-gold-rumble);
+    background-color: var(--primary-pfw-white);
+    border-color: var(--primary-pfw-white);
 
     justify-items: left;
+    border-radius: 2.5em;
 }
 
 .student {
-    background-color: var(--pfw-black-tusk);
-    border-color: var(--pfw-black-tusk);
+    background-color: var(--pfw-gold-rumble);
+    border-color: var(--pfw-gold-rumble);
 
     justify-items: right;
+    border-radius: 2.5em;
 }
 
 .talktext {
-    padding: 1em;
+    padding: 1.5em;
     text-align: left;
     line-height: 1.5em;
 }
 
 .talktext p {
     /* remove webkit p margins */
-    -webkit-margin-before: 0em;
-    -webkit-margin-after: 0em;
+    margin: .1em;
 }
 
 /*Right triangle, placed bottom right side slightly in*/
@@ -198,7 +202,8 @@
     right: -8px;
     bottom: -40px;
     border: 20px solid;
-    border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+    border-color: var(--pfw-gold-rumble) var(--pfw-gold-rumble) transparent transparent;
+    z-index: -100;
 }
 
 .tri-right.btm-right:after {
@@ -207,10 +212,11 @@
     width: 0;
     height: 0;
     left: auto;
-    right: 0px;
+    right: 2.5em;
     bottom: -20px;
     border: 12px solid;
-    border-color: var(--pfw-black-tusk) var(--pfw-black-tusk) transparent transparent;
+    border-color: var(--pfw-gold-rumble) var(--pfw-gold-rumble) transparent transparent;
+    z-index: -100;
 }
 
 /*Right triangle, placed bottom left side slightly in*/
@@ -224,7 +230,8 @@
     top: auto;
     bottom: -40px;
     border: 32px solid;
-    border-color: transparent transparent transparent var(--pfw-gold-rumble);
+    border-color: transparent transparent transparent var(--primary-pfw-white);
+    z-index: -100;
 }
 
 .tri-right.btm-left:after {
@@ -232,12 +239,13 @@
     position: absolute;
     width: 0;
     height: 0;
-    left: 0;
+    left: 2.5em;;
     right: auto;
     top: auto;
     bottom: -20px;
     border: 22px solid;
-    border-color: transparent transparent transparent var(--pfw-gold-rumble);
+    border-color: transparent transparent transparent var(--primary-pfw-white);
+    z-index: -100;
 }
 
 /* End Source: https://codepen.io/Founts/pen/AJyVOr */
@@ -246,4 +254,11 @@
 pre {
     white-space: pre-wrap; 
     word-break: break-word; 
+    background-color: #9e9e9e55;
+    border-radius: .25em;
+    padding: 1em;
+}
+
+.feedback {
+    display: none;
 }
