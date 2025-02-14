@@ -1,10 +1,3 @@
-// ------------------------------
-// DRAG-AND-DROP & MULTI-FILE UPLOAD
-// ------------------------------
-// DOM Elements
-// ------------------------------
-// DRAG-AND-DROP & MULTI-FILE QUEUE
-// ------------------------------
 const dropzone = document.getElementById("dropzone");
 const fileInput = document.getElementById("fileInput");
 const fileQueueEl = document.getElementById("fileQueue");
@@ -18,12 +11,12 @@ const allowedExtensions = [".txt", ".pdf", ".doc", ".docx", ".html", ".css"];
 // A DataTransfer that holds all staged files
 let combinedFilesDataTransfer = new DataTransfer();
 
-// 1) Dropzone click => open file dialog
+// Dropzone click => open file dialog
 dropzone.addEventListener("click", () => {
   fileInput.click();
 });
 
-// 2) Drag & Drop
+// Drag & Drop
 dropzone.addEventListener("dragover", (e) => {
   e.preventDefault();
   dropzone.classList.add("bg-info", "text-white");
@@ -49,7 +42,7 @@ dropzone.addEventListener("drop", (e) => {
   displayQueuedFiles(fileInput.files);
 });
 
-// 3) File dialog selection
+// File dialog selection
 fileInput.addEventListener("change", (e) => {
   for (const file of e.target.files) {
     const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
@@ -63,7 +56,7 @@ fileInput.addEventListener("change", (e) => {
   displayQueuedFiles(fileInput.files);
 });
 
-// 4) Display the queued files with a Remove button
+// Display the queued files with a Remove button
 function displayQueuedFiles(fileList) {
   fileQueueEl.innerHTML = "";
 
@@ -92,7 +85,7 @@ function displayQueuedFiles(fileList) {
   }
 }
 
-// 5) Remove a single file from the queue
+// Remove a single file from the queue
 function removeFileFromQueue(index) {
   const newDataTransfer = new DataTransfer();
 
@@ -108,26 +101,24 @@ function removeFileFromQueue(index) {
   displayQueuedFiles(fileInput.files);
 }
 
-// 6) "Remove All" button => clear entire queue
+// "Remove All" button => clear entire queue
 removeAllBtn.addEventListener("click", removeAllFromQueue);
 
 function removeAllFromQueue() {
-  // Optionally ask for confirmation
-  // if (!confirm("Remove all queued files?")) return;
 
-  combinedFilesDataTransfer = new DataTransfer(); // new empty
+  combinedFilesDataTransfer = new DataTransfer();
   fileInput.value = ""; // reset the file input
   displayQueuedFiles([]); // refresh UI
 }
 
-// 7) Click "Upload"
+// Click "Upload"
 uploadBtn.addEventListener("click", async () => {
   if (!fileInput.files.length) {
     alert("No files to upload.");
     return;
   }
 
-  // Optional: show spinner in button
+  // show spinner in button
   uploadBtn.disabled = true;
   uploadBtn.innerHTML = `Uploading...
     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
@@ -169,14 +160,14 @@ uploadBtn.addEventListener("click", async () => {
   }
 });
 
-// Helper: update progress bar
+//update progress bar
 function updateProgress(value) {
   progressBar.style.width = `${value}%`;
   progressBar.textContent = `${value}%`;
   progressBar.setAttribute("aria-valuenow", value);
 }
 
-// Helper: show results after upload
+// show results after upload
 function showUploadResult(files) {
   uploadResult.innerHTML = "";
   uploadResult.classList.remove("d-none");
@@ -217,9 +208,7 @@ function showUploadResult(files) {
   });
 }
 
-// ------------------------------
-// DELETE FILE (same logic)
-// ------------------------------
+// Delete file
 async function deleteFile(fileName) {
   if (!confirm(`Are you sure you want to delete "${fileName}"?`)) {
     return;
@@ -241,9 +230,7 @@ async function deleteFile(fileName) {
   }
 }
 
-// ------------------------------
-// UPDATE FILE (same logic)
-// ------------------------------
+// Update File
 function initiateUpdate(fileName) {
   // Trigger hidden input
   const updateInput = document.getElementById("update-file-input");
@@ -296,7 +283,7 @@ async function deleteAllFiles() {
       return;
     }
   
-    // 1) Disable the button, change text, add spinner
+    // Disable the button, change text, add spinner
     deleteAllBtn.disabled = true;
     deleteAllBtn.innerHTML = `Deleting...
       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
@@ -317,7 +304,7 @@ async function deleteAllFiles() {
       console.error("Error deleting all files:", error);
       alert(`Error deleting all files: ${error.message}`);
     } finally {
-      // 2) Re-enable the button and restore text/spinner
+      // Re-enable the button and restore text/spinner
       deleteAllBtn.disabled = false;
       deleteAllBtn.textContent = "Delete All";
     }
