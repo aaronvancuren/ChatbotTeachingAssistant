@@ -1,7 +1,12 @@
-from fastapi import APIRouter, File, UploadFile, Form, Request, HTTPException
+import os
+from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 import uuid
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi_msal import IDTokenClaims
+from fastapi_msal.models import TokenStatus
+from backend.api.errors import HTTPError
+from backend.api.routes.auth import ACCESS_REQUIRED, get_context, validate_user
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import (
     initialize_chromadb,
@@ -20,10 +25,16 @@ upload_router = APIRouter(prefix="/files")
 
 @upload_router.get("/upload", response_class=HTMLResponse)
 async def get_upload_form(request: Request):
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
     return templates.TemplateResponse("upload_form.html", {"request": request})
 
 @upload_router.post("/upload")
-async def upload_file_api(file: UploadFile = File(...)):
+async def upload_file_api(request: Request, file: UploadFile = File(...)):
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
     try:
         content = await file.read()
         chunks = process_file(content, file.filename)
@@ -50,7 +61,10 @@ async def upload_file_api(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the file: {str(e)}")
 
 @upload_router.delete("/delete/{file_name}")
-async def delete_file_api(file_name: str):
+async def delete_file_api(file_name: str, request: Request):
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
     # Retrieve all entries with the given file_name
     results = collection.get(where={"file_name": file_name})
     if results['ids']:
@@ -67,6 +81,9 @@ async def update_file_api(
     file: UploadFile = File(None),
     content: str = Form(None)
 ):
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
 
     # Check if the file exists in the database
     existing = collection.get(where={"file_name": file_name})
@@ -108,7 +125,10 @@ async def update_file_api(
     
 @upload_router.get("/", response_class=HTMLResponse)
 async def upload_page(request: Request):
-    # Retrieve all documents from the collection
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+
     documents = collection.get()
 
     # Extract unique file names from the metadatas

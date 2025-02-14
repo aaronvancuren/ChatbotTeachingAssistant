@@ -1,12 +1,13 @@
 <div id="sidebar">
     <div>
-        <h1>CS 232</h1>
-        <div class="chatList">
-            <a onclick="addChat()" id="addChat"></a>
+        <h1>Chats</h1>
+        <div class="d-grid p-2">
+            <a class="btn btn-secondary" onclick="addChat()">Add Chat</a>
             <hr>
-            <div id="convos">
+            <div id="convos" class="d-grid gap-2 p-2">
                 {% for conversation in context.conversation_list %}
-                    <a href="/chat?chatID={{conversation.id}}" class="{{  'active' if conversation.id == context.chatID else '' }}">{{conversation.name}}</a>
+                    {% set isActive=conversation.id ~ '' == context.chatID.strip("") %}
+                    <a href="/chat?chatID={{conversation.id}}" class="btn btn-secondary {{  'active' if isActive else '' }}">{{conversation.name}}</a>
                 {% endfor %}
             </div>
         </div>
