@@ -41,16 +41,12 @@ COMMENT ON COLUMN public.user_conversations.title
 
 -- Index: fki_user_conversations_archive_by_fkey
 
--- DROP INDEX IF EXISTS public.fki_user_conversations_archive_by_fkey;
-
 CREATE INDEX IF NOT EXISTS fki_user_conversations_archive_by_fkey
     ON public.user_conversations USING btree
     (archived_by ASC NULLS LAST)
     TABLESPACE pg_default;
 
 -- Index: fki_user_conversations_course_id_fkey
-
--- DROP INDEX IF EXISTS public.fki_user_conversations_course_id_fkey;
 
 CREATE INDEX IF NOT EXISTS fki_user_conversations_course_id_fkey
     ON public.user_conversations USING btree
@@ -59,16 +55,12 @@ CREATE INDEX IF NOT EXISTS fki_user_conversations_course_id_fkey
 
 -- Index: fki_user_conversations_user_id_fkey
 
--- DROP INDEX IF EXISTS public.fki_user_conversations_user_id_fkey;
-
 CREATE INDEX IF NOT EXISTS fki_user_conversations_user_id_fkey
     ON public.user_conversations USING btree
     (user_id ASC NULLS LAST)
     TABLESPACE pg_default;
 
 -- Index: user_course_conversations
-
--- DROP INDEX IF EXISTS public.user_course_conversations;
 
 CREATE INDEX IF NOT EXISTS user_course_conversations
     ON public.user_conversations USING btree

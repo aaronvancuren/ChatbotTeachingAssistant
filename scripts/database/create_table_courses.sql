@@ -65,16 +65,12 @@ COMMENT ON COLUMN public.courses.image_path
 
 -- Index: course_codes
 
--- DROP INDEX IF EXISTS public.course_codes;
-
 CREATE UNIQUE INDEX IF NOT EXISTS course_codes
     ON public.courses USING btree
     (subject ASC NULLS LAST, course_number ASC NULLS LAST, section_number ASC NULLS LAST)
     TABLESPACE pg_default;
 
 -- Index: fki_courses_archived_by_fkey
-
--- DROP INDEX IF EXISTS public.fki_courses_archived_by_fkey;
 
 CREATE INDEX IF NOT EXISTS fki_courses_archived_by_fkey
     ON public.courses USING btree

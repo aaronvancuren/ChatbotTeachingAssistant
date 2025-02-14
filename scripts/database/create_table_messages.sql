@@ -36,8 +36,6 @@ COMMENT ON COLUMN public.messages.response
 
 -- Index: fki_messages_conversation_id_fkey
 
--- DROP INDEX IF EXISTS public.fki_messages_conversation_id_fkey;
-
 CREATE INDEX IF NOT EXISTS fki_messages_conversation_id_fkey
     ON public.messages USING btree
     (conversation_id ASC NULLS LAST)
