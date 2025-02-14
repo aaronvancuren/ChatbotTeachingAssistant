@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+
+    {% include './elements/HTML_Head.html' %}
+
+    <body class="d-flex bg-body-tertiary" style="height: 100%;">
+        <div class="container my-auto">
+            <div class="p-5 text-center rounded-3">
+                <h1 style="font-size: 54px;" class="bi bi-bandaid"></h1>
+                <h1>{{context.status_code}}</h1>
+                <h2>{{context.detail}}</h2>
+                <p class="col-lg-8 mx-auto fs-5 text-muted">
+                    {{context.message}}
+                </p>
+                <div class="d-inline-flex gap-2 mb-5">
+                    <button class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill" type="button"
+                        onclick="window.location.href='/'">
+                        Go Home
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-lg px-4 rounded-pill" type="button"
+                        onclick="window.history.go(-1)" )">
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
