@@ -113,6 +113,14 @@
     margin: auto;
 }
 
+#openai_model {
+    position: fixed;
+    top: 10vh;
+    height: 2em !important;
+    padding: 0 .5em;
+    width: auto !important;
+}
+
 .chat-box #input * {
     height: auto;
     min-height: 3ch;

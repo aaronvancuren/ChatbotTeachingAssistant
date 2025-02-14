@@ -116,16 +116,17 @@ async def chat(request: ChatRequest, response: Response) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            currentConversation.discussion.append({'role': 'system', 'content': system_message})
+            currentConversation.discussion.append({'role': 'developer', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=currentConversation.discussion,
-            model=os.getenv("OPENAI_MODEL"),
+            model=reqBody['openai_model'],
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
-            stop=None,
+            stop=['\0'],
             temperature=0.7,
+            store=True,
             user=user_id
         )
 
