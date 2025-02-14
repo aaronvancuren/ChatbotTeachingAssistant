@@ -2,6 +2,10 @@
 
 import os
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.templating import Jinja2Templates
+
+from backend.api.errors import HTTPError
 from backend.api.routes.web import web_router
 from backend.api.routes.openai import openai_router
 from backend.api.routes.auth import msal_auth
@@ -45,3 +49,14 @@ app.add_middleware(
 # Enables secure HTTPS connections for production
 if os.getenv("environment") == "production":
     app.add_middleware(HTTPSRedirectMiddleware)
+
+
+@app.exception_handler(HTTPError)
+@app.exception_handler(404)
+@app.exception_handler(RequestValidationError)
+async def http_error_handler(request, exc):
+    if (isinstance(exc, RequestValidationError)):
+        err = HTTPError(422, "Unprocessable Entity")
+    else:
+        err = HTTPError(exc.status_code, exc.detail)
+    return Jinja2Templates(directory='frontend/templates').TemplateResponse('/error.html', {"request": request, "context": err})
