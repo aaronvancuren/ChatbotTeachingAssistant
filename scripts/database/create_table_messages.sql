@@ -33,7 +33,7 @@ COMMENT ON COLUMN public.messages.prompt
 
 COMMENT ON COLUMN public.messages.response
     IS 'An assistant response message from a conversation';
-	
+
 -- Index: fki_messages_conversation_id_fkey
 
 -- DROP INDEX IF EXISTS public.fki_messages_conversation_id_fkey;

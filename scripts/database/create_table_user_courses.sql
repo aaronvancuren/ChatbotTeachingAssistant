@@ -23,6 +23,7 @@ ALTER TABLE IF EXISTS public.user_courses
 
 COMMENT ON TABLE public.user_courses
     IS 'Joining table for assigning users to courses';
+
 -- Index: fki_user_courses_course_id_fkey
 
 -- DROP INDEX IF EXISTS public.fki_user_courses_course_id_fkey;
@@ -31,6 +32,7 @@ CREATE INDEX IF NOT EXISTS fki_user_courses_course_id_fkey
     ON public.user_courses USING btree
     (course_id ASC NULLS LAST)
     TABLESPACE pg_default;
+
 -- Index: fki_user_courses_user_id_fkey
 
 -- DROP INDEX IF EXISTS public.fki_user_courses_user_id_fkey;
