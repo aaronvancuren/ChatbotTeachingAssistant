@@ -18,16 +18,7 @@ SCRIPT_DIR = os.path.dirname(__file__)
 
 # Define the script execution order
 CREATE_DATABASE_SCRIPT = "create_database.sql"
-
-DROP_SCRIPTS = [
-    "drop_table_messages.sql",
-    "drop_table_user_conversations.sql",
-    "drop_table_user_courses.sql",
-    "drop_table_courses.sql",
-    "drop_table_users.sql",
-    "drop_type_course_subject.sql",
-    "drop_type_role.sql",
-]
+DROP_DATABASE_SCRIPT = "drop_database.sql"
 
 CREATE_SCRIPTS = [
     "create_type_course_subject.sql",
@@ -98,7 +89,6 @@ def run_sql_script(conn: connection, script_name: str):
 
     statements = parse_sql_statements(sql_script)
     logger.debug("Parsed %d statements from %s", len(statements), script_name)
-
     with conn.cursor() as cur:
         statement: str
         for statement in statements:
@@ -122,24 +112,31 @@ def database_exists(host, port, user, password, dbname):
     except Exception as e:
         logger.error(f"Error checking database existence: {e}")
         return False
+    finally:
+        conn.close()
 
-def create_database_if_not_exists(host, port, user, password, dbname):
-    if not database_exists(host, port, user, password, dbname):
-        logger.info(f"Database '{dbname}' does not exist. Creating it...")
-        try:
-            with psycopg2.connect(
-                host=host,
-                port=port,
-                dbname="postgres",
-                user=user,
-                password=password
-            ) as conn:
-                conn.autocommit = True
-                run_sql_script(conn, CREATE_DATABASE_SCRIPT)
-                logger.info(f"Database '{dbname}' created successfully.")
-        except Exception as e:
-            logger.error(f"Error creating database: {e}")
-            exit(1)
+def recreate_database(host, port, user, password, dbname):
+    try:
+        conn = psycopg2.connect(
+            host=host,
+            port=port,
+            dbname="postgres",
+            user=user,
+            password=password,
+        )
+        conn.autocommit = True
+        
+        if(database_exists(host, port, user, password, dbname)):
+            run_sql_script(conn, DROP_DATABASE_SCRIPT)
+            logger.info(f"Database '{dbname}' dropped successfully.")
+        
+        run_sql_script(conn, CREATE_DATABASE_SCRIPT)
+        logger.info(f"Database '{dbname}' created successfully.")
+    except Exception as e:
+        logger.error(f"Error recreating database: {e}")
+        exit(1)
+    finally:
+        conn.close()
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -154,7 +151,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    create_database_if_not_exists(args.host, args.port, args.user, args.password, args.dbname)
+    recreate_database(args.host, args.port, args.user, args.password, args.dbname)
 
     try:
         conn = psycopg2.connect(
@@ -177,12 +174,6 @@ def main():
         return 1
 
     try:
-        
-        # Run all drop scripts in order.
-        for drop_script in DROP_SCRIPTS:
-            logger.info("Running drop script: %s", drop_script)
-            run_sql_script(conn, drop_script)
-
         # Run all create scripts in order.
         for create_script in CREATE_SCRIPTS:
             logger.info("Running create script: %s", create_script)
