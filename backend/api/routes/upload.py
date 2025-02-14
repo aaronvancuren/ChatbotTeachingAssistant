@@ -4,7 +4,6 @@ from fastapi.templating import Jinja2Templates
 from typing import List
 import uuid
 
-# Import your pipeline/database logic
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import (
     initialize_chromadb,
@@ -87,15 +86,7 @@ async def upload_file_api(files: List[UploadFile] = File(...)):
                 "message": "File uploaded successfully."
             })
         except HTTPException as he:
-            # If you want to immediately stop on error, re-raise
             raise he
-            
-            # If you want partial success (skip error), comment out the raise above
-            # and do something like:
-            # results.append({
-            #     "filename": file.filename,
-            #     "error": str(he.detail)
-            # })
 
         except Exception as e:
             raise HTTPException(
@@ -146,7 +137,6 @@ async def update_file_api(
         raise HTTPException(status_code=404, detail="File not found.")
 
     try:
-        # Either process a new file or the raw content
         if file:
             new_content = await file.read()
             new_chunks = process_file(new_content, file.filename)
