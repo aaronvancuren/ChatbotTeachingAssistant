@@ -308,4 +308,4 @@ async function deleteAllFiles() {
       deleteAllBtn.disabled = false;
       deleteAllBtn.textContent = "Delete All";
     }
-  }
+}

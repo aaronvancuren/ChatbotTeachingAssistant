@@ -54,47 +54,47 @@ async def upload_file_api(request: Request, files: List[UploadFile] = File(...))
     """
     results = []
 
-    for file in files:
-    
     if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
         raise HTTPError(status_code=401, detail="Unauthorized")
-    
-    try:
-            content = await file.read()
-            chunks = process_file(content, file.filename)
 
-            if chunks is None:
-                raise HTTPException(status_code=400, detail=f"Unsupported file type: {file.filename}")
+    for file in files:
+        
+        try:
+                content = await file.read()
+                chunks = process_file(content, file.filename)
 
-            if not chunks:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"Failed to extract text from file: {file.filename}"
-                )
+                if chunks is None:
+                    raise HTTPException(status_code=400, detail=f"Unsupported file type: {file.filename}")
 
-            # Check if this file already exists
-            existing = collection.get(where={"file_name": file.filename})
-            if existing['ids']:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"File already exists: {file.filename}"
-                )
+                if not chunks:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"Failed to extract text from file: {file.filename}"
+                    )
 
-            # Generate IDs and metadata for each chunk
-            chunk_ids = [str(uuid.uuid4()) for _ in chunks]
-            metadatas = [
-                {"file_name": file.filename, "chunk_index": idx} 
-                for idx, _ in enumerate(chunks)
-            ]
+                # Check if this file already exists
+                existing = collection.get(where={"file_name": file.filename})
+                if existing['ids']:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"File already exists: {file.filename}"
+                    )
 
-            # Add chunks to the collection
-            add_documents(collection, chunks, chunk_ids, metadatas)
+                # Generate IDs and metadata for each chunk
+                chunk_ids = [str(uuid.uuid4()) for _ in chunks]
+                metadatas = [
+                    {"file_name": file.filename, "chunk_index": idx} 
+                    for idx, _ in enumerate(chunks)
+                ]
 
-            results.append({
-                "filename": file.filename, 
-                "content_type": file.content_type,
-                "message": "File uploaded successfully."
-            })
+                # Add chunks to the collection
+                add_documents(collection, chunks, chunk_ids, metadatas)
+
+                results.append({
+                    "filename": file.filename, 
+                    "content_type": file.content_type,
+                    "message": "File uploaded successfully."
+                })
         except HTTPException as he:
             raise he
 
