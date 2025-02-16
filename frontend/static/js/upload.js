@@ -184,30 +184,6 @@ function showUploadResult(files) {
   });
 }
 
-// Update progress bar
-function updateProgress(value) {
-  progressBar.style.width = `${value}%`;
-  progressBar.textContent = `${value}%`;
-  progressBar.setAttribute("aria-valuenow", value);
-}
-
-// Display result from server
-function showUploadResult(files) {
-  uploadResult.innerHTML = "";
-  uploadResult.classList.remove("d-none");
-
-  files.forEach((file) => {
-    const li = document.createElement("li");
-    li.className = "list-group-item";
-    if (file.error) {
-      li.textContent = `Error uploading ${file.filename}: ${file.error}`;
-    } else {
-      li.textContent = `File: ${file.filename} - Uploaded Successfully`;
-    }
-    uploadResult.appendChild(li);
-  });
-}
-
 // Delete file
 async function deleteFile(fileName) {
   if (!confirm(`Are you sure you want to delete "${fileName}"?`)) {
