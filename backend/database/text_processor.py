@@ -6,7 +6,7 @@ from pathlib import Path
 import magic  # Requires the 'python-magic' library
 
 # Import libraries for extracting text from various file types
-import PyPDF2
+import pypdf
 import docx
 from bs4 import BeautifulSoup
 from pptx import Presentation
@@ -81,7 +81,7 @@ def extract_text_from_pdf(file_bytes):
     """
     Extracts text from a PDF file.
     """
-    pdf_reader = PyPDF2.PdfReader(BytesIO(file_bytes))
+    pdf_reader = pypdf.PdfReader(BytesIO(file_bytes))
     text = ''
     for page in pdf_reader.pages:
         text += page.extract_text() or ''
