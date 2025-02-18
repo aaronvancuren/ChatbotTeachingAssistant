@@ -8,11 +8,11 @@ def CreateSampleClassSections(num = 1):
     for i in range(0, num):
         tmpClass = ClassSection()
         tmpClass.id = uuid.uuid4()                          # Replace with UUID of Class
-        tmpClass.name = "CS 232"                     # Replace with Name of Class
-        tmpClass.professor_id = "Example Professor" + str(i)         # Replace with Professor of Class
-        tmpClass.section = str(i)                                # Replace with Section of Class
+        tmpClass.name = "Intro to C and Unix"                     # Replace with Name of Class
+        tmpClass.professor_id = "Zesheng Chen"        # Replace with Professor of Class
+        tmpClass.section = "CS 232-01"                                # Replace with Section of Class
         tmpClass.teaching_assistant_id = "Example Student " + str(i)  # Replace with TA
-        tmpClass.splash = "https://plus.unsplash.com/premium_photo-1661872817492-fd0c30404d74?fm=jpg&q=60&w=300&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y29tcHV0ZXIlMjBzY2llbmNlfGVufDB8fDB8fHww"
+        tmpClass.splash = "/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
         tmpClass.prompt = (
             "You are a TA for CS 232, introduction to C and Unix"
             "You are a helpful teaching assistant."
@@ -29,11 +29,9 @@ def CreateSampleClassSections(num = 1):
 def CreateSampleConversation():
     tmpList = []
     
-    EXAMPLE_CONVERSATION = Conversation("gpt-3.5-turbo")
-    EXAMPLE_CONVERSATION.name = "Introduction"                      # Replace with Name of conversation
+    EXAMPLE_CONVERSATION = Conversation("gpt-4o-mini")
+    EXAMPLE_CONVERSATION.name = "CS 232 Help"                      # Replace with Name of conversation
     EXAMPLE_CONVERSATION.classID = uuid.uuid4()                     # Replace with UUID of conversation
-    EXAMPLE_CONVERSATION.discussion.append({'role': 'user', 'content': 'Hello! Can you introduce yourself?'})
-    EXAMPLE_CONVERSATION.discussion.append({'role': 'assistant', 'content': 'My name is Victor. I am an AI created by OpenAI. What assignments can I help you with today?'})
 
     tmpList.append(EXAMPLE_CONVERSATION)
     return tmpList
