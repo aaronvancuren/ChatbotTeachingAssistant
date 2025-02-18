@@ -119,9 +119,45 @@ def read_user_by_email(email):
         cur.close()
         conn.close()
 
-def update_user_email(display_name, new_email):
+def read_email_by_id(user_id):
     """
-    Updates a user's email in the users table based on their display name.
+    Retrieves the email of a user from the users table by their ID.
+
+    Args:
+        user_id (str): The user's unique ID (UUID).
+
+    Returns:
+        str or None: The user's email if found, else None.
+    """
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        select_query = "SELECT email FROM users WHERE id = %s;"
+        cur.execute(select_query, (user_id,))
+        row = cur.fetchone()
+
+        if row is None:
+            return None
+
+        return row['email']
+
+    except Exception as e:
+        logging.error(f"Error retrieving user email by ID: {e}")
+        return None
+    
+    finally:
+        cur.close()
+        conn.close()
+
+def update_user_display_name(display_name, email):
+    """
+    Updates a user's display name in the users table based on their display name.
 
     Args:
         display_name (str): The user's display name.
@@ -139,13 +175,13 @@ def update_user_email(display_name, new_email):
     cur = conn.cursor()
 
     try:
-        update_query = "UPDATE users SET email = %s WHERE display_name = %s;"
-        cur.execute(update_query, (new_email, display_name))
+        update_query = "UPDATE users SET display_name = %s WHERE email = %s;"
+        cur.execute(update_query, (display_name, email))
         conn.commit()
         return True
     
     except Exception as e:
-        logging.error(f"Error updating user email: {e}")
+        logging.error(f"Error updating user display name: {e}")
         conn.rollback()
         return False
     
@@ -187,7 +223,7 @@ def delete_user(user_id):
         conn.close()
 
 
-def create_course(display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path):
+def create_course(instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path):
     """
     Inserts a new course into the courses table.
 
@@ -215,11 +251,11 @@ def create_course(display_name, subject, course_number, section_number, title, m
 
     try:
         insert_query = """
-            INSERT INTO courses (display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path)
+            INSERT INTO courses (instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """
-        cur.execute(insert_query, (display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path))
+        cur.execute(insert_query, (instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path))
         course_id = cur.fetchone()[0]
         conn.commit()
         return course_id
@@ -406,12 +442,13 @@ def create_user_conversation(course_id, user_id, title):
         cur.close()
         conn.close()
 
-def read_conversations_by_user(user_id):
+def read_conversations_by_user(user_id, course_id):
     """
     Retrieves all conversations IDs for a given user.
 
     Args:
         user_id (str): The user's unique ID.
+        course_id (str): The course's unique ID.
 
     Returns:
         list: A list of conversations IDs.
@@ -425,9 +462,10 @@ def read_conversations_by_user(user_id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s;"
-        cur.execute(select_query, (user_id,))
+        select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s AND course_id = %s;"
+        cur.execute(select_query, (user_id, course_id))
         rows = cur.fetchall()
+
         conversation_ids = [row['conversation_id'] for row in rows]
         return conversation_ids
     
@@ -439,13 +477,12 @@ def read_conversations_by_user(user_id):
         cur.close()
         conn.close()
 
-def update_conversation_title(conversation_id, course_id, new_title):
+def update_conversation_title(conversation_id, new_title):
     """
     Updates the title of a conversation.
 
     Args:
         conversation_id (str): The ID of the conversation.
-        course_id (str): The ID of the course
         new_title (str): The new title name.
 
     Returns:
@@ -460,8 +497,8 @@ def update_conversation_title(conversation_id, course_id, new_title):
     cur = conn.cursor()
 
     try:
-        update_query = "UPDATE user_conversations SET title = %s WHERE conversation_id = %s AND course_id = %s;"
-        cur.execute(update_query, (new_title, conversation_id, course_id))
+        update_query = "UPDATE user_conversations SET title = %s WHERE conversation_id = %s;"
+        cur.execute(update_query, (new_title, conversation_id))
         conn.commit()
         return True
     
@@ -513,7 +550,7 @@ def create_message(conversation_id, prompt, response):
 
     Args:
         conversation_id (str): The ID of the conversation.
-        mprompt (str): The prompt given in the conversation.
+        prompt (str): The prompt given in the conversation.
         response (str): The response given in the conversation.
 
     Returns:
@@ -576,73 +613,6 @@ def read_messages_from_conversation(conversation_id):
     except Exception as e:
         logging.error(f"Error retrieving messages: {e}")
         return []
-    
-    finally:
-        cur.close()
-        conn.close()
-
-def update_message_conversation_id(old_conversation_id, new_conversation_id):
-    """
-    Updates the coversation ID of a message.
-
-    Args:
-        old_conversation_id (str): The old conversation ID of the message.
-        new_conversation_id (str): The new conversation ID of the message.
-
-    Returns:
-        bool: True if update was successful, False otherwise.
-    """
-    conn = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return False
-    
-    cur = conn.cursor()
-
-    try:
-        update_query = "UPDATE messages SET conversation_id = %s WHERE conversation_id = %s;"
-        cur.execute(update_query, (new_conversation_id, old_conversation_id))
-        conn.commit()
-        return True
-    
-    except Exception as e:
-        logging.error(f"Error updating message conversation ID: {e}")
-        conn.rollback()
-        return False
-    
-    finally:
-        cur.close()
-        conn.close()
-
-def delete_message(message_id):
-    """
-    Deletes a message.
-
-    Args:
-        message_id (str): The ID of the message.
-
-    Returns:
-        bool: True if deletion was successful, False otherwise.
-    """
-    conn = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return False
-    
-    cur = conn.cursor()
-
-    try:
-        delete_query = "DELETE FROM messages WHERE id = %s;"
-        cur.execute(delete_query, (message_id,))
-        conn.commit()
-        return True
-    
-    except Exception as e:
-        logging.error(f"Error deleting message: {e}")
-        conn.rollback()
-        return False
     
     finally:
         cur.close()
@@ -757,6 +727,41 @@ def delete_user_course(course_id, user_id):
         conn.rollback()
         return False
     
+    finally:
+        cur.close()
+        conn.close()
+
+def delete_user_courses_by_course(course_id):
+    """
+    Deletes all user-course associations from the user_courses table for a given course.
+
+    Args:
+        course_id (str): The UUID of the course.
+
+    Returns:
+        bool: True if the deletion was successful, False otherwise.
+    """
+    conn = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        delete_query = """
+            DELETE FROM user_courses WHERE course_id = %s;
+        """
+        cur.execute(delete_query, (course_id,))
+        conn.commit()
+        return True
+
+    except Exception as e:
+        logging.error(f"Error deleting user courses by course_id '{course_id}': {e}")
+        conn.rollback()
+        return False
+        
     finally:
         cur.close()
         conn.close()
