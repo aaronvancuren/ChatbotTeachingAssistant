@@ -47,7 +47,7 @@ async def upload_page(request: Request):
     )
 
 @upload_router.post("/upload")
-async def upload_file_api(request: Request, files: List[UploadFile] = File(...)):
+async def upload_file(request: Request, files: List[UploadFile] = File(...)):
     """
     Accept multiple files at once, process them, 
     and add them to the ChromaDB collection if they do not already exist.
@@ -107,13 +107,13 @@ async def upload_file_api(request: Request, files: List[UploadFile] = File(...))
     return {"uploaded_files": results}
 
 @upload_router.delete("/delete/{file_name}")
-async def delete_file_api(file_name: str, request: Request):
-
-    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
-        raise HTTPError(status_code=401, detail="Unauthorized")
+async def delete_file(file_name: str, request: Request):
     """
     Deletes all chunks associated with the given file_name.
     """
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+
     results = collection.get(where={"file_name": file_name})
     if results['ids']:
         collection.delete(ids=results['ids'])
@@ -122,7 +122,11 @@ async def delete_file_api(file_name: str, request: Request):
         raise HTTPException(status_code=404, detail="File not found.")
     
 @upload_router.delete("/delete_all")
-async def delete_all_files_api():
+async def delete_all_files(request: Request):
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+
     # Get all documents in the collection
     all_docs = collection.get()
     all_ids = all_docs.get('ids', [])
@@ -134,7 +138,7 @@ async def delete_all_files_api():
     return {"message": "All files deleted successfully."}
 
 @upload_router.put("/update/{file_name}")
-async def update_file_api(
+async def update_file(
     file_name: str,
     request: Request,
     file: UploadFile = File(None),
@@ -188,19 +192,3 @@ async def update_file_api(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while updating the file: {str(e)}")
-    
-@upload_router.get("/", response_class=HTMLResponse)
-async def upload_page(request: Request):
-
-    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
-        raise HTTPError(status_code=401, detail="Unauthorized")
-
-    documents = collection.get()
-
-    # Extract unique file names from the metadatas
-    file_names = set()
-    for metadata in documents.get('metadatas', []):
-        file_names.add(metadata['file_name'])
-
-    # Pass the list of file names to the template
-    return templates.TemplateResponse("upload_index.html", {"request": request, "file_names": file_names})
