@@ -206,7 +206,6 @@ class TestUserCrudOps(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        from backend.database.postgres import read_email_by_id
         email = read_email_by_id('some-uuid-123')
         self.assertEqual(email, 'alice@example.com')
 
@@ -227,7 +226,6 @@ class TestUserCrudOps(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        from backend.database.postgres import read_email_by_id
         email = read_email_by_id('nonexistent-uuid')
         self.assertIsNone(email)
 
@@ -245,7 +243,6 @@ class TestUserCrudOps(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        from backend.database.postgres import read_email_by_id
         email = read_email_by_id('some-uuid-123')
         self.assertIsNone(email)
 
@@ -266,7 +263,6 @@ class TestUserCrudOps(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        from backend.database.postgres import update_user_display_name
         result = update_user_display_name('NewName', 'alice@example.com')
         self.assertTrue(result)
 
@@ -285,7 +281,7 @@ class TestUserCrudOps(unittest.TestCase):
         """Test DB connection failure for update_user_display_name."""
         mock_get_db_connection.return_value = None
 
-        from backend.database.postgres import update_user_display_name
+    
         result = update_user_display_name('AnotherName', 'bob@example.com')
         self.assertFalse(result)
         mock_get_db_connection.assert_called_once()
@@ -301,7 +297,6 @@ class TestUserCrudOps(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        from backend.database.postgres import update_user_display_name
         result = update_user_display_name('AnotherName', 'bob@example.com')
         self.assertFalse(result)
 
