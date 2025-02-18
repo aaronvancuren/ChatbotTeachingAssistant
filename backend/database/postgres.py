@@ -66,14 +66,14 @@ def read_user_by_id(user_id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT display_name FROM users WHERE id = %s;"
+        select_query = "SELECT display_name, role FROM users WHERE id = %s;"
         cur.execute(select_query, (user_id,))
         row = cur.fetchone()
         
         if row is None:
             return None
         
-        return row['display_name']
+        return row
     
     except Exception as e:
         logging.error(f"Error retrieving user: {e}")
@@ -102,14 +102,14 @@ def read_user_by_email(email):
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT display_name FROM users WHERE email = %s;"
+        select_query = "SELECT display_name, role FROM users WHERE email = %s;"
         cur.execute(select_query, (email,))
         row = cur.fetchone()
         
         if row is None:
             return None
         
-        return row['display_name']
+        return row
     
     except Exception as e:
         logging.error(f"Error retrieving user by email: {e}")
@@ -761,7 +761,7 @@ def delete_user_courses_by_course(course_id):
         logging.error(f"Error deleting user courses by course_id '{course_id}': {e}")
         conn.rollback()
         return False
-        
+
     finally:
         cur.close()
         conn.close()
