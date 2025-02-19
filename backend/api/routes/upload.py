@@ -30,6 +30,9 @@ async def upload_page(request: Request):
     Renders the main upload page (drag-and-drop UI) and 
     shows a list of already-uploaded file names.
     """
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+
     # Retrieve all documents from the collection
     documents = collection.get()
 
@@ -39,8 +42,6 @@ async def upload_page(request: Request):
         file_names.add(metadata['file_name'])
 
     # Pass list of file names into the template
-    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
-        raise HTTPError(status_code=401, detail="Unauthorized")
     return templates.TemplateResponse(
         "upload_index.html", 
         {"request": request, "file_names": file_names}
