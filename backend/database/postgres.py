@@ -252,7 +252,7 @@ def create_course(instructor_id, display_name, subject, course_number, section_n
     try:
         insert_query = """
             INSERT INTO courses (instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """
         cur.execute(insert_query, (instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path))
