@@ -1,17 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>File Management System</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
-    <header>
-        <h1>File Management System</h1>
+<body class="bg-light">
+
+    <header class="header text-white p-3">
+        <div class="container">
+            <h1 class="text-center text-black">File Management System</h1>
+        </div>
     </header>
-    <main>
+
+    <main class="container p-5">
         {% block content %}
         {% endblock %}
     </main>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
     <script src="/static/js/upload.js"></script>
 </body>
 </html>
