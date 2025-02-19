@@ -3,11 +3,12 @@ from unittest.mock import patch, MagicMock
 import logging
 from psycopg2.extras import RealDictCursor
 
-# Import the CRUD methods under test
+# Import updated CRUD methods
 from backend.database.postgres import (
     create_user_course,
     read_users_for_course,
-    delete_user_course
+    delete_user_course,
+    delete_user_courses_by_course
 )
 
 class TestUserCoursesCrudOps(unittest.TestCase):
@@ -26,12 +27,10 @@ class TestUserCoursesCrudOps(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        # Simulate rowcount = 1 means a new record was inserted
+        # Simulate rowcount = 1 => new record was inserted
         mock_cursor.rowcount = 1
 
-        # Call the function under test
         result = create_user_course('course-uuid-123', 'user-uuid-456')
-
         self.assertTrue(result)
         mock_get_db_connection.assert_called_once()
 
@@ -59,26 +58,33 @@ class TestUserCoursesCrudOps(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        # Simulate rowcount = 0 means no new record inserted (conflict or already exists)
+        # rowcount = 0 => conflict or already exists => no new insertion
         mock_cursor.rowcount = 0
 
         result = create_user_course('course-uuid-123', 'user-uuid-456')
         self.assertFalse(result)
+
         mock_get_db_connection.assert_called_once()
         mock_conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
         mock_conn.close.assert_called_once()
 
+    @patch('backend.database.postgres.logging.error')
     @patch('backend.database.postgres.get_db_connection')
-    def test_create_user_course_db_connection_failure(self, mock_get_db_connection):
+    def test_create_user_course_db_connection_failure(self, mock_get_db_connection, mock_log_error):
+        """Test DB connection failure for create_user_course."""
         mock_get_db_connection.return_value = None
 
         result = create_user_course('course-uuid-123', 'user-uuid-456')
         self.assertFalse(result)
         mock_get_db_connection.assert_called_once()
 
+        mock_log_error.assert_called_once_with("Failed to connect to the database.")
+
+    @patch('backend.database.postgres.logging.error')
     @patch('backend.database.postgres.get_db_connection')
-    def test_create_user_course_exception(self, mock_get_db_connection):
+    def test_create_user_course_exception(self, mock_get_db_connection, mock_log_error):
+        """Test exception scenario during insertion."""
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.execute.side_effect = Exception('Insert error')
@@ -91,6 +97,8 @@ class TestUserCoursesCrudOps(unittest.TestCase):
         mock_conn.rollback.assert_called_once()
         mock_cursor.close.assert_called_once()
         mock_conn.close.assert_called_once()
+
+        mock_log_error.assert_called_once_with("Error creating user course: Insert error")
 
     # ------------------------------------------------------------------
     # Tests for read_users_for_course
@@ -140,8 +148,9 @@ class TestUserCoursesCrudOps(unittest.TestCase):
         mock_cursor.close.assert_called_once()
         mock_conn.close.assert_called_once()
 
+    @patch('backend.database.postgres.logging.error')
     @patch('backend.database.postgres.get_db_connection')
-    def test_read_users_for_course_exception(self, mock_get_db_connection):
+    def test_read_users_for_course_exception(self, mock_get_db_connection, mock_log_error):
         """
         Test returning an empty list upon exception.
         """
@@ -156,6 +165,8 @@ class TestUserCoursesCrudOps(unittest.TestCase):
         mock_get_db_connection.assert_called_once()
         mock_cursor.close.assert_called_once()
         mock_conn.close.assert_called_once()
+
+        mock_log_error.assert_called_once_with("Error retrieving users for course course-uuid-888: Select error")
 
     # ------------------------------------------------------------------
     # Tests for delete_user_course
@@ -182,15 +193,21 @@ class TestUserCoursesCrudOps(unittest.TestCase):
         mock_cursor.close.assert_called_once()
         mock_conn.close.assert_called_once()
 
+    @patch('backend.database.postgres.logging.error')
     @patch('backend.database.postgres.get_db_connection')
-    def test_delete_user_course_db_connection_failure(self, mock_get_db_connection):
+    def test_delete_user_course_db_connection_failure(self, mock_get_db_connection, mock_log_error):
+        """Test DB connection failure for delete_user_course."""
         mock_get_db_connection.return_value = None
+
         result = delete_user_course('course-uuid-111', 'user-uuid-999')
         self.assertFalse(result)
         mock_get_db_connection.assert_called_once()
+        mock_log_error.assert_called_once_with("Failed to connect to the database.")
 
+    @patch('backend.database.postgres.logging.error')
     @patch('backend.database.postgres.get_db_connection')
-    def test_delete_user_course_exception(self, mock_get_db_connection):
+    def test_delete_user_course_exception(self, mock_get_db_connection, mock_log_error):
+        """Test exception scenario for delete_user_course."""
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.execute.side_effect = Exception('Delete error')
@@ -203,6 +220,61 @@ class TestUserCoursesCrudOps(unittest.TestCase):
         mock_conn.rollback.assert_called_once()
         mock_cursor.close.assert_called_once()
         mock_conn.close.assert_called_once()
+
+        mock_log_error.assert_called_once_with("Error deleting user course: Delete error")
+
+    # ------------------------------------------------------------------
+    # Tests for delete_user_courses_by_course (new method)
+    # ------------------------------------------------------------------
+    @patch('backend.database.postgres.get_db_connection')
+    def test_delete_user_courses_by_course_success(self, mock_get_db_connection):
+        """Test deleting all user-course associations for a given course."""
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value = mock_cursor
+        mock_get_db_connection.return_value = mock_conn
+
+        result = delete_user_courses_by_course('course-uuid-123')
+        self.assertTrue(result)
+        mock_get_db_connection.assert_called_once()
+
+        delete_query = """
+            DELETE FROM user_courses WHERE course_id = %s;
+        """
+        mock_cursor.execute.assert_called_once_with(delete_query, ('course-uuid-123',))
+        mock_conn.commit.assert_called_once()
+        mock_cursor.close.assert_called_once()
+        mock_conn.close.assert_called_once()
+
+    @patch('backend.database.postgres.logging.error')
+    @patch('backend.database.postgres.get_db_connection')
+    def test_delete_user_courses_by_course_db_connection_failure(self, mock_get_db_connection, mock_log_error):
+        """Test DB connection failure for delete_user_courses_by_course."""
+        mock_get_db_connection.return_value = None
+
+        result = delete_user_courses_by_course('course-uuid-999')
+        self.assertFalse(result)
+        mock_get_db_connection.assert_called_once()
+        mock_log_error.assert_called_once_with("Failed to connect to the database.")
+
+    @patch('backend.database.postgres.logging.error')
+    @patch('backend.database.postgres.get_db_connection')
+    def test_delete_user_courses_by_course_exception(self, mock_get_db_connection, mock_log_error):
+        """Test exception scenario for delete_user_courses_by_course."""
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.execute.side_effect = Exception('Delete error')
+        mock_conn.cursor.return_value = mock_cursor
+        mock_get_db_connection.return_value = mock_conn
+
+        result = delete_user_courses_by_course('course-uuid-999')
+        self.assertFalse(result)
+        mock_get_db_connection.assert_called_once()
+        mock_conn.rollback.assert_called_once()
+        mock_cursor.close.assert_called_once()
+        mock_conn.close.assert_called_once()
+
+        mock_log_error.assert_called_once_with("Error deleting user courses by course_id 'course-uuid-999': Delete error")
 
 
 if __name__ == '__main__':
