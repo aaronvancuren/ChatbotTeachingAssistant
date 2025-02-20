@@ -92,6 +92,7 @@ def read_user_by_email(email):
 
     Returns:
         str or None: User's display name if found, else None.
+        str or None: User's role if found, else None.
     """
     conn = get_db_connection()
 
@@ -228,6 +229,7 @@ def create_course(instructor_id, display_name, subject, course_number, section_n
     Inserts a new course into the courses table.
 
     Args:
+        instructor_id (str): The instructors unique user ID (UUID).
         display_name (str): The display name of the course (e.g., 'Intro to Chemistry').
         subject (str): The subject of the course (type course_subject in DB).
         course_number (int): The numeric course number (e.g., 101).
