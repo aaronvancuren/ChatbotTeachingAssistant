@@ -226,6 +226,19 @@ python -m unittest test_module.TestClass
 ```bash
 python -m unittest test_module.TestClass.test_method
 ```
+# Setting up PostgreSQL Locally
+Windows Install:
+
+  Step 1: Download the Installer
+    - Visit the official PostgreSQL download page: https://www.postgresql.org/download/windows/
+    - Click on the "Download the installer" link, which will take you to the EnterpriseDB installer page.
+    - Choose the version you want (e.g., PostgreSQL 16 is prefered for Google Cloud deployment) and download the appropriate installer for your system (32-bit or 64-bit).
+
+  Step 2: Run the Installer
+    - Locate the downloaded .exe file and double-click to run it.
+    - If prompted by User Account Control (UAC), click "Yes" to allow the installer to make changes.
+
+  Step 3: Follow the Installation Wizard
 
 # Setting Up Google Cloud
 - Go to [Google Cloud](https://console.cloud.google.com/)
