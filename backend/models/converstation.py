@@ -5,9 +5,9 @@ import uuid
 
 class Model(Enum):
     VICTOR = "gpt-3.5-turbo"
-    JOHN = "gpt-4o-mini"
+    JOHN = "gpt-4o-mini-2024-07-18"
     HEDY = "gpt-4o-mini"
-    HENRIETTA = "chatgpt-4o"
+    HENRIETTA = "gpt-4o"
 
 class Conversation:
     id: str         # Unique HashID
@@ -30,6 +30,8 @@ class Conversation:
                 self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("HENRIETTA_PROMPT")})
             case _:
                 self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("VICTOR_PROMPT")})
+        
+        self.model = assistant
         if (class_prompt is not None):
             self.discussion.append({'role': 'developer', 'content': class_prompt})
         self.discussion.append(

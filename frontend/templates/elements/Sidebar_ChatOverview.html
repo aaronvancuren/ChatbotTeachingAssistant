@@ -2,7 +2,7 @@
     <div>
         <h1>Chats</h1>
         <div class="d-grid p-2">
-            <a class="btn btn-secondary" onclick="addChat()">Add Chat</a>
+            <a class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#chooseTA">Add Chat</a>
             <hr>
             <div id="convos" class="d-grid gap-2 p-2">
                 {% for conversation in context.conversation_list %}
