@@ -1,28 +1,37 @@
+from enum import Enum
 import os
 from typing import List, Tuple
 import uuid
+
+class Model(Enum):
+    VICTOR = "gpt-3.5-turbo"
+    JOHN = "gpt-4o-mini-2024-07-18"
+    HEDY = "gpt-4o-mini"
+    HENRIETTA = "gpt-4o"
 
 class Conversation:
     id: str         # Unique HashID
     name: str       # Conversation Name
     classID: str    # Class HashID
+    model: Model      # OpenAI Model
     discussion: List[Tuple[str, str]]
 
-    def __init__(self, assistant = None, class_prompt = None):
+    def __init__(self, assistant: Model = Model.JOHN, class_prompt: str = None):
         self.id = str(uuid.uuid4())
         self.discussion = []
-        if (assistant is not None):
-            match assistant:
-                case "gpt-3.5-turbo":
-                    self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("VICTOR_PROMPT")})
-                case "gpt-4o-mini":
-                    self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("JOHN_PROMPT")})
-                case "chatgpt-4o":
-                    self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("HEDY_PROMPT")})
-                case "o1-preview":
-                    self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("HENRIETTA_PROMPT")})
-                case _:
-                    self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("VICTOR_PROMPT")})
+        match assistant:
+            case Model.VICTOR:
+                self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("VICTOR_PROMPT")})
+            case Model.JOHN:
+                self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("JOHN_PROMPT")})
+            case Model.HEDY:
+                self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("HEDY_PROMPT")})
+            case Model.HENRIETTA:
+                self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("HENRIETTA_PROMPT")})
+            case _:
+                self.discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + os.getenv("VICTOR_PROMPT")})
+        
+        self.model = assistant
         if (class_prompt is not None):
             self.discussion.append({'role': 'developer', 'content': class_prompt})
         self.discussion.append(

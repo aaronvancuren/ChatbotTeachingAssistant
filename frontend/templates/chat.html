@@ -12,9 +12,13 @@
 
     {% include './elements/Header_General.html' %}
 
+    {% include './elements/Main_ModelModal.html' %}
+
     <main id="host">
 
         {% include './elements/Sidebar_ChatOverview.html' %}
+
+        <p hidden id="openai_model">{{context.conversation_model}}</p>
 
         <div id="content">
             <div id="conversation">
@@ -28,7 +32,7 @@
                         </p>
                         <div>
                             <h5>Examples</h5>
-                            <div class="list-group d-grid gap-2">
+                            <div class="list-group d-grid gap-2 mx-auto">
                                 <button class="list-group-item rounded-3 py-3 bg-light-subtle btn"
                                     onclick="document.getElementById('question').value = 'How does an array work in C?'; AskQuestion();">
                                     How does an array work in C?
@@ -58,7 +62,7 @@
                 </div>
                 {% else %}
                 <div class="talk-bubble left ">
-                    <p class="text-from left">TA Says...</p>
+                    <p class="text-from left">{{context.conversation_model}} Says...</p>
                     <div class="tri-right btm-left teaching_assistant">
                         <article class="talktext">
                             {{dialogue['content']}}
@@ -92,19 +96,12 @@
             <div class="chat-box position-relative">
                 <form id="input" onsubmit="AskQuestion();return false;" method="post">
                     <div class="mx-auto">
-                        <select id="openai_model" title="Select OpenAI Model" name="openai_model" required onchange="updateDisclaimer()">
-                            <option title="Choose a model to help you with an assignment" style="font-size: small;" value="" disabled>Choose a TA</option>
-                            <option title="GPT 3.5 Turbo" value="gpt-3.5-turbo" selected>Victor (GPT 3.5 Turbo)</option>
-                            <option title="GPT 4o Mini" value="gpt-4o-mini">John (GPT 4o Mini)</option>
-                            <option title="GPT 4o Mini" value="gpt-4o-mini">Hedy (GPT 4o Mini)</option>
-                            <option title="GPT 4o" value="gpt-4o">Henrietta (GPT 4o)</option>
-                        </select>
                         <input class="form-control" id="question" name="question" type="text" required placeholder="What's your question?" />
                         <label class="text-from right bi bi-arrow-right" style="z-index: 100; font-size:medium; padding:1.5vh; pointer-events:none !important"></label>
                         <br>
                     </div>
                     <div style="pointer-events: none;">
-                    <p class="text-from left" style="bottom:3%;" id="disclaimer">John is an AI and will occassionally make
+                    <p class="text-from left" style="bottom:3%;" id="disclaimer">{{context.conversation_model}} is an AI and will occassionally make
                         mistakes.</p>
                         <p class="text-from right" style="bottom:3%;" id="counter"></p>
                     </div>

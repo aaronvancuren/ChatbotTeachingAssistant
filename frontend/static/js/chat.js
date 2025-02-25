@@ -8,31 +8,18 @@ window.addEventListener("load", () => {
 
 function addChat() {
     $.ajax({
-        type: "GET",
-        url: "/addChat",    
+        type: "POST",
+        url: "/addChat",
+        data: JSON.stringify({
+            model: $('input[name="ai_list"]:checked')[0].id
+        }),
         headers: {
-            "X-victor-uid": "DEMO-1234", //Replace with UUID Cookie
             "X-Content-Type-Options": "nosniff",
             "Content-Security-Policy": "frame-ancestors 'none'",
             "X-Frame-Options": "DENY",
         },
         success: function(data) {
-            host = document.getElementById('convos');
-            newChat = document.createElement('a');
-            newChat.classList.add('btn', 'btn-secondary', 'active', 'temporary');
-            newChat.href = `/chat?chatID=${data}`;
-            newChat.innerText = 'New Chat';
-            for (const child of host.children) {
-                child.classList.remove('active');
-            }
-            host.insertBefore(newChat, host.firstChild);
-            while (document.getElementById('conversation').children.length > 1) {
-                document.getElementById('conversation').removeChild(document.getElementById('conversation').lastChild);
-            }
-
-            let updateChat = new URLSearchParams(window.location.search);
-            updateChat.set('chatID', data);
-            window.history.replaceState('', '', window.location.origin + window.location.pathname + '?' + updateChat.toString());
+            window.location.href = data;            
         },
         statusCode:  {
             405: (value) => {
@@ -43,6 +30,7 @@ function addChat() {
             }
         }
     })    
+    $('#chooseTA').modal('hide');
 }
 
 function AskQuestion() {
@@ -52,7 +40,6 @@ function AskQuestion() {
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
             currentConversationId: new URLSearchParams(window.location.search).get('chatID').toString(),
-            openai_model: document.getElementById("openai_model").value
         }),        
         headers: {
             "X-Content-Type-Options": "nosniff",
@@ -102,7 +89,7 @@ function createChatBubble(dialogue, classes){
     chatWrapper = document.createElement("p");
     
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.innerText = `${document.getElementById("openai_model").options[document.getElementById("openai_model").selectedIndex].text} says...`;
+        chatWrapper.innerText = `${document.getElementById("openai_model").innerText} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
@@ -158,11 +145,4 @@ function UpdateChatNum() {
         let log = JSON.parse(atob(document.cookie.substring(14).split(';')[0].split("").reverse().join("").substring(2)))
         document.getElementById("counter").innerHTML = 'Daily Questions Left: ' + (log.max - log.count) + '/' + log.max;
     } catch{}
-}
-
-function updateDisclaimer(){
-    let target = document.getElementById("disclaimer");
-    let newVal = document.getElementById("openai_model").options[document.getElementById("openai_model").selectedIndex].text;
-    target.innerText = newVal + " is an AI and will occassionally make mistakes";
-    document.getElementById('openai_model').title = document.getElementById('openai_model').options[document.getElementById('openai_model').selectedIndex].title;
 }

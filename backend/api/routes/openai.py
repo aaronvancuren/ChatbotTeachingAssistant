@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from typing import List, Dict
 from datetime import date
 from backend.database.database_class_sections import get_user_classes
-from backend.models.converstation import Conversation
+from backend.models.converstation import Conversation, Model
 from backend.api.routes.auth import msal_auth
 from backend.database.database_user_conversations import DEMO_LIST
 
@@ -84,7 +84,8 @@ async def chat(request: ChatRequest, response: Response) -> str:
 
         userConversation: List[Conversation] = conversations.get(user_id, [])
         currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
-                                                 Conversation(assistant=reqBody['openai_model'], class_prompt=get_user_classes(user_id)[0].prompt))
+                                                 Conversation(assistant=Model(os.getenv("OPENAI_MODEL")), class_prompt=get_user_classes(user_id)[0].prompt))
+        
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
@@ -121,7 +122,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=currentConversation.discussion,
-            model=reqBody['openai_model'],
+            model=str(currentConversation.model.value),
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=['\0'],

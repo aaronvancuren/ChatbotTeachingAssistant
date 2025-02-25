@@ -1,6 +1,6 @@
 import uuid
 
-from backend.models.converstation import Conversation
+from backend.models.converstation import Conversation, Model
 from backend.models.classes import ClassSection
 
 def CreateSampleClassSections(num = 1):
@@ -29,7 +29,7 @@ def CreateSampleClassSections(num = 1):
 def CreateSampleConversation():
     tmpList = []
     
-    EXAMPLE_CONVERSATION = Conversation("gpt-4o-mini")
+    EXAMPLE_CONVERSATION = Conversation(Model.JOHN)
     EXAMPLE_CONVERSATION.name = "CS 232 Help"                      # Replace with Name of conversation
     EXAMPLE_CONVERSATION.classID = uuid.uuid4()                     # Replace with UUID of conversation
 

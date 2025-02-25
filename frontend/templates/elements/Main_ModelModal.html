@@ -1,0 +1,56 @@
+<link href="https://getbootstrap.com/docs/5.3/examples/list-groups/list-groups.css" rel="stylesheet">
+
+<div class="modal fade" id="chooseTA" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="chooseTA_label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="chooseTA_label">Current Office Hours</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="list-group list-group-checkable d-grid gap-2 border-0" style="margin-inline: 0 !important;">
+          <input class="list-group-item-check pe-none" type="radio" name="ai_list" id="victor">
+          <label class="list-group-item rounded-3 py-3" for="victor">
+            <div class="flex-row">
+              <img class="rounded" src="../static/assets/Port_Victor.jpeg" height="50pt" width="50pt">
+              TA Victor
+              <span class="small opacity-50"><br>Built with ChatGPT 3.5 Turbo</span>
+            </div>
+          </label>
+
+          <input class="list-group-item-check pe-none" type="radio" name="ai_list" id="john" checked>
+          <label class="list-group-item rounded-3 py-3" for="john">
+            <div class="flex-row">
+              <img class="rounded" src="../static/assets/Port_John.jpeg" height="50pt" width="50pt">
+              TA John
+              <span class="small opacity-50"><br>Built with ChatGPT 4o-mini</span>
+            </div>
+          </label>
+
+          <input class="list-group-item-check pe-none" type="radio" name="ai_list" id="hedy">
+          <label class="list-group-item rounded-3 py-3" for="hedy">
+            <div class="flex-row">
+              <img class="rounded" src="../static/assets/Port_Hedy.jpeg" height="50pt" width="50pt">
+              TA Hedy
+              <span class="small opacity-50"><br>Built with ChatGPT 4o-mini</span>
+            </div>
+          </label>
+
+          <input class="list-group-item-check pe-none" type="radio" name="ai_list" id="henrietta">
+          <label class="list-group-item rounded-3 py-3" for="henrietta">
+            <div class="flex-row">
+              <img class="rounded" src="../static/assets/Port_Henrietta.jpeg" height="50pt" width="50pt">
+              TA Henrietta
+              <span class="small opacity-50"><br>Built with ChatGPT 4o</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="addChat()">Let's Chat</button>
+      </div>
+    </div>
+  </div>
+</div>
