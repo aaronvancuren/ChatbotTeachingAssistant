@@ -1,7 +1,7 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from psycopg2 import sql
 import logging
+
+from psycopg2.extensions import *
+from psycopg2.extras import RealDictCursor
 
 from backend.database.postgre_db_connection import get_db_connection 
 
@@ -20,13 +20,13 @@ def create_user(display_name, email, role='student'):
     Returns:
         bool: True if insertion was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         insert_query = """
@@ -57,13 +57,13 @@ def read_user_by_id(user_id):
     Returns:
         str or None: User data if found, else None.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
     
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         select_query = "SELECT display_name, role FROM users WHERE id = %s;"
@@ -94,13 +94,13 @@ def read_user_by_email(email):
         str or None: User's display name if found, else None.
         str or None: User's role if found, else None.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
     
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         select_query = "SELECT display_name, role FROM users WHERE email = %s;"
@@ -130,13 +130,13 @@ def read_email_by_id(user_id):
     Returns:
         str or None: The user's email if found, else None.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
 
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         select_query = "SELECT email FROM users WHERE id = %s;"
@@ -167,13 +167,13 @@ def update_user_display_name(display_name, email):
     Returns:
         bool: True if update was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         update_query = "UPDATE users SET display_name = %s WHERE email = %s;"
@@ -200,13 +200,13 @@ def delete_user(user_id):
     Returns:
         bool: True if deletion was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         delete_query = "DELETE FROM users WHERE id = %s;"
@@ -243,13 +243,13 @@ def create_course(instructor_id, display_name, subject, course_number, section_n
     Returns:
         str or None: The UUID of the newly created course, or None if failed.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         insert_query = """
@@ -281,13 +281,13 @@ def read_course_by_id(course_id):
     Returns:
         dict or None: Course data if found, else None.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
     
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         select_query = "SELECT * FROM courses WHERE id = %s;"
@@ -314,13 +314,13 @@ def update_course_title(course_id, new_title):
     Returns:
         bool: True if update was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         update_query = "UPDATE courses SET title = %s WHERE id = %s;"
@@ -348,13 +348,13 @@ def update_course_model(course_id, new_model):
     Returns:
         bool: True if update was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         update_query = "UPDATE courses SET model = %s WHERE id = %s;"
@@ -381,13 +381,13 @@ def delete_course(course_id):
     Returns:
         bool: True if deletion was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         delete_query = "DELETE FROM courses WHERE id = %s;"
@@ -416,13 +416,13 @@ def create_user_conversation(course_id, user_id, title):
     Returns:
         str or None: The ID of the new conversation, or None if failed.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         insert_query = """
@@ -455,13 +455,13 @@ def read_conversations_by_user(user_id, course_id):
     Returns:
         list: A list of conversations IDs.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return []
     
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s AND course_id = %s;"
@@ -490,13 +490,13 @@ def update_conversation_title(conversation_id, new_title):
     Returns:
         bool: True if update was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         update_query = "UPDATE user_conversations SET title = %s WHERE conversation_id = %s;"
@@ -523,13 +523,13 @@ def delete_conversation(conversation_id):
     Returns:
         bool: True if deletion was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         delete_query = "DELETE FROM user_conversations WHERE conversation_id = %s;"
@@ -558,13 +558,13 @@ def create_message(conversation_id, prompt, response):
     Returns:
         str or None: The ID of the new message, or None if failed.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         insert_query = """
@@ -596,13 +596,13 @@ def read_messages_from_conversation(conversation_id):
     Returns:
         list: A list of prompts and responses for a conversation.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return []
     
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         select_query = """
@@ -631,13 +631,13 @@ def create_user_course(course_id, user_id):
     Returns:
         bool: True if creation was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
     
-    cur = conn.cursor()
+    cur: cursor = conn.cursor()
 
     try:
         insert_query = """
@@ -671,13 +671,13 @@ def read_users_for_course(course_id):
         If no records are found or an error occurs, an empty list is returned.
     """
 
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return []
 
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         select_query = """
             SELECT user_id FROM user_courses WHERE course_id = %s;
@@ -708,13 +708,13 @@ def delete_user_course(course_id, user_id):
         bool: True if deletion was successful, False otherwise.
     """
 
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
 
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         delete_query = """
@@ -743,13 +743,13 @@ def delete_user_courses_by_course(course_id):
     Returns:
         bool: True if the deletion was successful, False otherwise.
     """
-    conn = get_db_connection()
+    conn: connection = get_db_connection()
 
     if conn is None:
         logging.error("Failed to connect to the database.")
         return False
 
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         delete_query = """
