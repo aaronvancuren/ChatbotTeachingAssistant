@@ -83,6 +83,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
             conversations[user_id] = DEMO_LIST
 
         userConversation: List[Conversation] = conversations.get(user_id, [])
+        #TODO Update the method of getting the class prompt
         currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
                                                  Conversation(assistant=Model(os.getenv("OPENAI_MODEL")), class_prompt=get_user_classes(user_id)[0].prompt))
         
