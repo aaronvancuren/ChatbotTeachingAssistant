@@ -35,8 +35,8 @@ async def homepage(request : Request, context: dict = Depends(get_context)):
         claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
         if claims is not None and claims.validate_token() == TokenStatus.VALID:
             context.update({"display_name": claims.display_name})
-            context.update({"class_list": get_user_classes(claims.user_id)})
-            context.update({"conversation_list": get_user_conversations(claims.user_id)})
+            context.update({"class_list": get_user_classes(claims.user_id)}) #TODO update method of getting student classes
+            context.update({"conversation_list": get_user_conversations(claims.user_id)}) #TODO update method of getting conversations for classes. Need to discuss when we should be getting the conversations
 
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
@@ -55,14 +55,14 @@ async def chatpage(request : Request, chatID : str, context: dict = Depends(get_
     if context.get("id_token") is not None:
         claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
         if(claims is not None and claims.validate_token() == TokenStatus.VALID):
-            userConvos = get_user_conversations(claims.user_id)
+            userConvos = get_user_conversations(claims.user_id) #TODO update method of getting user conversations
             if (chatID in [str(convo.id) for convo in userConvos]):
                 conversation = next((convo for convo in userConvos
                     if str(convo.id) == chatID), Conversation(class_prompt=get_user_classes(claims.user_id)[0].prompt))
                 
                 context.update({"display_name": claims.display_name})
                 context.update({"conversation_list": userConvos})
-                context.update({"conversation_data": conversation.getDiscussion()})
+                context.update({"conversation_data": conversation.getDiscussion()}) #TODO update method of getting the discussion (should be conversation) Need Neal to clarify method purpose.
                 context.update({"conversation_model": conversation.model.name.title()})
                 context.update({"chatID": chatID})
 

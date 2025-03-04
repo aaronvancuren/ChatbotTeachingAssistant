@@ -1,12 +1,7 @@
 import psycopg2
 import os
-from dotenv import load_dotenv
 
 def get_db_connection():
-    
-  # Load environment variables from .env file
-    load_dotenv()
-
     # Retrieve required environment variables
     dbname = os.environ['DB_NAME']
     user = os.environ['DB_USER']

@@ -18,8 +18,8 @@ def get_user_conversations(UserID : str) -> list[Conversation]:
     return DEMO_LIST                                # Replace with DATABASE CALLS
     
 
+#TODO need to reevaluate this method and the use of the get_user_classes method
 def add_user_conversation(UserID : str, model: Model):
-
     tmpConvo = Conversation(assistant=model,class_prompt=get_user_classes(UserID)[0].prompt)
     tmpConvo.id = uuid.uuid4()
     tmpConvo.name = f"New chat with {model.name.title()}"                      # Replace with Name of conversation
