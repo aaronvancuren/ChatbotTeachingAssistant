@@ -142,7 +142,7 @@ function RenderMarkdown(text) {
 
 function UpdateChatNum() {
     try {
-        let log = JSON.parse(atob(document.cookie.substring(14).split(';')[0].split("").reverse().join("").substring(2)))
+        let log = JSON.parse(atob(decodeURIComponent(document.cookie).split(';').find((e)=>{return e.includes("chat_usage")}).trim().substring(14).split("").reverse().join("").substring(2)));
         document.getElementById("counter").innerHTML = 'Daily Questions Left: ' + (log.max - log.count) + '/' + log.max;
     } catch{}
 }
