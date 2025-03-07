@@ -1,4 +1,6 @@
 import uuid
+from backend.database.postgres import *
+
 from backend.models.role import Role
 from backend.models.message import Message
 from backend.models.course import Course
@@ -13,8 +15,16 @@ class User:
     
     def __init__(self, email: str, id: uuid):
         # Find the user in the database
+        user: RealDictRow = read_user_by_email(email)
+        if(user is None):
+            # return
+            pass
         
         # If found, inspect user id
+        id:uuid = uuid.UUID(user["id"])
+        if(id is None):
+            set_user_id(id, email)
+            pass
         
         # If id is null, update user with id argument (first time logging into application)
         
