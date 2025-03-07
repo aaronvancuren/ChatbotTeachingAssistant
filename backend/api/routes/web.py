@@ -58,7 +58,7 @@ async def chatpage(request : Request, chatID : str, context: dict = Depends(get_
             userConvos = get_user_conversations(claims.user_id) #TODO update method of getting user conversations
             if (chatID in [str(convo.id) for convo in userConvos]):
                 conversation = next((convo for convo in userConvos
-                    if str(convo.id) == chatID), Conversation(class_prompt=get_user_classes(claims.user_id)[0].prompt))
+                    if str(convo.id) == chatID), Conversation(claims.user_id, class_prompt=get_user_classes(claims.user_id)[0].prompt))
                 
                 context.update({"display_name": claims.display_name})
                 context.update({"conversation_list": userConvos})

@@ -4,7 +4,7 @@ from backend.database.database_class_sections import get_user_classes
 from backend.models.converstation import Conversation, Model
 from backend.models.sampler import CreateSampleConversation
 
-DEMO_LIST = CreateSampleConversation()
+DEMO_LIST = []
 
 def get_user_conversations(UserID : str) -> list[Conversation]:
     """
@@ -15,12 +15,16 @@ def get_user_conversations(UserID : str) -> list[Conversation]:
     Returns:
         A list of conversations that the user is a part of
     """
-    return DEMO_LIST                                # Replace with DATABASE CALLS
+    li = [convo for convo in DEMO_LIST if convo.user_id == UserID]
+    if (len(li) == 0):
+        add_user_conversation(UserID, Model.JOHN)
+        li = [convo for convo in DEMO_LIST if convo.user_id == UserID]
+    return li                                # Replace with DATABASE CALLS
     
 
 #TODO need to reevaluate this method and the use of the get_user_classes method
 def add_user_conversation(UserID : str, model: Model):
-    tmpConvo = Conversation(assistant=model,class_prompt=get_user_classes(UserID)[0].prompt)
+    tmpConvo = Conversation(UserID, assistant=model,class_prompt=get_user_classes(UserID)[0].prompt)
     tmpConvo.id = uuid.uuid4()
     tmpConvo.name = f"New chat with {model.name.title()}"                      # Replace with Name of conversation
     tmpConvo.classID = uuid.uuid4()                 # Replace with UUID of conversation
