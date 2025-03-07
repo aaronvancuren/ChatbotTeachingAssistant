@@ -17,12 +17,12 @@ class User:
         # Find the user in the database
         user: RealDictRow = read_user_by_email(email)
         if(user is None):
-            # return
+            # you have not been invited
             pass
         
         # If found, inspect user id
-        id:uuid = uuid.UUID(user["id"])
-        if(id is None):
+        self.id:uuid = uuid.UUID(user["id"])
+        if(self.id is None):
             set_user_id(id, email)
             pass
         
@@ -38,8 +38,7 @@ class User:
     # Get user conversations by course
     def get_conversations(self, course_id: uuid) -> list[Message]:
         # Get the conversation_id from the user_conversations table by using the course_id and id
-        conversation_id: uuid
-        self.get_conversation(conversation_id)
+
         # Update the conversation property
         
         # Return the conversation (list[message])
