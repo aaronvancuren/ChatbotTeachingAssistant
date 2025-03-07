@@ -89,7 +89,7 @@ function createChatBubble(dialogue, classes){
     chatWrapper = document.createElement("p");
     
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.innerText = `${document.getElementById("openai_model").innerText} says...`;
+        chatWrapper.text = `${document.getElementById("openai_model").text} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
@@ -137,12 +137,14 @@ function createChatBubble(dialogue, classes){
 function RenderMarkdown(text) {
     let markdownToHTML = new showdown.Converter();
     UpdateChatNum();
-    return markdownToHTML.makeHtml(text);
+    return markdownToHTML.makeHtml(text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'));
 }
 
 function UpdateChatNum() {
     try {
         let log = JSON.parse(atob(decodeURIComponent(document.cookie).split(';').find((e)=>{return e.includes("chat_usage")}).trim().substring(14).split("").reverse().join("").substring(2)));
         document.getElementById("counter").innerHTML = 'Daily Questions Left: ' + (log.max - log.count) + '/' + log.max;
+        if (log.max - log.count === 0)
+            document.getElementById("question").disabled = true;
     } catch{}
 }
