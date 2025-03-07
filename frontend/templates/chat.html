@@ -5,6 +5,7 @@
 
 <script src="../static/js/chat.js"></script>
 <script type="text/javascript" src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/@jitbit/htmlsanitizer@latest/HtmlSanitizer.js"></script>
 
 <link rel="stylesheet" href="../static/css/chat.css"/>
 
@@ -82,7 +83,7 @@
             <div id="LOADING" class="talk-bubble left hidden" style="width:8em; bottom: 12vh" aria-hidden="true">
                 <p class="text-from left">Thinking...</p>
                 <div class="tri-right btm-left teaching_assistant">
-                    <article class="talktext">
+                    <div class="talktext">
                         <div class="placeholder-glow d-flex">
                             <p class="placeholder col-2 rounded-pill"></p>
                             <p class="placeholder col-2 rounded-pill"></p>
@@ -90,7 +91,7 @@
                             <p class="placeholder col-2 rounded-pill"></p>
                             <p class="placeholder col-2 rounded-pill"></p>
                         </div>
-                    </article>
+                    </div>
                 </div>
             </div>
             <div class="chat-box position-relative">

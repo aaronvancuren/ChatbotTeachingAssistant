@@ -73,7 +73,7 @@ function AskQuestion() {
             }
         }
     });
-    createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
+    createChatBubble(document.getElementById("question").value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'), ["btm-right", "student"]);
     document.getElementById("question").disabled = true;
     document.getElementById("LOADING").classList.remove("hidden");
     try {
@@ -89,7 +89,7 @@ function createChatBubble(dialogue, classes){
     chatWrapper = document.createElement("p");
     
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.innerText = `${document.getElementById("openai_model").innerText} says...`;
+        chatWrapper.text = `${document.getElementById("openai_model").text} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
@@ -142,7 +142,9 @@ function RenderMarkdown(text) {
 
 function UpdateChatNum() {
     try {
-        let log = JSON.parse(atob(document.cookie.substring(14).split(';')[0].split("").reverse().join("").substring(2)))
+        let log = JSON.parse(atob(decodeURIComponent(document.cookie).split(';').find((e)=>{return e.includes("chat_usage")}).trim().substring(14).split("").reverse().join("").substring(2)));
         document.getElementById("counter").innerHTML = 'Daily Questions Left: ' + (log.max - log.count) + '/' + log.max;
+        if (log.max - log.count === 0)
+            document.getElementById("question").disabled = true;
     } catch{}
 }
