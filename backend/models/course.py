@@ -14,6 +14,7 @@ class Course:
     prompt: str
     documents_path: str
     image_path: str
+    students: list[User]
     
     def __init__(self):
         pass
