@@ -73,7 +73,7 @@ function AskQuestion() {
             }
         }
     });
-    createChatBubble(document.getElementById("question").value, ["btm-right", "student"]);
+    createChatBubble(document.getElementById("question").value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'), ["btm-right", "student"]);
     document.getElementById("question").disabled = true;
     document.getElementById("LOADING").classList.remove("hidden");
     try {
@@ -137,7 +137,7 @@ function createChatBubble(dialogue, classes){
 function RenderMarkdown(text) {
     let markdownToHTML = new showdown.Converter();
     UpdateChatNum();
-    return markdownToHTML.makeHtml(text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+    return markdownToHTML.makeHtml(text);
 }
 
 function UpdateChatNum() {
