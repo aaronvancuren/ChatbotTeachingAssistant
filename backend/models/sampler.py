@@ -26,12 +26,11 @@ def CreateSampleClassSections(num = 1):
         tmpList.append(tmpClass)
     return tmpList
 
-def CreateSampleConversation():
+def CreateSampleConversation(UserID : str):
     tmpList = []
     
-    EXAMPLE_CONVERSATION = Conversation(Model.JOHN)
+    EXAMPLE_CONVERSATION = Conversation(UserID, Model.JOHN)
     EXAMPLE_CONVERSATION.name = "CS 232 Help"                      # Replace with Name of conversation
     EXAMPLE_CONVERSATION.classID = uuid.uuid4()                     # Replace with UUID of conversation
-
     tmpList.append(EXAMPLE_CONVERSATION)
     return tmpList

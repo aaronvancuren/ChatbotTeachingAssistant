@@ -15,9 +15,11 @@ class Conversation:
     classID: str    # Class HashID
     model: Model      # OpenAI Model
     discussion: List[Tuple[str, str]]
+    user_id: str
 
-    def __init__(self, assistant: Model = Model.JOHN, class_prompt: str = None):
+    def __init__(self,  user_id: str, assistant: Model = Model.JOHN, class_prompt: str = None):
         self.id = str(uuid.uuid4())
+        self.user_id = user_id
         self.discussion = []
         match assistant:
             case Model.VICTOR:
