@@ -9,6 +9,7 @@ from backend.api.errors import HTTPError
 from backend.api.routes.web import web_router
 from backend.api.routes.openai import openai_router
 from backend.api.routes.auth import msal_auth
+from backend.api.routes.dashboard import dashboard_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -24,6 +25,7 @@ app.include_router(web_router)
 app.include_router(openai_router)
 app.include_router(msal_auth.router)
 app.include_router(upload_router)
+app.include_router(dashboard_router)
 
 # Set up pathing to CSS/JS files for Jinja2 Templates
 app.mount('/static', StaticFiles(directory='frontend/static'), name='static')
