@@ -78,9 +78,13 @@ header {
 .btn-gold {
     background-color: var(--pfw-gold-tassel);
     color: var(--primary-pfw-white);
-  }
-  
-  .btn-gold:hover {
+}
+
+.btn-gold:hover {
     background-color: var(--pfw-gold-summit);
     color: var(--primary-pfw-white);
-  }
+}
+
+i { 
+    font-style: italic;
+}

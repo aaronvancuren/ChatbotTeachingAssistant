@@ -83,6 +83,22 @@ async def addChat(request: Request, context: dict = Depends(get_context)):
 
     raise HTTPError(status_code=401, detail="Unauthorized")
 
+@web_router.get("/profile")
+async def profilepage(request : Request, context: dict = Depends(get_context)):
+    """
+    Profile page of application
+    Args:
+        request: the data contained in the request that the server received
+    """
+    if context.get("id_token") is not None:
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
+        if(claims is not None and claims.validate_token() == TokenStatus.VALID):
+            context.update({"display_name": claims.display_name})
+            context.update({"id": claims.user_id})
+            context.update({"user_email": claims.preferred_username})
+            return page_templates.TemplateResponse('profile.html', {"request": request, "context": context})
+    raise HTTPError(status_code=401, detail="Unauthorized")
+
 #endregion
 
 #region Error Pages

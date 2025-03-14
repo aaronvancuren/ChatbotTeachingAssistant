@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include './elements/HTML_Head.html' %}
+
+<script src="../static/js/profile.js"></script>
+
+<link rel="stylesheet" href="../static/css/profile.css" />
+
+<body class="bg-body-tertiary" style="overflow:hidden">
+
+    {% include './elements/Header_General.html' %}
+
+    <main id="host">
+
+        {% include './elements/Sidebar_Profile.html' %}
+
+        <div class="col-8" style="margin-left: 280px; padding: 25px; overflow-y: auto !important;">
+            <h1>Settings</h1>
+            <hr>
+            <div data-bs-spy="scroll" data-bs-target="#navbar" data-bs-smooth-scroll="true"
+                class="scrollspy" tabindex="0" id="settings">
+                <div id="about-me">
+                    <h4>About Me</h4>
+                    <p style="color: #00000060 !important;">These settings are how our TAs will respond with you or allow the professor to reach out to you.</p>
+                </div>
+                <div id="about-me-name">
+                    <h5>Name</h5>
+                    <span style="color: #00000060 !important;"><input class="form-control" name="name" type="text" placeholder="{{context.display_name}}"></input></span>
+                </div>
+                <div id="about-me-email">
+                    <h5>Email</h5>
+                    <span style="color: #00000060 !important;"><input class="form-control" disabled type="email" placeholder="{{context.user_email}}"></input></span>
+                    <p style="color: #00000060 !important;"><b>NOTE:</b> This setting is controlled by an administrator.</p>
+                </div>
+                <div id="about-me-pronouns">
+                    <h5>Pronouns</h5>
+                    <span style="color: #00000060 !important;"><input class="form-control" type="text"></input></span>
+                </div>
+                <hr>
+                <div id="preferences">
+                    <h4>Preferences</h4>
+                    <p style="color: #00000060 !important;">Change how the website looks. Make it your own!</p>
+                </div>
+                <div id="preferences-general">
+                    <h5>General</h5>
+                    <p style="color: #00000060 !important;"><i>Coming Soon</i></p>
+                </div>
+                <hr>
+                <div id="accessibility">
+                    <h4>Accessibility</h4>
+                    <p style="color: #00000060 !important;">We want to make the website as accessable as possible. Change settings related to this here.</p>
+                </div>
+                <div id="accessibility-general">
+                    <h5>General</h5>
+                    <p style="color: #00000060 !important;"><i>Coming Soon</i></p>
+                </div>
+
+            </div>
+
+    </main>
+</body>
+
+</html>
