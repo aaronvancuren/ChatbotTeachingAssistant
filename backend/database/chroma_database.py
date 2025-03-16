@@ -1,23 +1,28 @@
-import chromadb
 import logging
 import os
 
 from openai import OpenAI
-from typing import List, Dict
+from openai.types.create_embedding_response import CreateEmbeddingResponse
+from openai.types.embedding import Embedding
+
+import chromadb
+from chromadb.api import ClientAPI
+from chromadb.api.models.Collection import Collection
+from chromadb.api.types import Document, Documents, ID, IDs, Metadata, Metadatas, GetResult
 
 openai = OpenAI()
 
 # Function to generate embeddings using OpenAI's API
-def generate_embedding(text):
-    response = openai.embeddings.create(
+def generate_embedding(text: str) -> Embedding:
+    response:CreateEmbeddingResponse = openai.embeddings.create(
         input=text,
         model=os.getenv("OPENAI_EMBEDDING_MODEL")
     )
-    embedding = response.data[0].embedding
+    embedding: Embedding = response.data[0].embedding
     return embedding
 
 # Function to initialize ChromaDB client with optional persistent storage
-def initialize_chromadb(use_persistence=True):
+def initialize_chromadb(use_persistence=True) -> ClientAPI:
     if use_persistence == True:
         client = chromadb.PersistentClient(os.getenv("CHROMA_PERSISTENT_DIRECTORY"))
         logging.info(f"ChromaDB initialized with persistent storage at '{os.getenv("CHROMA_PERSISTENT_DIRECTORY")}'.")
@@ -28,12 +33,12 @@ def initialize_chromadb(use_persistence=True):
     return client
 
 # Function to get or create a collection
-def get_or_create_collection(client, collection_name):
+def get_or_create_collection(client: ClientAPI, collection_name: str) -> Collection:
     collection = client.get_or_create_collection(name=collection_name)
     return collection
 
 # Function to add documents to the collection
-def add_documents(collection, documents, ids, metadatas):
+def add_documents(collection: Collection, documents: Documents, ids: IDs, metadatas: Metadatas):
     embeddings = [generate_embedding(doc) for doc in documents]
     collection.add(
         documents=documents,
@@ -43,14 +48,14 @@ def add_documents(collection, documents, ids, metadatas):
     )
 
 # Function to retrieve entries based on file name
-def retrieve_by_file_name(collection, file_name):
+def retrieve_by_file_name(collection: Collection, file_name: str) -> GetResult:
     results = collection.get(
         where={'file_name': file_name}
     )
     return results
 
 # Function to update an existing entry
-def update_entry(collection, id, updated_document=None, updated_metadata=None):
+def update_entry(collection: Collection, id: ID, updated_document: Document=None, updated_metadata: Metadata=None):
     update_params = {'ids': [id]}
     if updated_document:
         update_params['documents'] = [updated_document]
@@ -60,10 +65,10 @@ def update_entry(collection, id, updated_document=None, updated_metadata=None):
     collection.update(**update_params)
 
 # Function to delete an entry
-def delete_entry(collection, id):
+def delete_entry(collection: Collection, id: ID):
     collection.delete(ids=[id])
 
-def nearest_neighbor_search(collection, input_text: str, n_results: int = 5) -> List[Dict]:
+def nearest_neighbor_search(collection: Collection, input_text: str, n_results: int = 5) -> list[dict]:
     """
     Performs a nearest neighbor search on the collection based on the input_text.
     

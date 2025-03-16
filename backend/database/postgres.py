@@ -1,12 +1,34 @@
 import logging
+import os
+import uuid
 
-from psycopg2.extensions import *
-from psycopg2.extras import RealDictCursor
-
-from backend.database.postgre_db_connection import get_db_connection 
+import psycopg2
+from psycopg2.extensions import connection, cursor
+from psycopg2.extras import RealDictCursor, RealDictRow
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+def get_db_connection():
+    # Retrieve required environment variables
+    dbname = os.environ['DB_NAME']
+    user = os.environ['DB_USER']
+    password = os.environ['DB_PASSWORD']
+    host = os.getenv('DB_HOST', 'localhost')  # Default to 'localhost' if not set
+    port = int(os.getenv('DB_PORT', 5432))    # Default to 5432 if not set
+
+    # Database connection configuration
+    db_config = {
+        "dbname": dbname,
+        "user": user,
+        "password": password,
+        "host": host,
+        "port": port
+    }
+
+    # Connect to PostgreSQL using psycopg2
+    conn = psycopg2.connect(**db_config)
+    return conn
 
 def create_user(display_name, email, role='student'):
     """
@@ -83,7 +105,7 @@ def read_user_by_id(user_id):
         cur.close()
         conn.close()
 
-def read_user_by_email(email):
+def read_user_by_email(email) -> RealDictRow:
     """
     Retrieves a user from the users table by email.
 
@@ -103,10 +125,10 @@ def read_user_by_email(email):
     cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT display_name, role FROM users WHERE email = %s;"
-        cur.execute(select_query, (email,))
-        row = cur.fetchone()
-        
+        select_query = "SELECT id, display_name, email, role FROM users WHERE email = %s;"
+        cur.execute(select_query, (email))
+        row: RealDictRow = cur.fetchone()
+
         if row is None:
             return None
         
@@ -190,6 +212,28 @@ def update_user_display_name(display_name, email):
         cur.close()
         conn.close()
 
+def set_user_id(id: uuid, email: str):
+    conn: connection = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+    
+    cur: cursor = conn.cursor()
+    
+    try:
+        update_query = "UPDATE users SET id = %s WHERE email = %s;"
+        cur.execute(update_query, (id, email))
+        conn.commit()
+        return True
+    except Exception as e:
+        logging.error(f"Error updating user display name: {e}")
+        conn.rollback()
+        return False
+    finally:
+        cur.close()
+        conn.close()
+
 def delete_user(user_id):
     """
     Deletes a user from the users table.
@@ -222,7 +266,6 @@ def delete_user(user_id):
     finally:
         cur.close()
         conn.close()
-
 
 def create_course(instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path):
     """
