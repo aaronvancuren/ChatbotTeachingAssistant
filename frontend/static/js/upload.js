@@ -190,7 +190,7 @@ uploadBtn.addEventListener("click", async () => {
   }
 
   try {
-    const response = await fetch("/files/upload", {
+    const response = await fetch("/dashboard/upload", {
       method: "POST",
       body: formData
     });
@@ -247,7 +247,7 @@ async function deleteFile(fileName) {
     return;
   }
   try {
-    const response = await fetch(`/files/delete/${fileName}`, {
+    const response = await fetch(`/dashboard/delete/${fileName}`, {
       method: "DELETE"
     });
     if (!response.ok) {
@@ -284,7 +284,7 @@ async function handleUpdateFile(event) {
   formData.append("file", newFile);
 
   try {
-    const response = await fetch(`/files/update/${fileName}`, {
+    const response = await fetch(`/dashboard/update/${fileName}`, {
       method: "PUT",
       body: formData
     });
@@ -322,7 +322,7 @@ async function deleteAllFiles() {
       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
   
     try {
-      const response = await fetch("/files/delete_all", {
+      const response = await fetch("/dashboard/delete_all", {
         method: "DELETE",
       });
   

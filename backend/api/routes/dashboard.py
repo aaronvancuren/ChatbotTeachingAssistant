@@ -26,9 +26,9 @@ collection = get_or_create_collection(client, 'file_collection')
 
 page_templates = Jinja2Templates(directory='frontend/templates')
 
-dashboard_router = APIRouter()
+dashboard_router = APIRouter(prefix="/dashboard")
 
-@dashboard_router.get("/dashboard")
+@dashboard_router.get("/")
 async def dashboard(request : Request, context: dict = Depends(get_context)):
     """
     Main index page of application
@@ -47,7 +47,7 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
 
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
 
-@dashboard_router.get("/dashboard/class")
+@dashboard_router.get("/class")
 async def teacher_class_view(request : Request, context: dict = Depends(get_context)):
     # Retrieve all documents from the collection
     documents = collection.get()
