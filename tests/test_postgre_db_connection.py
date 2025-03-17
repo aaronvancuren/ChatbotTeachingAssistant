@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 import os
 
 # Import the get_db_connection function from your module
-from backend.database.postgre_db_connection import get_db_connection
+from backend.database.postgres import get_db_connection
 
 class TestGetDbConnection(unittest.TestCase):
 

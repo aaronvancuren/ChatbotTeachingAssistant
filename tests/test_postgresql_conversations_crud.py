@@ -1,7 +1,5 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import logging
-from psycopg2.extras import RealDictCursor
 
 # Import the updated CRUD methods under test
 from backend.database.postgres import (
