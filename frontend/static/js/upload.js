@@ -1,6 +1,9 @@
-const dropzone = document.getElementById("dropzone");
-const fileInput = document.getElementById("fileInput");
+const studentDropzone = document.getElementById("studentDropzone");
+const fileDropzone = document.getElementById("fileDropzone");
+const studentFileInput = document.getElementById("studentFileInput");
+const uploadFileInput = document.getElementById("uploadFileInput");
 const fileQueueEl = document.getElementById("fileQueue");
+const studentList = document.getElementById("studentList"); // NEW
 const removeAllBtn = document.getElementById("removeAllBtn"); // <-- NEW
 const uploadBtn = document.getElementById("uploadBtn");
 const progressBar = document.getElementById("uploadProgress");
@@ -8,63 +11,109 @@ const uploadResult = document.getElementById("uploadResult");
 
 const allowedExtensions = [".txt", ".pdf", ".doc", ".docx", ".html", ".css"];
 
-// A DataTransfer that holds all staged files
+// DataTransfer that holds all staged files
 let combinedFilesDataTransfer = new DataTransfer();
 
 // Dropzone click => open file dialog
-dropzone.addEventListener("click", () => {
-  fileInput.click();
+studentDropzone.addEventListener("click", () => {
+  studentFileInput.click();
+});
+
+fileDropzone.addEventListener("click", () => {
+  uploadFileInput.click();
 });
 
 // Drag & Drop
-dropzone.addEventListener("dragover", (e) => {
+studentDropzone.addEventListener("dragover", (e) => {
   e.preventDefault();
-  dropzone.classList.add("bg-info", "text-white");
+  studentDropzone.classList.add("bg-info", "text-white");
 });
-dropzone.addEventListener("dragleave", (e) => {
+studentDropzone.addEventListener("dragleave", (e) => {
   e.preventDefault();
-  dropzone.classList.remove("bg-info", "text-white");
+  studentDropzone.classList.remove("bg-info", "text-white");
 });
-dropzone.addEventListener("drop", (e) => {
+studentDropzone.addEventListener("drop", (e) => {
   e.preventDefault();
-  dropzone.classList.remove("bg-info", "text-white");
+  studentDropzone.classList.remove("bg-info", "text-white");
+  handleFileDrop(e, "student");
+});
+
+fileDropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  fileDropzone.classList.add("bg-info", "text-white");
+});
+fileDropzone.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  fileDropzone.classList.remove("bg-info", "text-white");
+});
+fileDropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  fileDropzone.classList.remove("bg-info", "text-white");
+  handleFileDrop(e, "upload");
+});
+
+// File dialog selection
+uploadFileInput.addEventListener("change", (e) => {
+  handleFileSelection(e, "upload");
+});
+
+studentFileInput.addEventListener("change", (e) => {
+  handleFileSelection(e, "student");
+});
+
+function handleFileSelection(e, type) {
+  const targetInput = type === "upload" ? uploadFileInput : studentFileInput;
+  const fileQueue = type === "upload" ? fileQueueEl : studentList;
+  const allowedExtensions = type === "upload" 
+    ? [".txt", ".pdf", ".doc", ".docx", ".html", ".css"] 
+    : [".txt", ".csv", ".xls", ".xlsx"];
+
+  const newDataTransfer = new DataTransfer();
+
+  for (const file of e.target.files) {
+    const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+    if (allowedExtensions.includes(extension)) {
+      newDataTransfer.items.add(file);
+    } else {
+      alert(`"${file.name}" is not an allowed file type.`);
+    }
+  }
+
+  targetInput.files = newDataTransfer.files;
+  displayQueuedFiles(targetInput.files, fileQueue);
+}
+
+function handleFileDrop(e, type) {
+  const targetInput = type === "upload" ? uploadFileInput : studentFileInput;
+  const fileQueue = type === "upload" ? fileQueueEl : studentList;
+  const allowedExtensions = type === "upload" 
+    ? [".txt", ".pdf", ".doc", ".docx", ".html", ".css"] 
+    : [".txt", ".csv", ".xls", ".xlsx"];
+
+  const newDataTransfer = new DataTransfer();
 
   for (const file of e.dataTransfer.files) {
     const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
     if (allowedExtensions.includes(extension)) {
-      combinedFilesDataTransfer.items.add(file);
+      newDataTransfer.items.add(file);
     } else {
       alert(`"${file.name}" is not an allowed file type.`);
     }
   }
-  fileInput.files = combinedFilesDataTransfer.files;
 
-  displayQueuedFiles(fileInput.files);
-});
-
-// File dialog selection
-fileInput.addEventListener("change", (e) => {
-  for (const file of e.target.files) {
-    const extension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-    if (allowedExtensions.includes(extension)) {
-      combinedFilesDataTransfer.items.add(file);
-    } else {
-      alert(`"${file.name}" is not an allowed file type.`);
-    }
-  }
-  fileInput.files = combinedFilesDataTransfer.files;
-  displayQueuedFiles(fileInput.files);
-});
+  targetInput.files = newDataTransfer.files;
+  displayQueuedFiles(targetInput.files, fileQueue);
+}
 
 // Display the queued files with a Remove button
-function displayQueuedFiles(fileList) {
-  fileQueueEl.innerHTML = "";
+function displayQueuedFiles(fileList, queueElement) {
+  queueElement.innerHTML = "";
 
   if (!fileList.length) {
     const li = document.createElement("li");
     li.className = "list-group-item text-muted";
     li.textContent = "No files queued";
-    fileQueueEl.appendChild(li);
+    queueElement.appendChild(li);
     return;
   }
 
@@ -78,27 +127,34 @@ function displayQueuedFiles(fileList) {
     const removeBtn = document.createElement("button");
     removeBtn.className = "btn btn-danger btn-sm ms-3";
     removeBtn.textContent = "Remove";
-    removeBtn.addEventListener("click", () => removeFileFromQueue(i));
+    removeBtn.addEventListener("click", () => removeFileFromQueue(i, queueElement));
 
     li.appendChild(removeBtn);
-    fileQueueEl.appendChild(li);
+    queueElement.appendChild(li);
   }
 }
 
 // Remove a single file from the queue
-function removeFileFromQueue(index) {
+function removeFileFromQueue(index, queueElement) {
   const newDataTransfer = new DataTransfer();
 
-  const currentFiles = combinedFilesDataTransfer.files;
+  const currentFiles = queueElement === fileQueueEl 
+    ? uploadFileInput.files 
+    : studentFileInput.files;
+
   for (let i = 0; i < currentFiles.length; i++) {
     if (i !== index) {
       newDataTransfer.items.add(currentFiles[i]);
     }
   }
 
-  combinedFilesDataTransfer = newDataTransfer;
-  fileInput.files = combinedFilesDataTransfer.files;
-  displayQueuedFiles(fileInput.files);
+  if (queueElement === fileQueueEl) {
+    uploadFileInput.files = newDataTransfer.files;
+    displayQueuedFiles(uploadFileInput.files, fileQueueEl);
+  } else {
+    studentFileInput.files = newDataTransfer.files;
+    displayQueuedFiles(studentFileInput.files, studentList);
+  }
 }
 
 // "Remove All" button => clear entire queue
@@ -107,13 +163,14 @@ removeAllBtn.addEventListener("click", removeAllFromQueue);
 function removeAllFromQueue() {
 
   combinedFilesDataTransfer = new DataTransfer();
-  fileInput.value = ""; // reset the file input
-  displayQueuedFiles([]); // refresh UI
+  uploadFileInput.value = ""; // reset the file input
+  displayQueuedFiles([], fileQueueEl); // refresh UI
+  displayQueuedFiles([], studentList); // refresh student UI
 }
 
 // Click "Upload"
 uploadBtn.addEventListener("click", async () => {
-  if (!fileInput.files.length) {
+  if (!uploadFileInput.files.length) {
     alert("No files to upload.");
     return;
   }
@@ -128,8 +185,8 @@ uploadBtn.addEventListener("click", async () => {
 
   // Build FormData
   const formData = new FormData();
-  for (let i = 0; i < fileInput.files.length; i++) {
-    formData.append("files", fileInput.files[i]);
+  for (let i = 0; i < uploadFileInput.files.length; i++) {
+    formData.append("files", uploadFileInput.files[i]);
   }
 
   try {
