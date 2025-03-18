@@ -34,7 +34,7 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
     Main index page of application
     Args:
         request: the data contained in the request that the server received
-    
+        context: the user's token from the current session through Microsoft Authentication
     Returns:
         Index Web Page Response
     """
