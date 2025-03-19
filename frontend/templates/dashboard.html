@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include './elements/HTML_Head.html' %}
+
+<body class="alert-light">
+    {% include './elements/Header_General.html' %}
+    <main class="container-fluid">
+        <div class="container">
+            <h2 class="py-3">Your Classes</h2>
+            <div class="container p-2" style="background-color: white;">
+                <!-- Single row container for all cards -->
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                  
+                  <!-- Teacher Class Cards -->
+                  {% include './elements/Teacher_ClassCards.html' %}
+                  
+                  <!-- Add Class Cards-->
+                  {% include './elements/Add_ClassCards.html' %}
+                </div>
+              </div>
+        </div>
+        {% include './elements/Footer_General.html' %}
+    </main>
+
+  <!-- Add New Class Modal -->
+  <div
+    class="modal fade"
+    id="addClassModal"
+    tabindex="-1"
+    aria-labelledby="addClassModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="addClassModalLabel">Add New Class</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+
+        <div class="modal-body">
+          <form id="newClassForm">
+            <!-- Subject -->
+            <div class="mb-3">
+              <label for="classType" class="form-label">Class Subject</label>
+              <select
+                class="form-select"
+                id="classType"
+                name="classType"
+                required
+              >
+                <!-- Placeholder subjects-->
+                <option value="">-- Select Subject --</option>
+                <option value="ComputerScience">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="English">English</option>
+                <option value="Biology">Biology</option>
+              </select>
+            </div>
+        
+            <!-- Course Number -->
+            <div class="mb-3">
+              <label for="courseNumber" class="form-label">Course Number</label>
+              <input
+                type="text"
+                class="form-control"
+                id="courseNumber"
+                name="courseNumber"
+                placeholder="e.g. 101"
+                required
+              />
+            </div>
+        
+            <!-- Section Number -->
+            <div class="mb-3">
+              <label for="sectionNumber" class="form-label">Section Number</label>
+              <input
+                type="text"
+                class="form-control"
+                id="sectionNumber"
+                name="sectionNumber"
+                placeholder="e.g. 01"
+                required
+              />
+            </div>
+        
+            <!-- Class Name -->
+            <div class="mb-3">
+              <label for="className" class="form-label">Class Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="className"
+                name="className"
+                placeholder="e.g. Intro to Programming"
+                required
+              />
+            </div>
+
+            <!-- Custom Prompt Field -->
+            <div class="mb-3">
+              <label for="customPrompt" class="form-label">Custom Prompt</label>
+              <textarea class="form-control" id="customPrompt" name="customPrompt" rows="3"
+                        placeholder="Enter a custom prompt for this class"></textarea>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Modal Footer: Submit & Close -->
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="submitNewClass()"
+          >
+            Create Class
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
