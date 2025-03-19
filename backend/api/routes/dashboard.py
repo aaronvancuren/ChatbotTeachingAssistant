@@ -1,13 +1,15 @@
-import os
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
-from fastapi.templating import Jinja2Templates
+from fastapi_msal.models import IDTokenClaims, TokenStatus
+from backend.api.routes.auth import get_context
+from backend.api.errors import HTTPError
 from typing import List
 import uuid
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi_msal import IDTokenClaims
-from fastapi_msal.models import TokenStatus
-from backend.api.errors import HTTPError
+from fastapi.templating import Jinja2Templates
 from backend.api.routes.auth import ACCESS_REQUIRED, get_context, validate_user
+from backend.api.errors import HTTPError
+from backend.database.database_class_sections import get_user_classes
+from backend.database.database_user_conversations import get_user_conversations, add_user_conversation
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import (
     initialize_chromadb,
@@ -22,17 +24,31 @@ templates = Jinja2Templates(directory="frontend/templates")
 client = initialize_chromadb()
 collection = get_or_create_collection(client, 'file_collection')
 
-upload_router = APIRouter(prefix="/files")
+page_templates = Jinja2Templates(directory='frontend/templates')
 
-@upload_router.get("/", response_class=HTMLResponse)
-async def upload_page(request: Request):
-    """
-    Renders the main upload page (drag-and-drop UI) and 
-    shows a list of already-uploaded file names.
-    """
-    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
-        raise HTTPError(status_code=401, detail="Unauthorized")
+dashboard_router = APIRouter(prefix="/dashboard")
 
+@dashboard_router.get("/")
+async def dashboard(request : Request, context: dict = Depends(get_context)):
+    """
+    Main index page of application
+    Args:
+        request: the data contained in the request that the server received
+        context: the user's token from the current session through Microsoft Authentication
+    Returns:
+        Index Web Page Response
+    """
+    if context.get("id_token") is not None:
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
+        if claims is not None and claims.validate_token() == TokenStatus.VALID:
+            context.update({"display_name": claims.display_name})
+            context.update({"class_list": get_user_classes(claims.user_id)})
+            context.update({"conversation_list": get_user_conversations(claims.user_id)})
+
+    return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
+
+@dashboard_router.get("/class")
+async def teacher_class_view(request : Request, context: dict = Depends(get_context)):
     # Retrieve all documents from the collection
     documents = collection.get()
 
@@ -42,13 +58,21 @@ async def upload_page(request: Request):
         file_names.add(metadata['file_name'])
 
     # Pass list of file names into the template
-    return templates.TemplateResponse(
-        "upload_index.html", 
-        {"request": request, "file_names": file_names}
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
+    if context.get("id_token") is not None:
+        claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
+        if claims is not None and claims.validate_token() == TokenStatus.VALID:
+            context.update({"display_name": claims.display_name})
+            context.update({"class_list": get_user_classes(claims.user_id)})
+            context.update({"conversation_list": get_user_conversations(claims.user_id)})
+
+    return templates.TemplateResponse("Teacher_ClassView.html", {"request": request, "context": context, "file_names": file_names}
     )
 
-@upload_router.post("/upload")
-async def upload_file(request: Request, files: List[UploadFile] = File(...)):
+@dashboard_router.post("/upload")
+async def upload_file_api(request: Request, files: List[UploadFile] = File(...)):
     """
     Accept multiple files at once, process them, 
     and add them to the ChromaDB collection if they do not already exist.
@@ -96,6 +120,8 @@ async def upload_file(request: Request, files: List[UploadFile] = File(...)):
                     "content_type": file.content_type,
                     "message": "File uploaded successfully."
                 })
+
+                print(collection.query)
         except HTTPException as he:
             raise he
 
@@ -107,14 +133,14 @@ async def upload_file(request: Request, files: List[UploadFile] = File(...)):
 
     return {"uploaded_files": results}
 
-@upload_router.delete("/delete/{file_name}")
-async def delete_file(file_name: str, request: Request):
+@dashboard_router.delete("/delete/{file_name}")
+async def delete_file_api(file_name: str, request: Request):
+
+    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
+        raise HTTPError(status_code=401, detail="Unauthorized")
     """
     Deletes all chunks associated with the given file_name.
     """
-    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
-        raise HTTPError(status_code=401, detail="Unauthorized")
-
     results = collection.get(where={"file_name": file_name})
     if results['ids']:
         collection.delete(ids=results['ids'])
@@ -122,12 +148,8 @@ async def delete_file(file_name: str, request: Request):
     else:
         raise HTTPException(status_code=404, detail="File not found.")
     
-@upload_router.delete("/delete_all")
-async def delete_all_files(request: Request):
-
-    if (not await validate_user(request, ACCESS_REQUIRED.ADMIN)):
-        raise HTTPError(status_code=401, detail="Unauthorized")
-
+@dashboard_router.delete("/delete_all")
+async def delete_all_files_api():
     # Get all documents in the collection
     all_docs = collection.get()
     all_ids = all_docs.get('ids', [])
@@ -138,8 +160,8 @@ async def delete_all_files(request: Request):
 
     return {"message": "All files deleted successfully."}
 
-@upload_router.put("/update/{file_name}")
-async def update_file(
+@dashboard_router.put("/update/{file_name}")
+async def update_file_api(
     file_name: str,
     request: Request,
     file: UploadFile = File(None),

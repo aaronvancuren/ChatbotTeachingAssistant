@@ -1,7 +1,5 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import logging
-import textwrap
 
 # Import the functions under test
 from backend.database.postgres import (

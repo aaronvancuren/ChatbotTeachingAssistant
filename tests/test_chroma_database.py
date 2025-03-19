@@ -2,7 +2,6 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-import chromadb
 import os
 import shutil
 import tempfile
