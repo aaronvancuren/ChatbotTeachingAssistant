@@ -137,4 +137,4 @@ cython_debug/
 .DS_Store
 
 # SQLite Database
-*.sqlite3
+chromadb_store/
