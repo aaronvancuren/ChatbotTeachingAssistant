@@ -1,27 +1,23 @@
 """Contains OpenAI API calls"""
 
 import base64
+from datetime import date
 import os
 import json
 
-from fastapi import APIRouter, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
-from openai import OpenAI, _exceptions
-from pydantic import BaseModel
-from typing import List, Dict
-from datetime import date
-from backend.database.database_class_sections import get_user_classes
-from backend.models.converstation import Conversation, Model
-from backend.api.routes.auth import msal_auth
-from backend.database.database_user_conversations import DEMO_LIST
-
+from backend.api.routes import get_context
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
+from backend.database.database_user_conversations import DEMO_LIST
+from backend.models.converstation import Conversation, Model
+
+from fastapi import APIRouter, HTTPException, Request, Response, Depends
+
+from openai import OpenAI, _exceptions
 
 client = OpenAI()
 openai_router = APIRouter()
 chroma_client = initialize_chromadb()
 collection = get_or_create_collection(chroma_client, 'file_collection')
-
 
 class ChatRequest(Request):
     user_content: str
@@ -29,10 +25,10 @@ class ChatRequest(Request):
     context: str
     currentConversationId: str
 
-conversations: Dict[str,List[Conversation]] = {}
+conversations: dict[str, list[Conversation]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
-async def chat(request: ChatRequest, response: Response) -> str:
+async def chat(request: ChatRequest, response: Response, context: dict = Depends(get_context)) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
@@ -75,17 +71,15 @@ async def chat(request: ChatRequest, response: Response) -> str:
 
     try:
         reqBody = await request.json()
-
-        user_session = await msal_auth.handler.get_token_from_session(request)
-        user_id = user_session.id_token_claims.user_id
+        user_id = context.get("id")
 
         if (not conversations.get(user_id, [])):    # For Testing
             conversations[user_id] = DEMO_LIST
 
-        userConversation: List[Conversation] = conversations.get(user_id, [])
+        userConversation: list[Conversation] = conversations.get(user_id, [])
         #TODO Update the method of getting the class prompt
         currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
-                                                 Conversation(user_id, assistant=Model(os.getenv("OPENAI_MODEL")), class_prompt=get_user_classes(user_id)[0].prompt))
+                                                Conversation(user_id, assistant=Model(os.getenv("OPENAI_MODEL")), class_prompt=context.get("class_list")[0].prompt))
         
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
@@ -98,7 +92,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
             )
 
             if moderation_response.results and moderation_response.results[0].flagged:
-                 # Adds the ChatGPT response to the conversation
+                # Adds the ChatGPT response to the conversation
                 currentConversation.discussion.append({'role': 'assistant', 'content': "I can't answer that"})
 
                 # Returns the conversation to the frontend to display
@@ -135,7 +129,7 @@ async def chat(request: ChatRequest, response: Response) -> str:
         # Adds the ChatGPT response to the conversation
         currentConversation.discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
 
- # Returns the conversation to the frontend to display
+        # Returns the conversation to the frontend to display
         return json.dumps(currentConversation.getDiscussion())
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
