@@ -227,7 +227,7 @@ def set_user_id(id: uuid, email: str):
         conn.commit()
         return True
     except Exception as e:
-        logging.error(f"Error updating user display name: {e}")
+        logging.error(f"Error updating user id with Microsoft user_id: {e}")
         conn.rollback()
         return False
     finally:
