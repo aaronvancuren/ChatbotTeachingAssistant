@@ -4,10 +4,12 @@ import uuid
 
 import psycopg2
 from psycopg2.extensions import connection, cursor
-from psycopg2.extras import RealDictCursor, RealDictRow
+from psycopg2.extras import RealDictCursor, RealDictRow, register_uuid
+import psycopg2.extras
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+register_uuid()
 
 def get_db_connection():
     # Retrieve required environment variables
@@ -473,7 +475,13 @@ def create_user_conversation(course_id, user_id, title):
             VALUES (%s, %s, %s)
             RETURNING conversation_id;
         """
-        cur.execute(insert_query, (course_id, user_id, title))
+        cid = uuid.UUID(course_id)
+        uid = uuid.UUID(user_id)
+        cid = psycopg2.extras.UUID_adapter(cid)
+        print(cid)
+        uid = psycopg2.extras.UUID_adapter(uid)
+        print(uid)
+        cur.execute(insert_query, (course_id.replace("-",""), user_id.replace("-",""), title))
         conversation_id = cur.fetchone()[0]
         conn.commit()
         return conversation_id

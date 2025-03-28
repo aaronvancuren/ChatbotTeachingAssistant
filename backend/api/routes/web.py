@@ -1,4 +1,5 @@
 """TODO: update docstring"""
+import uuid
 from backend.api.errors import HTTPError
 from backend.api.routes.auth import get_context
 from backend.database.database_class_sections import get_user_classes
@@ -8,6 +9,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi_msal.models import IDTokenClaims, TokenStatus
 from fastapi.responses import PlainTextResponse
 
+from backend.database.postgres import create_user_conversation
 from backend.models.converstation import Conversation, Model
 
 web_router = APIRouter()
@@ -78,8 +80,9 @@ async def addChat(request: Request, context: dict = Depends(get_context)):
     if context.get("id_token") is not None:
         claims: IDTokenClaims = IDTokenClaims.decode_id_token(context.get("id_token"))
         if(claims is not None and claims.validate_token() == TokenStatus.VALID):
-            newConvo = add_user_conversation(claims.user_id, Model[reqBody["model"].upper()])
-            return PlainTextResponse(f"/chat?chatID={str(newConvo.id)}")
+            newConvo = create_user_conversation("3a6f30f7c-7c143-3a8c-2a100-ed6dcedb1", claims.user_id, "CS 232 Help")
+            # newConvo = add_user_conversation(claims.user_id, Model[reqBody["model"].upper()])
+            return PlainTextResponse(f"/chat?chatID={str(newConvo)}")
 
     raise HTTPError(status_code=401, detail="Unauthorized")
 
