@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
+from pydantic import BaseModel
 from fastapi_msal.models import IDTokenClaims, TokenStatus
 from backend.api.routes.auth import get_context
 from backend.api.errors import HTTPError
@@ -11,11 +12,15 @@ from backend.api.errors import HTTPError
 from backend.database.database_class_sections import get_user_classes
 from backend.database.database_user_conversations import get_user_conversations, add_user_conversation
 from backend.database.text_processor import process_file, chunk_text
+from backend.models.user import User
 from backend.database.chroma_database import (
     initialize_chromadb,
     get_or_create_collection,
     add_documents
 )
+
+class StudentInput(BaseModel):
+    email: str
 
 # Initialize templates directory
 templates = Jinja2Templates(directory="frontend/templates")
@@ -215,3 +220,24 @@ async def update_file_api(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while updating the file: {str(e)}")
+    
+@dashboard_router.post("/add_student")
+async def add_student(student: StudentInput, request: Request):
+    # Optionally, enforce that only an admin can add a student:
+    # if not await validate_user(request, ACCESS_REQUIRED.ADMIN):
+    #     raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        # Generate a new UUID for the student.
+        new_id = uuid.uuid4()
+        # Call the User constructor. This will look up the user record by email.
+        # If the user exists and the user id is not set, it will assign the new UUID.
+        new_user = User(student.email, new_id)
+        return {"success": True, "message": "Student added successfully."}
+    except ValueError as e:
+        # Likely means the user record wasn’t found (no invitation) 
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

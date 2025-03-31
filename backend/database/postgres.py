@@ -126,7 +126,7 @@ def read_user_by_email(email) -> RealDictRow:
 
     try:
         select_query = "SELECT id, display_name, email, role FROM users WHERE email = %s;"
-        cur.execute(select_query, (email))
+        cur.execute(select_query, (email,))
         row: RealDictRow = cur.fetchone()
 
         if row is None:
@@ -223,7 +223,7 @@ def set_user_id(id: uuid, email: str):
     
     try:
         update_query = "UPDATE users SET id = %s WHERE email = %s;"
-        cur.execute(update_query, (id, email))
+        cur.execute(update_query, (str(id), email))
         conn.commit()
         return True
     except Exception as e:

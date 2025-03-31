@@ -342,3 +342,43 @@ async function deleteAllFiles() {
       deleteAllBtn.textContent = "Delete All";
     }
 }
+
+function submitNewStudent() {
+  const studentEmail = document.getElementById('studentEmail').value;
+  if (!studentEmail) {
+    alert('Please enter an email address.');
+    return;
+  }
+
+  fetch('/dashboard/add_student', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: studentEmail })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Student added successfully!');
+      // Clear the input after success
+      document.getElementById('studentEmail').value = '';
+      
+      // Hide the add student modal using Bootstrap's modal API
+      let studentModalEl = document.getElementById('addStudentModal');
+      let studentModal = bootstrap.Modal.getInstance(studentModalEl);
+      if (studentModal) {
+          studentModal.hide();
+      } else {
+          // If no instance exists, create one and then hide it
+          studentModal = new bootstrap.Modal(studentModalEl);
+          studentModal.hide();
+      }
+    } else {
+      const errorMessage = data.error || data.detail || "An error occurred while adding the student.";
+      alert('Error adding student: ' + errorMessage);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred while adding the student.');
+  });
+}
