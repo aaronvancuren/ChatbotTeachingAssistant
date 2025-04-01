@@ -223,17 +223,20 @@ async def update_file_api(
     
 @dashboard_router.post("/add_student")
 async def add_student(student: StudentInput, request: Request):
-    # Optionally, enforce that only an admin can add a student:
-    # if not await validate_user(request, ACCESS_REQUIRED.ADMIN):
-    #     raise HTTPException(status_code=401, detail="Unauthorized")
-
     try:
         # Generate a new UUID for the student.
         new_id = uuid.uuid4()
-        # Call the User constructor. This will look up the user record by email.
-        # If the user exists and the user id is not set, it will assign the new UUID.
+        # Create the student record (or load existing one) using the User object.
         new_user = User(student.email, new_id)
-        return {"success": True, "message": "Student added successfully."}
+        
+        # Now, add the student to a course in the user_courses table.
+        # For testing, we'll use the default course id for CS232.
+        from backend.models.course import Course
+        default_course_id = "e9fb87c0-b500-411b-b1d5-ab581905dc59"
+        if not Course.add_student(default_course_id, new_user):
+            raise HTTPException(status_code=500, detail="Failed to add student to course.")
+        
+        return {"success": True, "message": "Student added successfully and enrolled in course."}
     except ValueError as e:
         # Likely means the user record wasn’t found (no invitation) 
         raise HTTPException(status_code=400, detail=str(e))
