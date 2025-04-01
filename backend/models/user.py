@@ -56,115 +56,21 @@ class User:
     
     # Get user courses
     def get_courses(self) -> list[Course]:
-        """
-        Fetches all courses that this user is enrolled in (or teaches).
-        Calls get_user_classes(user_id) from your database_class_sections, then
-        turns each record into a Course object.
-        """
-        from backend.models.course import Course
-        from backend.database.database_class_sections import get_user_classes
-        
-        db_course_dicts = get_user_classes(str(self.id))
-        self.courses = [Course(**course_dict) for course_dict in db_course_dicts]
-        return self.courses
+       pass
     
     # Get user conversations by course
     def get_conversations(self, course_id: uuid.UUID) -> list[Message]:
-        """
-        Fetch all messages across *all* conversation threads for a given course ID.
-        In practice, you might want to fetch entire conversation objects
-        or handle them differently, but here we gather all messages
-        for demonstration purposes.
-        """
-        from backend.models.converstation import Conversation, Model
+        # Get the conversation_id from the user_conversations table by using the course_id and id
 
-        conv_records = read_conversations_by_user(str(self.id), str(course_id))
-        conversation_objs = []
-
-        for record in conv_records:
-            # Create a new Conversation object
-            assistant_model = record.get("model")
-            # Fallback if DB lacks or uses an unknown model
-            if assistant_model not in [m.value for m in Model]:
-                assistant_model = Model.JOHN.value
-
-            conv = Conversation(
-                user_id=str(self.id),
-                assistant=Model(assistant_model),
-                class_prompt=record.get("class_prompt")
-            )
-
-            # Overwrite these fields if present
-            conv.id = str(record.get("id"))
-            conv.name = record.get("name", "")
-            conv.classID = record.get("class_id", "")
-
-            # Now load all messages for that conversation
-            raw_msgs = read_messages_from_conversation(str(record.get("id")))
-            for m in raw_msgs:
-                # Add each message to the conversation's discussion
-                role = m.get("role")
-                content = m.get("content")
-                # If your DB uses "prompt" & "response" columns, adapt as needed
-                if not role and "prompt" in m:
-                    role = "user"
-                    content = m["prompt"]
-                elif not role and "response" in m:
-                    role = "assistant"
-                    content = m["response"]
-
-                conv.discussion.append({
-                    "role": role,
-                    "content": content
-                })
-
-            conversation_objs.append(conv)
-
-        self.conversation = conversation_objs
-        return conversation_objs
+        # Update the conversation property
+        
+        # Return the conversation (list[message])
+        pass
     
-    # def get_conversation(self, conversation_id: uuid.UUID) -> list[Message]:
-    #     """
-    #     Fetches all messages for a single conversation identified by conversation_id.
-    #     """
-    #     from backend.models.converstation import Conversation, Model
-
-    #     # Assume we have a function to read a single conversation record, or adapt:
-    #     record = read_single_conversation(str(conversation_id))  # if needed, else define your own method
-    #     if not record:
-    #         # If there's no record for that conversation, handle accordingly
-    #         raise ValueError("No conversation found for the given ID")
-
-    #     assistant_model = record.get("model")
-    #     if assistant_model not in [m.value for m in Model]:
-    #         assistant_model = Model.JOHN.value
-
-    #     conv = Conversation(
-    #         user_id=str(self.id),
-    #         assistant=Model(assistant_model),
-    #         class_prompt=record.get("class_prompt")
-    #     )
-
-    #     conv.id = str(record.get("id"))
-    #     conv.name = record.get("name", "")
-    #     conv.classID = record.get("class_id", "")
-
-    #     raw_msgs = read_messages_from_conversation(str(conversation_id))
-    #     for m in raw_msgs:
-    #         role = m.get("role")
-    #         content = m.get("content")
-    #         # If your DB uses "prompt" & "response", adapt as needed
-    #         if not role and "prompt" in m:
-    #             role = "user"
-    #             content = m["prompt"]
-    #         elif not role and "response" in m:
-    #             role = "assistant"
-    #             content = m["response"]
-
-    #         conv.discussion.append({
-    #             "role": role,
-    #             "content": content
-    #         })
-
-    #     self.conversation = [conv]
-    #     return [conv]
+    def get_conversation(self, conversation_id: uuid) -> list[Message]:
+        # Get messages from the messages table using the conversation_id
+        
+        # Update the conversation property
+        
+        # Return the conversation (list[message])
+        pass
