@@ -7,6 +7,8 @@ from psycopg2.extensions import connection, cursor
 from psycopg2.extras import RealDictCursor, RealDictRow, register_uuid
 import psycopg2.extras
 
+from backend.api.errors import HTTPError
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 register_uuid()
@@ -30,6 +32,7 @@ def get_db_connection():
 
     # Connect to PostgreSQL using psycopg2
     conn = psycopg2.connect(**db_config)
+    conn.commit()
     return conn
 
 def create_user(display_name, email, role='student'):
@@ -468,20 +471,19 @@ def create_user_conversation(course_id, user_id, title):
         return None
     
     cur: cursor = conn.cursor()
-
+    cur.execute("select exists(select * from information_schema.tables where table_name=%s)", ('user_conversations',))
+    print(cur.fetchone()[0])
     try:
         insert_query = """
             INSERT INTO user_conversations (course_id, user_id, title)
-            VALUES (%s, %s, %s)
+            VALUES (
+                %s, 
+                %s, 
+                %s
+            )
             RETURNING conversation_id;
-        """
-        cid = uuid.UUID(course_id)
-        uid = uuid.UUID(user_id)
-        cid = psycopg2.extras.UUID_adapter(cid)
-        print(cid)
-        uid = psycopg2.extras.UUID_adapter(uid)
-        print(uid)
-        cur.execute(insert_query, (course_id.replace("-",""), user_id.replace("-",""), title))
+        """        
+        cur.execute(insert_query, (course_id.replace("-", ""), user_id.replace("-",""), title))
         conversation_id = cur.fetchone()[0]
         conn.commit()
         return conversation_id
@@ -494,6 +496,40 @@ def create_user_conversation(course_id, user_id, title):
     finally:
         cur.close()
         conn.close()
+
+def get_conversation_data(conversation_id, field = "*"):
+    """
+    Retrieves a conversation data by a given id
+
+    Args:
+        conversation_id (str): The conversation's unique ID.
+
+    Returns:
+        list: A list of conversations IDs.
+    """
+    conn: connection = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        raise HTTPError(status_code=500, detail="Internal Server Error")
+    
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        select_query = "SELECT ? FROM user_conversations WHERE conversation_id = '%s';"
+        id=str(conversation_id).replace("-","")
+        cur.execute(select_query.replace("?", field) % id)
+        rows = cur.fetchone()
+        return rows.items().mapping.get(field)       
+    
+    except Exception as e:
+        logging.error(f"Error retrieving conversation ids: {e}")
+        raise HTTPError(status_code=500, detail="Internal Server Error")
+    
+    finally:
+        cur.close()
+        conn.close()
+
 
 def read_conversations_by_user(user_id, course_id):
     """
@@ -516,7 +552,7 @@ def read_conversations_by_user(user_id, course_id):
 
     try:
         select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s AND course_id = %s;"
-        cur.execute(select_query, (user_id, course_id))
+        cur.execute(select_query, (user_id.replace("-",""), course_id.replace("-","")))
         rows = cur.fetchall()
 
         conversation_ids = [row['conversation_id'] for row in rows]
@@ -651,7 +687,7 @@ def read_messages_from_conversation(conversation_id):
 
     if conn is None:
         logging.error("Failed to connect to the database.")
-        return []
+        raise HTTPError(status_code=500, detail="Internal Server Error")
     
     cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -660,12 +696,13 @@ def read_messages_from_conversation(conversation_id):
             SELECT prompt, response FROM messages WHERE conversation_id = %s ORDER BY id ASC;
         """
         cur.execute(select_query, (conversation_id,))
+       
         messages = cur.fetchall()
         return messages
     
     except Exception as e:
         logging.error(f"Error retrieving messages: {e}")
-        return []
+        raise HTTPError(status_code=500, detail="Internal Server Error")
     
     finally:
         cur.close()
