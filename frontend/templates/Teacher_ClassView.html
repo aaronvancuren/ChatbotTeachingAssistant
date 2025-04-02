@@ -48,22 +48,9 @@
 
                     <!-- List of Existing Students -->
                     <ul id="studentList" class="list-group">
-                        {% if course and course.students %}
-                            {% for student in course.students %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ student.email }}
-                                    <div>
-                                        <button class="btn btn-sm btn-danger" onclick="removeStudent('{{ student.id }}')">
-                                            Remove
-                                        </button>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="list-group-item text-muted" id="noStudentsPlaceholder">
-                                No students added yet.
-                            </li>
-                        {% endif %}
+                        <li class="list-group-item text-muted" id="noStudentsPlaceholder">
+                            No students added yet.
+                        </li>
                     </ul>
 
                 </div>

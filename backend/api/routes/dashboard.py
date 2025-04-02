@@ -244,3 +244,53 @@ async def add_student(student: StudentInput, request: Request):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+@dashboard_router.post("/add_students_csv")
+async def add_students_csv(request: Request, file: UploadFile = File(...)):
+    import csv, io, uuid
+    from fastapi.responses import JSONResponse
+    from fastapi import HTTPException
+    from backend.models.user import User
+    from backend.models.course import Course
+    
+    # Use default course id for testing (update as necessary)
+    default_course_id = "e9fb87c0-b500-411b-b1d5-ab581905dc59"
+    
+    try:
+        contents = await file.read()
+        csv_content = contents.decode("utf-8")
+        csv_file = io.StringIO(csv_content)
+        reader = csv.reader(csv_file)
+        rows = list(reader)
+        
+        # If first row is a header and contains 'email', skip it
+        if rows and "email" in [cell.lower() for cell in rows[0]]:
+            data_rows = rows[1:]
+        else:
+            data_rows = rows
+        
+        results = []
+        for row in data_rows:
+            if row:
+                email = row[0].strip()
+                if email:
+                    try:
+                        new_uuid = uuid.uuid4()
+                        user = User(email, new_uuid)
+                        if Course.add_student(default_course_id, user):
+                            results.append({"email": email, "success": True, "message": "Student added."})
+                        else:
+                            results.append({"email": email, "success": False, "message": "Failed to add student to course."})
+                    except Exception as e:
+                        results.append({"email": email, "success": False, "message": str(e)})
+        
+        success_count = sum(1 for r in results if r["success"])
+        failure_count = len(results) - success_count
+        
+        return JSONResponse(status_code=200, content={
+            "success": True,
+            "message": f"Processed CSV: {success_count} added, {failure_count} failed.",
+            "details": results
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
