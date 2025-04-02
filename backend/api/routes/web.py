@@ -10,8 +10,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi_msal.models import IDTokenClaims, TokenStatus
 from fastapi.responses import PlainTextResponse
 
-from backend.database.postgres import create_user_conversation, get_conversation_data, read_conversations_by_user, read_messages_from_conversation
-from backend.models.converstation import Conversation, Model
+from backend.database.postgres import create_user_conversation, get_conversation_data, get_course_data, read_conversations_by_user, read_messages_from_conversation
+from backend.models.converstation import Model
 
 web_router = APIRouter()
 
@@ -65,12 +65,16 @@ async def chatpage(request : Request, chatID : str, context: dict = Depends(get_
         if(claims is not None and claims.validate_token() == TokenStatus.VALID):
             userConvos = read_conversations_by_user(claims.user_id, getenv("COURSE_ID"))
             try:
-                conversation = read_messages_from_conversation(chatID)
-                    
+                raw_conversation = read_messages_from_conversation(chatID)
+                clean_conversation = []
+                for message in raw_conversation:
+                    clean_conversation.append({'role': 'user', 'content': message["prompt"]})
+                    clean_conversation.append({'role': 'assistant', 'content': message["response"]})
+                
                 context.update({"display_name": claims.display_name})
                 context.update({"conversation_list": userConvos})
-                context.update({"conversation_data": conversation}) #TODO update method of getting the discussion (should be conversation) Need Neal to clarify method purpose.
-                context.update({"conversation_model": Model.JOHN})
+                context.update({"conversation_data": clean_conversation})
+                context.update({"conversation_model": Model(get_course_data(get_conversation_data(chatID, 'course_id'),"model")).name.capitalize()})
                 context.update({"chatID": chatID})
 
                 return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})

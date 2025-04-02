@@ -5,15 +5,12 @@ import os
 import json
 
 from fastapi import APIRouter, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
 from openai import OpenAI, _exceptions
-from pydantic import BaseModel
 from typing import List, Dict
 from datetime import date
-from backend.database.database_class_sections import get_user_classes
-from backend.models.converstation import Conversation, Model
+from backend.database.postgres import create_message, get_conversation_data, read_messages_from_conversation, update_conversation_title, get_course_data
+from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
-from backend.database.database_user_conversations import DEMO_LIST
 
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 
@@ -79,13 +76,12 @@ async def chat(request: ChatRequest, response: Response) -> str:
         user_session = await msal_auth.handler.get_token_from_session(request)
         user_id = user_session.id_token_claims.user_id
 
-        if (not conversations.get(user_id, [])):    # For Testing
-            conversations[user_id] = DEMO_LIST
-
-        userConversation: List[Conversation] = conversations.get(user_id, [])
-        #TODO Update the method of getting the class prompt
-        currentConversation: Conversation = next((convo for convo in userConversation if str(convo.id) == reqBody['currentConversationId']), 
-                                                 Conversation(user_id, assistant=Model(os.getenv("OPENAI_MODEL")), class_prompt=get_user_classes(user_id)[0].prompt))
+        currentConversation = read_messages_from_conversation(reqBody['currentConversationId'])
+        
+        discussion = []
+        for message in currentConversation:
+            discussion.append({'role': 'user', 'content': message["prompt"]})
+            discussion.append({'role': 'assistant', 'content': message["response"]})
         
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
@@ -98,8 +94,8 @@ async def chat(request: ChatRequest, response: Response) -> str:
             )
 
             if moderation_response.results and moderation_response.results[0].flagged:
-                 # Adds the ChatGPT response to the conversation
-                currentConversation.discussion.append({'role': 'assistant', 'content': "I can't answer that"})
+                # Adds the ChatGPT response to the conversation
+                discussion.append({'role': 'assistant', 'content': "I can't answer that"})
 
                 # Returns the conversation to the frontend to display
                 return json.dumps(currentConversation.discussion)
@@ -110,7 +106,20 @@ async def chat(request: ChatRequest, response: Response) -> str:
         except _exceptions.APIError as e:
             raise HTTPException(status_code=502, detail=f"Moderation API error: {str(e)}")
                 
-        currentConversation.discussion.append({'role': 'user', 'content': reqBody['user_content']})
+        if currentConversation == []:
+            response = client.chat.completions.create(
+                messages=[{'role': 'user', 'content': os.getenv("SUMMARY_PROMPT") + reqBody['user_content']}],
+                model=get_course_data(get_conversation_data(reqBody['currentConversationId'], 'course_id'),"model"),
+                max_completion_tokens=10,
+                n=1,
+                stop=['\0'],
+                temperature=0.7,
+                user=user_id
+            )
+            print(response.choices[0].message.content.strip())
+            update_conversation_title(reqBody['currentConversationId'], response.choices[0].message.content.strip())
+
+        discussion.append({'role': 'user', 'content': reqBody['user_content']})
 
         relevant_docs = nearest_neighbor_search(collection=collection,input_text=reqBody['user_content'], n_results=3)
 
@@ -118,12 +127,12 @@ async def chat(request: ChatRequest, response: Response) -> str:
             system_message = "Relevant information:\n"
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
-            currentConversation.discussion.append({'role': 'developer', 'content': system_message})
+            discussion.append({'role': 'developer', 'content': system_message})
 
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
-            messages=currentConversation.discussion,
-            model=str(currentConversation.model.value),
+            messages=discussion,
+            model=get_course_data(get_conversation_data(reqBody['currentConversationId'], 'course_id'),"model"),
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=['\0'],
@@ -133,10 +142,11 @@ async def chat(request: ChatRequest, response: Response) -> str:
         )
 
         # Adds the ChatGPT response to the conversation
-        currentConversation.discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+        discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+        create_message(reqBody['currentConversationId'], reqBody['user_content'], response.choices[0].message.content.strip())
 
  # Returns the conversation to the frontend to display
-        return json.dumps(currentConversation.getDiscussion())
+        return json.dumps([ dial for dial in discussion if dial['role'] != 'developer'])
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.

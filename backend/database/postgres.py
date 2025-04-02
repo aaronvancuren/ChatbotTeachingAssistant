@@ -319,6 +319,39 @@ def create_course(instructor_id, display_name, subject, course_number, section_n
         cur.close()
         conn.close()
 
+def get_course_data(course_id, field = "*"):
+    """
+    Retrieves a conversation data by a given id
+
+    Args:
+        conversation_id (str): The conversation's unique ID.
+
+    Returns:
+        list: A list of conversations IDs.
+    """
+    conn: connection = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        raise HTTPError(status_code=500, detail="Internal Server Error")
+    
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        select_query = "SELECT ? FROM courses WHERE id = '%s';"
+        id=str(course_id).replace("-","")
+        cur.execute(select_query.replace("?", field) % id)
+        rows = cur.fetchone()
+        return rows.items().mapping.get(field)       
+    
+    except Exception as e:
+        logging.error(f"Error retrieving conversation ids: {e}")
+        raise HTTPError(status_code=500, detail="Internal Server Error")
+    
+    finally:
+        cur.close()
+        conn.close()
+
 def read_course_by_id(course_id):
     """
     Retrieves a course by ID.
@@ -530,7 +563,6 @@ def get_conversation_data(conversation_id, field = "*"):
         cur.close()
         conn.close()
 
-
 def read_conversations_by_user(user_id, course_id):
     """
     Retrieves all conversations IDs for a given user.
@@ -649,25 +681,32 @@ def create_message(conversation_id, prompt, response):
 
     if conn is None:
         logging.error("Failed to connect to the database.")
-        return None
+        raise HTTPError(status_code=500, detail="Internal Server Error")
     
     cur: cursor = conn.cursor()
 
     try:
         insert_query = """
-            INSERT INTO messages (conversation_id, prompt, response)
-            VALUES (%s, %s, %s)
-            RETURNING id;
+            INSERT INTO messages (conversation_id, model, prompt, response)
+            VALUES (
+                %s, 
+                %s, 
+                E%s, 
+                E%s
+            );
         """
-        cur.execute(insert_query, (conversation_id, prompt, response))
-        message_id = cur.fetchone()[0]
+        cur.execute(insert_query, (
+            conversation_id, 
+            get_course_data(get_conversation_data(conversation_id, 'course_id'),"model"), 
+            prompt.replace("\n", chr(10)),
+            response.replace("\n", chr(10))
+        ))
         conn.commit()
-        return message_id
     
     except Exception as e:
         logging.error(f"Error adding message: {e}")
         conn.rollback()
-        return None
+        raise HTTPError(status_code=500, detail="Internal Server Error")
     
     finally:
         cur.close()
@@ -698,7 +737,10 @@ def read_messages_from_conversation(conversation_id):
         cur.execute(select_query, (conversation_id,))
        
         messages = cur.fetchall()
-        return messages
+        message_list = []
+        for message in messages:
+            message_list.append(dict(message))
+        return message_list
     
     except Exception as e:
         logging.error(f"Error retrieving messages: {e}")
