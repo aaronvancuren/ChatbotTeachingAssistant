@@ -116,7 +116,6 @@ async def chat(request: ChatRequest, response: Response) -> str:
                 temperature=0.7,
                 user=user_id
             )
-            print(response.choices[0].message.content.strip())
             update_conversation_title(reqBody['currentConversationId'], response.choices[0].message.content.strip())
 
         discussion.append({'role': 'user', 'content': reqBody['user_content']})
