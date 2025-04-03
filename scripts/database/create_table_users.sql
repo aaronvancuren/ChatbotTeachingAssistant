@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.users
     role role NOT NULL DEFAULT 'student'::role,
     create_at timestamp with time zone NOT NULL DEFAULT now(),
 	archived boolean NOT NULL DEFAULT false,
-    archived_by uuid,
+    archived_by uuid, 
     archived_at timestamp with time zone,
     CONSTRAINT users_pkey PRIMARY KEY (email),
     CONSTRAINT users_email_key UNIQUE (email),
