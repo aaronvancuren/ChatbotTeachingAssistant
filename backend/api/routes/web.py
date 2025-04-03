@@ -3,6 +3,7 @@ from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.database_user_conversations import get_user_conversations, add_user_conversation
 from backend.models.converstation import Conversation, Model
+from backend.models import User
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
@@ -46,10 +47,10 @@ async def chatpage(request: Request, chatID: str, context: dict = Depends(get_co
     if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
     
-    user_id = context.get("id")
-    userConvos = get_user_conversations(user_id) #TODO update method of getting user conversations
+    user: User = context.get("user")
+    userConvos = get_user_conversations(user.id) #TODO update method of getting user conversations
     if (chatID in [str(convo.id) for convo in userConvos]):
-        conversation = next((convo for convo in userConvos if str(convo.id) == chatID), Conversation(user_id, class_prompt=context.get("class_list")[0].prompt))
+        conversation = next((convo for convo in userConvos if str(convo.id) == chatID), Conversation(user.id, class_prompt=context.get("class_list")[0].prompt))
         context.update({"conversation_list": userConvos})
         context.update({"conversation_data": conversation.getDiscussion()}) #TODO update method of getting the discussion (should be conversation) Need Neal to clarify method purpose.
         context.update({"conversation_model": conversation.model.name.title()})
