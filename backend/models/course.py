@@ -1,26 +1,14 @@
 import uuid
-from backend.models.user import User
-from backend.models.subject import Subject
+from backend.models import CourseBase, UserBase
 
-class Course:
-    id: uuid
-    instructor_id: uuid
-    display_name: str
-    subject: Subject
-    course_number: int
-    section_number:int
-    title: str
-    model: str
-    prompt: str
-    documents_path: str
-    image_path: str
-    students: list[User]
+class Course(CourseBase):
+    students: list[UserBase]
     
     def __init__(self):
         pass
     
     # Get a list of students
-    def get_students() -> list[User]:
+    def get_students() -> list[UserBase]:
         pass
     
     # Get a list of documents
