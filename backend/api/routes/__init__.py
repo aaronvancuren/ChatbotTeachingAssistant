@@ -1,3 +1,6 @@
+import logging
+import uuid
+
 from fastapi import Request
 from fastapi_msal import MSALAuthorization, MSALClientConfig
 from fastapi_msal.models import AuthToken, TokenStatus
@@ -5,7 +8,11 @@ from fastapi_msal.models import AuthToken, TokenStatus
 from backend.database.database_class_sections import get_user_classes
 from backend.database.database_user_conversations import get_user_conversations
 import backend.database.postgres as db
-from psycopg2.extras import RealDictRow
+
+from backend.models import User
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 client_config = MSALClientConfig()
 msal_auth = MSALAuthorization(client_config)
@@ -22,22 +29,20 @@ async def get_context(request: Request) -> dict:
     token: AuthToken = await msal_auth.get_session_token(request)
     if token and token.id_token_claims.validate_token() == TokenStatus.VALID:
         context.update({"logged_in": True})
-        context.update({"id_token": token.id_token})
-        context.update({"preferred_name": token.id_token_claims.preferred_username})
-        context.update({"email": token.id_token_claims.email})
-        context.update({"class_list": get_user_classes(token.id_token_claims.user_id)}) #TODO update method of getting student classes
-        context.update({"conversation_list": get_user_conversations(token.id_token_claims.user_id)}) #TODO update method of getting conversations for classes. Need to discuss when we should be getting the conversations
+
+        #TODO needs to be incorporated into user model
+        context.update({"class_list": get_user_classes(token.id_token_claims.user_id)})
+        context.update({"conversation_list": get_user_conversations(token.id_token_claims.user_id)})
     
-    if context.get("logged_in") and context.get("id", None) is None:
-        # check database
-        email: str = token.id_token_claims.email
-        user: RealDictRow = db.read_user_by_email(email)
-        context.update({"display_name": user.get("display_name", None)})
-        context.update({"user_role", user.get("role", None)})
+    if context.get("logged_in", None) and context.get("user", None) is None:
+        email: str = token.id_token_claims.preferred_username
+        user: User = db.read_user_by_email(email)
         
         # User id will return none if they are a new user. Must save the Microsoft user_id.
-        if user.get("id", None) is None:
+        if user.id != uuid.UUID(token.id_token_claims.user_id):
             if db.set_user_id(token.id_token_claims.user_id, email):
-                context.update({"id": token.id_token_claims.user_id})
+                user.id = uuid.UUID(token.id_token_claims.user_id)
+
+        context.update({"user": user})
 
     return context
