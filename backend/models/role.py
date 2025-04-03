@@ -1,6 +1,6 @@
 from enum import Enum
 
 class Role(Enum):
-    STUDENT = 0
-    INSTRUCTOR = 1
-    ADMIN = 2
+    student = 0
+    instructor = 1
+    admin = 2
