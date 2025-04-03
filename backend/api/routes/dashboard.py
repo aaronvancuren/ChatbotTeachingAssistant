@@ -4,10 +4,12 @@ from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import initialize_chromadb, get_or_create_collection, add_documents
+from backend.models import Role
 
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+
 
 # Initialize templates directory
 templates = Jinja2Templates(directory="frontend/templates")
@@ -30,12 +32,16 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
     Returns:
         Index Web Page Response
     """
-    #TODO Are you a professor?
+    role: Role = context.get("role")
+    if role is not (Role.instructor or Role.admin):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
 
 @dashboard_router.get("/class")
 async def teacher_class_view(request : Request, context: dict = Depends(get_context)):
-    if not context.get("logged_in"):
+    role: Role = context.get("role")
+    if role is not (Role.instructor or Role.admin):
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     # Retrieve all documents from the collection

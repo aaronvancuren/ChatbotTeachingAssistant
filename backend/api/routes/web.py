@@ -3,7 +3,7 @@ from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.database_user_conversations import get_user_conversations, add_user_conversation
 from backend.models.converstation import Conversation, Model
-from backend.models import User
+from backend.models import User, Role
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
@@ -62,7 +62,8 @@ async def chatpage(request: Request, chatID: str, context: dict = Depends(get_co
 
 @web_router.post("/addChat")
 async def addChat(request: Request, context: dict = Depends(get_context)):
-    if not context.get("logged_in"):
+    role: Role = context.get("role")
+    if role is not Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     reqBody = await request.json()

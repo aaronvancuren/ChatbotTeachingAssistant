@@ -5,10 +5,12 @@ from datetime import date
 import os
 import json
 
+from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 from backend.database.database_user_conversations import DEMO_LIST
 from backend.models.converstation import Conversation, Model
+from backend.models import Role
 
 from fastapi import APIRouter, HTTPException, Request, Response, Depends
 
@@ -36,7 +38,10 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
     Returns:
         str: conversation updated with the response from OpenAI as a JSON string
     """
-
+    role: Role = context.get("role")
+    if role is not Role.student:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+        
     # Retrieve the usage cookie
     usage_cookie = request.cookies.get("chat_usage")
 
