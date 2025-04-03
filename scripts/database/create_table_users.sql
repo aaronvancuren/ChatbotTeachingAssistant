@@ -12,9 +12,10 @@ CREATE TABLE IF NOT EXISTS public.users
     archived_at timestamp with time zone,
     CONSTRAINT users_pkey PRIMARY KEY (email),
     CONSTRAINT users_email_key UNIQUE (email),
+    CONSTRAINT users_id UNIQUE (id),
     CONSTRAINT users_archived_by_fkey FOREIGN KEY (archived_by)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT
 )
 
