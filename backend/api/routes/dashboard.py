@@ -4,7 +4,7 @@ from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import initialize_chromadb, get_or_create_collection, add_documents
-from backend.models import Role
+from backend.models import Role, User
 
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.responses import JSONResponse
@@ -32,16 +32,16 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
     Returns:
         Index Web Page Response
     """
-    role: Role = context.get("role")
-    if role is not (Role.instructor or Role.admin):
+    user: User = context.get("user")
+    if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
 
 @dashboard_router.get("/class")
 async def teacher_class_view(request : Request, context: dict = Depends(get_context)):
-    role: Role = context.get("role")
-    if role is not (Role.instructor or Role.admin):
+    user: User = context.get("user")
+    if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     # Retrieve all documents from the collection
@@ -61,8 +61,8 @@ async def upload_file_api(request: Request, files: list[UploadFile] = File(...),
     Accept multiple files at once, process them, 
     and add them to the ChromaDB collection if they do not already exist.
     """
-    role: Role = context.get("role")
-    if role is not (Role.instructor or Role.admin):
+    user: User = context.get("user")
+    if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = []
@@ -123,8 +123,8 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
     """
     Deletes all chunks associated with the given file_name.
     """
-    role: Role = context.get("role")
-    if role is not (Role.instructor or Role.admin):
+    user: User = context.get("user")
+    if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = collection.get(where={"file_name": file_name})
@@ -137,8 +137,8 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
 @dashboard_router.delete("/delete_all")
 async def delete_all_files_api(context: dict = Depends(get_context)):
     # Get all documents in the collection
-    role: Role = context.get("role")
-    if role is not (Role.instructor or Role.admin):
+    user: User = context.get("user")
+    if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     all_docs = collection.get()
@@ -162,8 +162,8 @@ async def update_file_api(
     Updates a file by replacing its existing chunks with new ones.
     Can accept either a file or raw text content.
     """
-    role: Role = context.get("role")
-    if role is not (Role.instructor or Role.admin):
+    user: User = context.get("user")
+    if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     # Check if the file exists in the database
