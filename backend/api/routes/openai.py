@@ -38,8 +38,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
     Returns:
         str: conversation updated with the response from OpenAI as a JSON string
     """
-    role: Role = context.get("role")
-    if role is not Role.student:
+    if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
         
     # Retrieve the usage cookie
