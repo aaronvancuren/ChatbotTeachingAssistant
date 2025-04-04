@@ -56,11 +56,15 @@ async def teacher_class_view(request : Request, context: dict = Depends(get_cont
     return templates.TemplateResponse("Teacher_ClassView.html", {"request": request, "context": context, "file_names": file_names})
 
 @dashboard_router.post("/upload")
-async def upload_file_api(request: Request, files: list[UploadFile] = File(...)):
+async def upload_file_api(request: Request, files: list[UploadFile] = File(...), context: dict = Depends(get_context)):
     """
     Accept multiple files at once, process them, 
     and add them to the ChromaDB collection if they do not already exist.
     """
+    role: Role = context.get("role")
+    if role is not (Role.instructor or Role.admin):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
     results = []
 
     for file in files:
@@ -115,10 +119,14 @@ async def upload_file_api(request: Request, files: list[UploadFile] = File(...))
     return {"uploaded_files": results}
 
 @dashboard_router.delete("/delete/{file_name}")
-async def delete_file_api(file_name: str, request: Request):
+async def delete_file_api(file_name: str, request: Request, context: dict = Depends(get_context)):
     """
     Deletes all chunks associated with the given file_name.
     """
+    role: Role = context.get("role")
+    if role is not (Role.instructor or Role.admin):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
     results = collection.get(where={"file_name": file_name})
     if results['ids']:
         collection.delete(ids=results['ids'])
@@ -127,8 +135,12 @@ async def delete_file_api(file_name: str, request: Request):
         raise HTTPException(status_code=404, detail="File not found.")
     
 @dashboard_router.delete("/delete_all")
-async def delete_all_files_api():
+async def delete_all_files_api(context: dict = Depends(get_context)):
     # Get all documents in the collection
+    role: Role = context.get("role")
+    if role is not (Role.instructor or Role.admin):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
     all_docs = collection.get()
     all_ids = all_docs.get('ids', [])
 
@@ -143,12 +155,17 @@ async def update_file_api(
     file_name: str,
     request: Request,
     file: UploadFile = File(None),
-    content: str = Form(None)
+    content: str = Form(None),
+    context: dict = Depends(get_context)
 ):
     """
     Updates a file by replacing its existing chunks with new ones.
     Can accept either a file or raw text content.
     """
+    role: Role = context.get("role")
+    if role is not (Role.instructor or Role.admin):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
     # Check if the file exists in the database
     existing = collection.get(where={"file_name": file_name})
     if not existing['ids']:
