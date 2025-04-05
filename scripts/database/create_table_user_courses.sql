@@ -8,11 +8,11 @@ CREATE TABLE IF NOT EXISTS public.user_courses
     CONSTRAINT user_courses_pkey PRIMARY KEY (user_id, course_id),
     CONSTRAINT user_courses_course_id_fkey FOREIGN KEY (course_id)
         REFERENCES public.courses (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CONSTRAINT user_courses_user_id_fkey FOREIGN KEY (user_id)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT
 )
 

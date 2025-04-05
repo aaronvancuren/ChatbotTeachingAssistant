@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.messages
     CONSTRAINT messages_pkey PRIMARY KEY (id),
     CONSTRAINT messages_conversation_id_fkey FOREIGN KEY (conversation_id)
         REFERENCES public.user_conversations (conversation_id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE CASCADE
 )
 
