@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.users
     CONSTRAINT users_id UNIQUE (id),
     CONSTRAINT users_archived_by_fkey FOREIGN KEY (archived_by)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT
 )
 

@@ -4,7 +4,7 @@ services:
   web:
     build: .
     container_name: fastapi_app
-    command: python run.py
+    command: python main.py
     ports:
       - "8000:8000"
     depends_on:

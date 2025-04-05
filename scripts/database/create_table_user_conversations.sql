@@ -13,15 +13,15 @@ CREATE TABLE IF NOT EXISTS public.user_conversations
     CONSTRAINT user_conversations_pkey PRIMARY KEY (conversation_id),
     CONSTRAINT user_conversations_archive_by_fkey FOREIGN KEY (archived_by)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CONSTRAINT user_conversations_course_id_fkey FOREIGN KEY (course_id)
         REFERENCES public.courses (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CONSTRAINT user_conversations_user_id_fkey FOREIGN KEY (user_id)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT
 )
 
