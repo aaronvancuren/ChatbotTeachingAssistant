@@ -44,13 +44,17 @@ def create_user(display_name, email, role='student'):
     
     cur: cursor = conn.cursor()
 
+    # Generate a temporary UUID here
+    user_id = str(uuid.uuid4())
+
     try:
+        # Insert user row with that UUID
         insert_query = """
-            INSERT INTO users (display_name, email, role)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (id) DO NOTHING;
+            INSERT INTO users (id, display_name, email, role)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (email) DO NOTHING;
         """
-        cur.execute(insert_query, (display_name, email, role))
+        cur.execute(insert_query, (user_id, display_name, email, role))
         conn.commit()
         return True
     
@@ -82,7 +86,7 @@ def read_user_by_id(user_id):
     cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT display_name, role FROM users WHERE id = %s;"
+        select_query = "SELECT id, email, display_name, role FROM users WHERE id = %s;"
         cur.execute(select_query, (user_id,))
         row = cur.fetchone()
         

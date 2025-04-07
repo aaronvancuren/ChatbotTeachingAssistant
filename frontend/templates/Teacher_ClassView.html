@@ -16,44 +16,54 @@
 
         <!-- Left Column: Manage Student Class List -->
         <div class="col-md-6 mb-3">
-            <div class="card shadow-sm">
+            <!-- Card #1: Add Student / Dropzone -->
+            <div class="card shadow-sm mb-4">
                 <div class="card-header text-center">
                     <h4 class="my-2">Manage Student Class List</h4>
                 </div>
                 <div class="card-body">
-
                     <!-- Dropzone -->
-                    <div id="studentDropzone" class="border border-primary rounded p-3 mb-3 text-center"
-                        style="cursor: pointer;">
+                    <div id="studentDropzone" class="border border-primary rounded p-3 mb-3 text-center" style="cursor: pointer;">
                         <p class="mb-0">Drag & Drop files here or click to select</p>
                     </div>
-
                     <!-- Hidden file input -->
-                    <input type="file" id="studentFileInput" class="form-control d-none" multiple
-                        accept=".txt,.csv,.xls,.xlsx" />
-
+                    <input type="file" id="studentFileInput" class="form-control d-none" multiple accept=".txt,.csv,.xls,.xlsx" />
                     <!-- Button to open the modal -->
-                    <button type="button" class="btn btn-gold w-100 mb-3" data-bs-toggle="modal"
-                        data-bs-target="#addStudentModal">
+                    <button type="button" class="btn btn-gold w-100 mb-3" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                         Add Student
                     </button>
-
-                    <!-- Heading + Remove All -->
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-muted mb-0">Existing Students</h6>
-                        <button id="removeAllStudentsBtn" class="btn btn-sm btn-danger" onclick="removeAllStudents()">
-                            Remove All
-                        </button>
-                    </div>
-
-                    <!-- List of Existing Students -->
-                    <ul id="studentList" class="list-group">
+                </div>
+            </div>
+            
+            <!-- Card #2: Existing Students -->
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Students</strong>
+                    <button id="removeAllStudentsBtn" class="btn btn-sm btn-danger" onclick="removeAllStudents()">
+                        Remove All
+                    </button>
+                </div>
+                <ul id="studentList" class="list-group list-group-flush">
+                    {% if students %}
+                        {% for student in students %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            id="student-{{ student.email|replace(' ', '_')|replace('/', '_')|replace('\\', '_') }}">
+                            <span class="flex-grow-1 text-truncate" style="min-width: 0;">{{ student.email }}</span>
+                            <div>
+                                <div class="btn-group" role="group" style="white-space: normal; overflow: visible;">
+                                    <button class="btn btn-sm btn-danger" onclick="removeStudent('{{ student.email }}')">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
                         <li class="list-group-item text-muted" id="noStudentsPlaceholder">
                             No students added yet.
                         </li>
-                    </ul>
-
-                </div>
+                    {% endif %}
+                </ul>
             </div>
         </div>
 

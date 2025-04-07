@@ -410,3 +410,33 @@ function submitNewStudent() {
     alert('An error occurred while adding the student.');
   });
 }
+
+function removeStudent(email) {
+  if (!confirm(`Are you sure you want to remove "${email}"?`)) {
+    return;
+  }
+
+  fetch('/dashboard/remove_student', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Student removed from the course.');
+      let sanitizedEmail = email.replace(/\s/g, '_').replace(/[\\/]/g, '_');
+      let studentItem = document.getElementById(`student-${sanitizedEmail}`);
+      if (studentItem) {
+        studentItem.remove();
+      }
+      // Reload or remove from the UI
+    } else {
+      alert(`Error removing student: ${data.detail || 'Unknown error'}`);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred while removing the student.');
+  });
+}
