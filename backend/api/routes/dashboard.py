@@ -16,7 +16,7 @@ from backend.database.postgres import (
     create_user_course,
     delete_user_course,
     read_users_for_course,
-    delete_user_courses_by_course,
+    delete_all_student_user_courses,
 )
 
 
@@ -79,6 +79,7 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
     context.update({"selected_course_id": selected_course.id})
     
     students = selected_course.get_students()
+    print(students)
     
     documents = collection.get()
     file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}
@@ -324,7 +325,7 @@ async def remove_all_students(request: Request, context: dict = Depends(get_cont
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
-    success = delete_user_courses_by_course(course_id)
+    success = delete_all_student_user_courses(course_id)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to remove all students from course")
 

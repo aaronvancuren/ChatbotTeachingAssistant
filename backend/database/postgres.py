@@ -836,3 +836,71 @@ def read_courses_for_user(user_id: str) -> list[dict]:
     finally:
         cur.close()
         conn.close()
+
+def delete_all_student_user_courses(course_id: str) -> bool:
+    """
+    Deletes all entries in the user_courses table for the given course_id.
+    Returns True on success; otherwise, returns False.
+    """
+    conn = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            DELETE FROM user_courses
+            USING users
+            WHERE user_courses.course_id = %s
+              AND user_courses.user_id = users.id
+              AND users.role = 'student';
+            """,
+            (course_id,)
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        logging.error(f"Error deleting user courses for course {course_id}: {e}")
+        conn.rollback()
+        return False
+    finally:
+        cur.close()
+        conn.close()
+
+def read_students_for_course(course_id: str) -> list[dict]:
+    """
+    Retrieves all users who are students (role = 'student') for a given course.
+
+    Args:
+        course_id (str): The UUID of the course.
+
+    Returns:
+        list[dict]: A list of rows with user info (RealDictRow), or an empty list if none found.
+    """
+    conn: connection = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        select_query = """
+            SELECT u.*
+            FROM user_courses uc
+            JOIN users u ON uc.user_id = u.id
+            WHERE uc.course_id = %s
+            AND u.role = 'student';
+        """
+        cur.execute(select_query, (course_id,))
+        rows = cur.fetchall()
+        return list(rows)
+    except Exception as e:
+        logging.error(f"Error retrieving student users for course {course_id}: {e}")
+        return []
+    finally:
+        cur.close()
+        conn.close()
+
+

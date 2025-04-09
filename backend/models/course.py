@@ -1,6 +1,6 @@
 import uuid
 from backend.models import CourseBase, UserBase
-from backend.database.postgres import read_users_for_course, read_user_by_id
+from backend.database.postgres import read_students_for_course, read_user_by_id
 from backend.models.user import User
 
 class Course(CourseBase):
@@ -10,13 +10,12 @@ class Course(CourseBase):
     #     pass
     
     def get_students(self) -> list[UserBase]:
-        # Get all user IDs (as strings) for this course
-        user_ids = read_users_for_course(str(self.id))
+        # Get all user rows (as RealDictRow objects) for this course
+        user_rows = read_students_for_course(str(self.id))
 
         students = []
-        # For each user ID, load user details from the database
-        for uid in user_ids:
-            user_row = read_user_by_id(uid)
+        # For each user row, instantiate a User
+        for user_row in user_rows:
             if user_row is not None:
                 students.append(User(user_row))
         return students
