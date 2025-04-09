@@ -836,32 +836,3 @@ def read_courses_for_user(user_id: str) -> list[dict]:
     finally:
         cur.close()
         conn.close()
-
-def delete_all_user_courses(course_id: str) -> bool:
-    """
-    Deletes all entries in the user_courses table for the given course_id.
-    Returns True on success; otherwise, returns False.
-    """
-    conn = get_db_connection()
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return False
-
-    cur = conn.cursor()
-    try:
-        cur.execute(
-            """
-            DELETE FROM user_courses
-            WHERE course_id = %s;
-            """,
-            (course_id,)
-        )
-        conn.commit()
-        return True
-    except Exception as e:
-        logging.error(f"Error deleting user courses for course {course_id}: {e}")
-        conn.rollback()
-        return False
-    finally:
-        cur.close()
-        conn.close()

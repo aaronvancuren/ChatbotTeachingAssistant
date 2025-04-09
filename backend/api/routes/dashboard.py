@@ -16,7 +16,7 @@ from backend.database.postgres import (
     create_user_course,
     delete_user_course,
     read_users_for_course,
-    delete_all_user_courses,
+    delete_user_courses_by_course,
 )
 
 
@@ -324,7 +324,7 @@ async def remove_all_students(request: Request, context: dict = Depends(get_cont
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
-    success = delete_all_user_courses(course_id)
+    success = delete_user_courses_by_course(course_id)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to remove all students from course")
 
