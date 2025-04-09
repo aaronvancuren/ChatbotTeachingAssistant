@@ -10,8 +10,6 @@ class Course(CourseBase):
     #     pass
     
     def get_students(self) -> list[UserBase]:
-
-
         # Get all user IDs (as strings) for this course
         user_ids = read_users_for_course(str(self.id))
 

@@ -17,7 +17,6 @@ from backend.database.postgres import (
     delete_user_course,
     read_users_for_course,
     delete_all_user_courses,
-    read_course_by_id
 )
 
 
