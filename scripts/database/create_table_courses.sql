@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS public.courses
     CONSTRAINT courses_pkey PRIMARY KEY (id),
     CONSTRAINT courses_instructor_id_fkey FOREIGN KEY (instructor_id)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CONSTRAINT courses_archived_by_fkey FOREIGN KEY (archived_by)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT
 )
 

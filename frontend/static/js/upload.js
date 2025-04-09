@@ -203,6 +203,7 @@ uploadBtn.addEventListener("click", async () => {
     updateProgress(100);
     const data = await response.json();
     showUploadResult(data.uploaded_files);
+    updateExistingFilesList(data.uploaded_files);
 
     // Clear queue on success
     removeAllFromQueue(); 
@@ -238,6 +239,33 @@ function showUploadResult(files) {
       li.textContent = `File: ${file.filename} - Uploaded Successfully`;
     }
     uploadResult.appendChild(li);
+  });
+}
+
+function updateExistingFilesList(files) {
+  const existingFilesList = document.getElementById("existingFilesList");
+  if (!existingFilesList) return;
+
+  // Remove "No files" placeholder if it exists
+  const placeholder = existingFilesList.querySelector("li.text-muted");
+  if (placeholder) {
+    placeholder.remove();
+  }
+
+  files.forEach((file) => {
+    if (!file.error) {
+      const li = document.createElement("li");
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.id = `file-${sanitizeId(file.filename)}`;
+      li.innerHTML = `
+        <span class="flex-grow-1 text-truncate" style="min-width: 0;">${file.filename}</span>
+        <div class="btn-group" role="group" style="white-space: nowrap; overflow: visible;">
+          <button class="btn btn-sm btn-gold me-2" onclick="initiateUpdate('${file.filename}')">Update</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteFile('${file.filename}')">Delete</button>
+        </div>
+      `;
+      existingFilesList.appendChild(li);
+    }
   });
 }
 

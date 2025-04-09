@@ -9,31 +9,27 @@ import psycopg2.extras
 
 from backend.api.errors import HTTPError
 
+from backend.models import User
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 register_uuid()
 
-def get_db_connection():
-    # Retrieve required environment variables
-    dbname = os.environ['DB_NAME']
-    user = os.environ['DB_USER']
-    password = os.environ['DB_PASSWORD']
-    host = os.getenv('DB_HOST', 'localhost')  # Default to 'localhost' if not set
-    port = int(os.getenv('DB_PORT', 5432))    # Default to 5432 if not set
-
+def get_db_connection() -> connection:
     # Database connection configuration
     db_config = {
-        "dbname": dbname,
-        "user": user,
-        "password": password,
-        "host": host,
-        "port": port
+        "dbname": os.environ['DB_NAME'],
+        "user": os.environ['DB_USER'],
+        "password": os.environ['DB_PASSWORD'],
+        "host": os.getenv('DB_HOST', 'localhost'),  # Default to 'localhost' if not set
+        "port": int(os.getenv('DB_PORT', 5432))     # Default to 5432 if not set
     }
 
     # Connect to PostgreSQL using psycopg2
     conn = psycopg2.connect(**db_config)
     conn.commit()
     return conn
+    return psycopg2.connect(**db_config)
 
 def create_user(display_name, email, role='student'):
     """
@@ -110,7 +106,7 @@ def read_user_by_id(user_id):
         cur.close()
         conn.close()
 
-def read_user_by_email(email) -> RealDictRow:
+def read_user_by_email(email) -> User:
     """
     Retrieves a user from the users table by email.
 
@@ -131,13 +127,13 @@ def read_user_by_email(email) -> RealDictRow:
 
     try:
         select_query = "SELECT id, display_name, email, role FROM users WHERE email = %s;"
-        cur.execute(select_query, (email))
+        cur.execute(select_query, (email,))
         row: RealDictRow = cur.fetchone()
 
         if row is None:
             return None
         
-        return row
+        return User(row)
     
     except Exception as e:
         logging.error(f"Error retrieving user by email: {e}")
@@ -232,7 +228,7 @@ def set_user_id(id: uuid, email: str):
         conn.commit()
         return True
     except Exception as e:
-        logging.error(f"Error updating user display name: {e}")
+        logging.error(f"Error updating user id with Microsoft user_id: {e}")
         conn.rollback()
         return False
     finally:
