@@ -79,7 +79,6 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
     context.update({"selected_course_id": selected_course.id})
     
     students = selected_course.get_students()
-    print(students)
     
     documents = collection.get()
     file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}
