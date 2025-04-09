@@ -43,9 +43,7 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
     """
     user: User = context.get("user")
 
-    if user is None:
-        raise HTTPError(status_code=401, detail="Unauthorized")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
@@ -53,9 +51,7 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
 @dashboard_router.get("/class")
 async def teacher_class_view(request: Request, context: dict = Depends(get_context)):
     user: User = context.get("user")
-    if user is None:
-        raise HTTPError(status_code=401, detail="Unauthorized")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     # The courses list is retrieved from the context
@@ -93,9 +89,7 @@ async def upload_file_api(request: Request, files: list[UploadFile] = File(...),
     and add them to the ChromaDB collection if they do not already exist.
     """
     user: User = context.get("user")
-    if user is None:
-        raise HTTPError(status_code=401, detail="Unauthorized")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = []
@@ -157,9 +151,7 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
     Deletes all chunks associated with the given file_name.
     """
     user: User = context.get("user")
-    if user is None:
-        raise HTTPError(status_code=401, detail="Unauthorized")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = collection.get(where={"file_name": file_name})
@@ -173,9 +165,7 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
 async def delete_all_files_api(context: dict = Depends(get_context)):
     # Get all documents in the collection
     user: User = context.get("user")
-    if user is None:
-        raise HTTPError(status_code=401, detail="Unauthorized")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     all_docs = collection.get()
