@@ -10,6 +10,7 @@ import psycopg2.extras
 from backend.api.errors import HTTPError
 
 from backend.models import User
+from backend.models.converstation import Conversation
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -448,13 +449,14 @@ def delete_course(course_id):
         cur.close()
         conn.close()
 
-def create_user_conversation(course_id, user_id, title):
+def create_user_conversation(course_id, user_id, model, title):
     """
     Creates a new conversation.
 
     Args:
         course_id (str): The ID of the course.
         user_id (str): The user's unique ID.
+        model (str): The model type for the conversation.
         title (str): Title for the conversation.
 
     Returns:
@@ -471,15 +473,16 @@ def create_user_conversation(course_id, user_id, title):
     print(cur.fetchone()[0])
     try:
         insert_query = """
-            INSERT INTO user_conversations (course_id, user_id, title)
+            INSERT INTO user_conversations (course_id, user_id, model, title)
             VALUES (
                 %s, 
                 %s, 
+                %s,
                 %s
             )
             RETURNING conversation_id;
         """        
-        cur.execute(insert_query, (course_id.replace("-", ""), user_id.replace("-",""), title))
+        cur.execute(insert_query, (str(course_id).replace("-",""), str(user_id).replace("-",""), model, title))
         conversation_id = cur.fetchone()[0]
         conn.commit()
         return conversation_id
@@ -513,7 +516,7 @@ def get_conversation_data(conversation_id, field = "*"):
 
     try:
         select_query = "SELECT ? FROM user_conversations WHERE conversation_id = '%s';"
-        id=str(conversation_id).replace("-","")
+        id=str(conversation_id).replace('-','')
         cur.execute(select_query.replace("?", field) % id)
         rows = cur.fetchone()
         return rows.items().mapping.get(field)       
@@ -527,7 +530,7 @@ def get_conversation_data(conversation_id, field = "*"):
         conn.close()
 
 
-def read_conversations_by_user(user_id, course_id):
+def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[Conversation]:
     """
     Retrieves all conversations IDs for a given user.
 
@@ -547,12 +550,13 @@ def read_conversations_by_user(user_id, course_id):
     cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s AND course_id = %s;"
-        cur.execute(select_query, (user_id.replace("-",""), course_id.replace("-","")))
+        select_query = "SELECT * FROM user_conversations WHERE user_id = %s AND course_id = %s;"
+        cur.execute(select_query, (str(user_id).replace("-",""), str(course_id).replace("-","")))
         rows = cur.fetchall()
-
-        conversation_ids = [row['conversation_id'] for row in rows]
-        return conversation_ids
+        tmp = []
+        for row in rows:
+            tmp.append(Conversation(row.values().mapping))
+        return tmp
     
     except Exception as e:
         logging.error(f"Error retrieving conversation ids: {e}")

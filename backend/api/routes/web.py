@@ -36,10 +36,15 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
     Returns:
         Index Web Page Response
     """
-    convos = read_conversations_by_user(context['user'].id, getenv("COURSE_ID"))
-    if len(convos) == 0:
-        convos = [create_user_conversation(getenv("COURSE_ID"), context['user'].id, "CS 232 Help")]
-    context.update({"conversation_list": convos})
+    if context.get("logged_in"):
+        print(context['user'].id)
+        convos = read_conversations_by_user(context['user'].id, getenv("COURSE_ID"))
+        print(len(convos))
+        if len(convos) == 0:
+            convos = [create_user_conversation(getenv("COURSE_ID"), context['user'].id, Model.JOHN.name.lower(), "CS 232 Help")]
+        context.update({"conversation_list": convos})
+        for convo in convos:
+            print(convo.id)
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
@@ -58,12 +63,15 @@ async def chatpage(request: Request, chatID: str, context: dict = Depends(get_co
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     user: User = context.get("user")
+    print(user.id)
     userConvos = read_conversations_by_user(user.id, getenv("COURSE_ID"))
     try:
-        conversation = read_messages_from_conversation(chatID)
+        for userConvo in userConvos:
+            print(userConvo.id, chatID)
+        conversation = [userConvo for userConvo in userConvos if str(userConvo.id) == chatID][0]
         context.update({"conversation_list": userConvos})
-        context.update({"conversation_data": conversation})
-        context.update({"conversation_model": Model.JOHN})
+        context.update({"conversation_data": read_messages_from_conversation(chatID)})
+        context.update({"conversation_model": conversation.model})
         context.update({"chatID": chatID})
         
         return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
@@ -72,12 +80,13 @@ async def chatpage(request: Request, chatID: str, context: dict = Depends(get_co
 
 @web_router.post("/addChat")
 async def addChat(request: Request, context: dict = Depends(get_context)):
-    role: Role = context.get("role")
+    role: Role = context.get("user").role
     if role is not Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     reqBody = await request.json()
-    newConvo = create_user_conversation(getenv("COURSE_ID"), context['user'].id, "CS 232 Help")
+    print(reqBody)
+    newConvo = create_user_conversation(getenv("COURSE_ID"), context['user'].id, reqBody['model'], "CS 232 Help")
     return PlainTextResponse(f"/chat?chatID={str(newConvo)}")
 
 @web_router.get("/profile")
