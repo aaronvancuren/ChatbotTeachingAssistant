@@ -1,7 +1,7 @@
 {% for class in context.courses %}
 <div class="col">
     <div class="card">
-        <img src="{{ class.splash }}" class="card-img-top" alt="Course Splash Image">
+        <img src="{{ class.image_path }}" class="card-img-top" alt="Course Splash Image">
         <div class="card-body flex-column">
             <div class="d-flex">
                 <h5 class="card-title">{{ class.display_name }}</h5>
