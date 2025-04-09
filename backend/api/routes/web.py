@@ -30,6 +30,12 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
     Returns:
         Index Web Page Response
     """
+    if context.get("logged_in"):
+        user: User = context["user"]  # set by get_context()
+
+        # fetch the courses the student is enrolled in
+        context["class_list"] = await user.get_courses()
+        
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
