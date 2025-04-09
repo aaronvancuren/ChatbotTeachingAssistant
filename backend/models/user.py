@@ -40,7 +40,7 @@ class User(UserBase):
             c.students = c.get_students()
 
             courses.append(c)
-        return courses
+        self.courses = courses
     
     # Get user conversations by course
     def get_conversations(self, course_id: uuid) -> list[Message]:

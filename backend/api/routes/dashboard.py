@@ -46,6 +46,8 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
+    context["courses"] = user.courses
+
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
 
 @dashboard_router.get("/class")
@@ -55,7 +57,7 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     # The courses list is retrieved from the context
-    courses = context.get("courses", [])
+    courses = user.courses
     if not courses:
         raise HTTPError(status_code=404, detail="No courses found for this user.")
 
@@ -70,11 +72,9 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
     else:
         # If no course_id is provided
         raise HTTPError(status_code=404, detail="No courses found for this user.")
-    
-    # Add the selected course ID into the context for template usage
-    context.update({"selected_course_id": selected_course.id})
-    
-    students = selected_course.get_students()
+        
+    selected_course.get_students()
+    students = selected_course.students
     
     documents = collection.get()
     file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}

@@ -15,7 +15,7 @@ class Course(CourseBase):
         for user_row in user_rows:
             if user_row is not None:
                 students.append(User(user_row))
-        return students
+        self.students = students
     
     # Get a list of documents
     def get_documents(): # What is the type?
