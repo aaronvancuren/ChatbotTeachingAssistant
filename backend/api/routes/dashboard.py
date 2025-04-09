@@ -59,7 +59,7 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
     if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
-    # Get the course_id from the query parameters, if provided.
+    # Get the course_id from the query parameters
     course_id = request.query_params.get("course_id")
     
     course = None
@@ -79,7 +79,7 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
             except Exception:
                 subject_val = Subject.CS
         
-        # Merge course_row with overrides.
+        # Merge course_row with overrides
         params = {**course_row, "subject": subject_val, "students": []}
         course = Course(**params)
     else:
@@ -89,13 +89,11 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
             raise HTTPException(status_code=404, detail="User is not enrolled in any course.")
         course = courses[0]
     
-    # Update the context with the selected course ID so that it is accessible in the template.
     context.update({"selected_course_id": course.id})
     
     # Load the student list for the selected course.
     students = course.get_students()
     
-    # Retrieve additional data as needed (for example, file names).
     documents = collection.get()
     file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}
     
@@ -192,8 +190,10 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
 async def delete_all_files_api(context: dict = Depends(get_context)):
     # Get all documents in the collection
     user: User = context.get("user")
-    # if user.role is Role.student:
-    #     raise HTTPError(status_code=401, detail="Unauthorized")
+    if user is None:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    if user.role is Role.student:
+        raise HTTPError(status_code=401, detail="Unauthorized")
     
     all_docs = collection.get()
     all_ids = all_docs.get('ids', [])
@@ -212,7 +212,6 @@ async def add_student(request: Request):
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
-    # Get course_id either from the URL query parameters or from the POST body.
     course_id = request.query_params.get("course_id") or data.get("course_id")
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
@@ -228,7 +227,7 @@ async def add_student(request: Request):
 
     student_id = user_record.id
 
-    # Use the specified course_id (from query params or the request body)
+    # Use the specified course_id
     course_id = request.query_params.get("course_id") or data.get("course_id")
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
@@ -242,8 +241,6 @@ async def add_student(request: Request):
     # Enroll the student in the specified course
     success = create_user_course(course_id, str(student_id))
     if not success:
-        # Double-check whether the student is already enrolled
-        enrolled_users = read_users_for_course(course_id)
         if str(student_id) not in enrolled_users:
             raise HTTPException(status_code=500, detail="Failed to enroll student in course")
 
@@ -257,7 +254,6 @@ async def remove_student(request: Request):
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
-    # Get the course_id either from the URL query parameters or from the POST body.
     course_id = request.query_params.get("course_id") or data.get("course_id")
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
@@ -283,17 +279,12 @@ async def remove_student(request: Request):
 async def add_students_bulk(request: Request, file: UploadFile = File(...), context: dict = Depends(get_context)):
     """
     Bulk add students from a CSV file to a course.
-    The CSV is expected to have email addresses in the first column.
-    The course_id is expected to be provided as a query parameter.
     """
 
-
-    # Get course_id from URL query parameters only
     course_id = request.query_params.get("course_id")
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided.")
 
-    # Read file contents and decode as UTF-8.
     content = await file.read()
     decoded_content = content.decode("utf-8")
     
@@ -330,7 +321,6 @@ async def add_students_bulk(request: Request, file: UploadFile = File(...), cont
         # Enroll the student in the specified course.
         success = create_user_course(course_id, str(student_id))
         if not success:
-            # Double-check if the student is already enrolled.
             enrolled_users = read_users_for_course(course_id)
             if str(student_id) not in enrolled_users:
                 results.append({"email": email, "status": "failed", "detail": "Failed to enroll student in course."})
@@ -343,17 +333,14 @@ async def add_students_bulk(request: Request, file: UploadFile = File(...), cont
 @dashboard_router.delete("/remove_all_students")
 async def remove_all_students(request: Request, context: dict = Depends(get_context)):
 
-    # Ensure the user is authenticated and is not a student.
     user: User = context.get("user")
     if user is None or user.role == Role.student:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    # Get the course_id from the URL query parameters.
     course_id = request.query_params.get("course_id")
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
-    # Call the helper function to delete all enrollments for this course.
     success = delete_all_user_courses(course_id)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to remove all students from course")

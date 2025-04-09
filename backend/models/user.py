@@ -1,6 +1,7 @@
 import uuid
 from backend.models import UserBase, CourseBase, Message, Role
 from psycopg2.extras import RealDictRow
+from backend.models.subject import Subject
 
 class User(UserBase):
     courses: list[CourseBase] = []
@@ -12,23 +13,14 @@ class User(UserBase):
     def get_courses(self) -> list[CourseBase]:
         from backend.database.postgres import read_courses_for_user
         from backend.models.course import Course
-        # 1) Query the DB to retrieve classes for this user
+        # Query the DB to retrieve classes for this user
         class_list = read_courses_for_user(str(self.id))
 
-        # 2) Convert each row/dict into a Course
+        # Convert each row/dict into a Course
         courses = []
         for class_info in class_list:
-            # Convert the subject field
             raw_subject = class_info["subject"]
-            try:
-                subject_val = int(raw_subject)
-            except (ValueError, TypeError):
-                # Map known string values to numbers.
-                # For example, if the subject "CS" should be 13:
-                if isinstance(raw_subject, str) and raw_subject.upper() == "CS":
-                    subject_val = 13
-                else:
-                    subject_val = 0
+            subject_val = Subject[raw_subject.upper()]
 
             c = Course(
                 id=class_info["id"],
@@ -42,10 +34,9 @@ class User(UserBase):
                 prompt=class_info["prompt"],
                 documents_path=class_info["documents_path"],
                 image_path=class_info["image_path"],
-                students=[]  # temporarily
+                students=[]
             )
 
-            # Load the students immediately
             c.students = c.get_students()
 
             courses.append(c)

@@ -819,7 +819,6 @@ def read_courses_for_user(user_id: str) -> list[dict]:
     cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        # Example: joins user_courses and courses to find all courses for this user
         select_query = """
             SELECT c.*
             FROM user_courses uc
