@@ -59,48 +59,32 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
     if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
+    # The courses list is retrieved from the context
+    courses = context.get("courses", [])
+    if not courses:
+        raise HTTPError(status_code=404, detail="No courses found for this user.")
+
     # Get the course_id from the query parameters
     course_id = request.query_params.get("course_id")
     
-    course = None
-
     if course_id:
-        course_row = read_course_by_id(course_id)
-        if not course_row:
-            raise HTTPException(status_code=404, detail="Course not found")
-        
-        # Convert raw_subject from course_row to your Subject enum.
-        raw_subject = course_row.get("subject")
-        try:
-            subject_val = Subject(int(raw_subject))
-        except Exception:
-            try:
-                subject_val = Subject[raw_subject.upper()]
-            except Exception:
-                subject_val = Subject.CS
-        
-        # Merge course_row with overrides
-        params = {**course_row, "subject": subject_val, "students": []}
-        course = Course(**params)
+        # Attempt to find a matching Course object in context["courses"]
+        selected_course = next((c for c in courses if str(c.id) == course_id), None)
+        if not selected_course:
+            raise HTTPError(status_code=404, detail="Course not found in context.")
     else:
-        # If no course_id in URL, use the first course from the user's list.
-        courses = user.get_courses()
-        if not courses:
-            raise HTTPException(status_code=404, detail="User is not enrolled in any course.")
-        course = courses[0]
+        # If no course_id is provided
+        raise HTTPError(status_code=404, detail="No courses found for this user.")
     
-    context.update({"selected_course_id": course.id})
+    # Add the selected course ID into the context for template usage
+    context.update({"selected_course_id": selected_course.id})
     
-    # Load the student list for the selected course.
-    students = course.get_students()
+    students = selected_course.get_students()
     
     documents = collection.get()
     file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}
     
-    # Render the page.
-    return templates.TemplateResponse(
-        "Teacher_ClassView.html",
-        {"request": request, "context": context, "file_names": file_names, "students": students}
+    return templates.TemplateResponse("Teacher_ClassView.html",{"request": request, "context": context, "file_names": file_names, "students": students}
     )
 
 @dashboard_router.post("/upload")
