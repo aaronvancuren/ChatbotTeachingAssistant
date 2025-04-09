@@ -28,8 +28,10 @@
                     </div>
                     <!-- Hidden file input -->
                     <input type="file" id="studentFileInput" class="form-control d-none" multiple accept=".txt,.csv,.xls,.xlsx" />
+                    <!-- Display selected file name for CSV upload -->
+                    <div id="selectedStudentFileName" class="text-muted mt-2" style="display: none;"></div>
                     <!-- Button to open the modal -->
-                    <button type="button" class="btn btn-gold w-100 mb-3" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                    <button type="button" id="addStudentBtn" class="btn btn-gold w-100 mb-3">
                         Add Student
                     </button>
                 </div>

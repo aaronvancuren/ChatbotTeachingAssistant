@@ -34,67 +34,70 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
         Index Web Page Response
     """
     user: User = context.get("user")
-    # if user.role is Role.student:
-    #     raise HTTPError(status_code=401, detail="Unauthorized")
+
+    if user is None:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    if user.role is Role.student:
+        raise HTTPError(status_code=401, detail="Unauthorized")
     
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
 
 @dashboard_router.get("/class")
-async def teacher_class_view(request : Request, context: dict = Depends(get_context)):
+async def teacher_class_view(request: Request, context: dict = Depends(get_context)):
+    from fastapi import HTTPException
     user: User = context.get("user")
-    # if user.role is Role.student:
-    #     raise HTTPError(status_code=401, detail="Unauthorized")
-
+    if user is None:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    if user.role is Role.student:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
+    # Get the course_id from the query parameters, if provided.
+    course_id = request.query_params.get("course_id")
     from backend.models.course import Course
+    course = None
+
+    if course_id:
+        from backend.database.postgres import read_course_by_id
+        course_row = read_course_by_id(course_id)
+        if not course_row:
+            raise HTTPException(status_code=404, detail="Course not found")
+        
+        # Convert raw_subject from course_row to your Subject enum.
+        from backend.models.subject import Subject
+        raw_subject = course_row.get("subject")
+        try:
+            subject_val = Subject(int(raw_subject))
+        except Exception:
+            try:
+                subject_val = Subject[raw_subject.upper()]
+            except Exception:
+                subject_val = Subject.CS
+        
+        # Merge course_row with overrides.
+        params = {**course_row, "subject": subject_val, "students": []}
+        course = Course(**params)
+    else:
+        # If no course_id in URL, use the first course from the user's list.
+        courses = user.get_courses()
+        if not courses:
+            raise HTTPException(status_code=404, detail="User is not enrolled in any course.")
+        course = courses[0]
     
-    # course = None
-    # students = []
-
-    # class_list = context.get("class_list", [])
-    # if class_list:
-        # Assume the first item in class_list is a dict with an 'id' key
-        # This is just until get courses functionality is done
-        # first_class = class_list[0]
-        # course = Course()
-        # course.id = first_class['id']
-        # students = course.get_students()
-
-    # course = Course()
-    # course.id = "e9fb87c0-b500-411b-b1d5-ab581905dc59"  # Hard-coded test course UUID
-
-     # Construct the Course with its ID right in the constructor
-    course = Course(
-    id="e9fb87c0-b500-411b-b1d5-ab581905dc59",
-    instructor_id="a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    display_name="CS232 - Introduction to Computer Science",
-    subject=13,
-    course_number="232",
-    section_number="1",
-    title="Introduction to CS",
-    model="default_model",
-    prompt="Default course prompt for CS232",
-    documents_path="/path/to/cs232/documents",
-    image_path="/path/to/cs232/image",
-    students=[]
-)
+    # Update the context with the selected course ID so that it is accessible in the template.
+    context.update({"selected_course_id": course.id})
+    
+    # Load the student list for the selected course.
     students = course.get_students()
-
-
-    students = []
-    if course is not None:
-        students = course.get_students()
-
     
-    # Retrieve all documents from the collection
+    # Retrieve additional data as needed (for example, file names).
     documents = collection.get()
-
-    # Extract unique file names from metadatas
-    file_names = set()
-    for metadata in documents.get('metadatas', []):
-        file_names.add(metadata['file_name'])
-
-    # Pass list of file names into the template
-    return templates.TemplateResponse("Teacher_ClassView.html", {"request": request, "context": context, "file_names": file_names, "students": students})
+    file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}
+    
+    # Render the page.
+    return templates.TemplateResponse(
+        "Teacher_ClassView.html",
+        {"request": request, "context": context, "file_names": file_names, "students": students}
+    )
 
 @dashboard_router.post("/upload")
 async def upload_file_api(request: Request, files: list[UploadFile] = File(...), context: dict = Depends(get_context)):
@@ -103,8 +106,10 @@ async def upload_file_api(request: Request, files: list[UploadFile] = File(...),
     and add them to the ChromaDB collection if they do not already exist.
     """
     user: User = context.get("user")
-    # if user.role is Role.student:
-    #     raise HTTPError(status_code=401, detail="Unauthorized")
+    if user is None:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    if user.role is Role.student:
+        raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = []
 
@@ -165,8 +170,10 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
     Deletes all chunks associated with the given file_name.
     """
     user: User = context.get("user")
-    # if user.role is Role.student:
-    #     raise HTTPError(status_code=401, detail="Unauthorized")
+    if user is None:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    if user.role is Role.student:
+        raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = collection.get(where={"file_name": file_name})
     if results['ids']:
@@ -193,30 +200,51 @@ async def delete_all_files_api(context: dict = Depends(get_context)):
 
 @dashboard_router.post("/add_student")
 async def add_student(request: Request):
-    from backend.database.postgres import read_user_by_email, create_user, create_user_course, read_users_for_course
     from fastapi import HTTPException
+    from backend.database.postgres import (
+        read_user_by_email,
+        create_user,
+        create_user_course,
+        read_users_for_course,
+    )
 
     data = await request.json()
     email = data.get("email")
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
+    # Get course_id either from the URL query parameters or from the POST body.
+    course_id = request.query_params.get("course_id") or data.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    # Retrieve the student record by email; if it doesn't exist, create it.
     user_record = read_user_by_email(email)
     if user_record is None:
-        # Create a new student record if needed
         if not create_user(email, email, 'student'):
             raise HTTPException(status_code=500, detail="Failed to create student")
         user_record = read_user_by_email(email)
         if user_record is None:
             raise HTTPException(status_code=500, detail="Student record not found after creation")
 
-    student_id = user_record.id  # <-- use attribute access
-    default_course_id = "e9fb87c0-b500-411b-b1d5-ab581905dc59"
-    
-    # Attempt to enroll the student
-    success = create_user_course(default_course_id, str(student_id))
+    student_id = user_record.id
+
+    # Use the specified course_id (from query params or the request body)
+    course_id = request.query_params.get("course_id") or data.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    # Check if the student is already enrolled in the course.
+    enrolled_users = read_users_for_course(course_id)
+    if str(student_id) in enrolled_users:
+        raise HTTPException(status_code=400, detail="Student is already enrolled in course")
+
+
+    # Enroll the student in the specified course
+    success = create_user_course(course_id, str(student_id))
     if not success:
-        enrolled_users = read_users_for_course(default_course_id)
+        # Double-check whether the student is already enrolled
+        enrolled_users = read_users_for_course(course_id)
         if str(student_id) not in enrolled_users:
             raise HTTPException(status_code=500, detail="Failed to enroll student in course")
 
@@ -236,23 +264,114 @@ async def remove_student(request: Request):
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
-    # Get the user record to find their ID
+    # Get the course_id either from the URL query parameters or from the POST body.
+    course_id = request.query_params.get("course_id") or data.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    # Retrieve the student record by email
     user_record = read_user_by_email(email)
     if user_record is None:
         raise HTTPException(status_code=404, detail="User not found")
 
     student_id = user_record.id
-    default_course_id = "e9fb87c0-b500-411b-b1d5-ab581905dc59"  # Or whichever course
 
     # Attempt to remove the student from the specified course
-    success = delete_user_course(default_course_id, str(student_id))
+    success = delete_user_course(course_id, str(student_id))
     if not success:
-        # Double check whether the user is still enrolled
-        enrolled_users = read_users_for_course(default_course_id)
+        # Double-check whether the student is still enrolled in the course
+        enrolled_users = read_users_for_course(course_id)
         if str(student_id) in enrolled_users:
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to remove student from course."
-            )
+            raise HTTPException(status_code=500, detail="Failed to remove student from course")
 
     return {"success": True, "message": "Student removed from course."}
+
+@dashboard_router.post("/add_students_bulk")
+async def add_students_bulk(request: Request, file: UploadFile = File(...), context: dict = Depends(get_context)):
+    """
+    Bulk add students from a CSV file to a course.
+    The CSV is expected to have email addresses in the first column.
+    The course_id is expected to be provided as a query parameter.
+    """
+    from fastapi import HTTPException
+    import csv, io
+    from backend.database.postgres import (
+        read_user_by_email,
+        create_user,
+        create_user_course,
+        read_users_for_course,
+    )
+
+    # Get course_id from URL query parameters only
+    course_id = request.query_params.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided.")
+
+    # Read file contents and decode as UTF-8.
+    content = await file.read()
+    decoded_content = content.decode("utf-8")
+    
+    # Use csv.reader to process the file.
+    reader = csv.reader(io.StringIO(decoded_content))
+    results = []
+
+    for row in reader:
+        if not row:
+            continue
+        email = row[0].strip()
+        if not email:
+            continue
+
+        # Try to get the student record by email; if none exists, create one.
+        user_record = read_user_by_email(email)
+        if user_record is None:
+            if not create_user(email, email, 'student'):
+                results.append({"email": email, "status": "failed", "detail": "Failed to create student."})
+                continue
+            user_record = read_user_by_email(email)
+            if user_record is None:
+                results.append({"email": email, "status": "failed", "detail": "Student record not found after creation."})
+                continue
+        
+        student_id = user_record.id
+
+        enrolled_users = read_users_for_course(course_id)
+        if str(student_id) in enrolled_users:
+            # Record that this student is already enrolled, and continue to the next record.
+            results.append({"email": email, "status": "already enrolled"})
+            continue
+
+        # Enroll the student in the specified course.
+        success = create_user_course(course_id, str(student_id))
+        if not success:
+            # Double-check if the student is already enrolled.
+            enrolled_users = read_users_for_course(course_id)
+            if str(student_id) not in enrolled_users:
+                results.append({"email": email, "status": "failed", "detail": "Failed to enroll student in course."})
+                continue
+        
+        results.append({"email": email, "status": "success"})
+
+    return {"results": results, "message": "Bulk student enrollment completed."}
+
+@dashboard_router.delete("/remove_all_students")
+async def remove_all_students(request: Request, context: dict = Depends(get_context)):
+    from fastapi import HTTPException
+    from backend.database.postgres import delete_all_user_courses
+
+    # Ensure the user is authenticated and is not a student.
+    user: User = context.get("user")
+    if user is None or user.role == Role.student:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Get the course_id from the URL query parameters.
+    course_id = request.query_params.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    # Call the helper function to delete all enrollments for this course.
+    success = delete_all_user_courses(course_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to remove all students from course")
+
+    return {"success": True, "message": "All students have been removed from the course."}

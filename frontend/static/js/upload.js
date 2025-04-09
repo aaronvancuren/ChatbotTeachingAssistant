@@ -80,7 +80,21 @@ function handleFileSelection(e, type) {
   }
 
   targetInput.files = newDataTransfer.files;
-  displayQueuedFiles(targetInput.files, fileQueue);
+  if (type === "upload") {
+      displayQueuedFiles(targetInput.files, fileQueue);
+  } else {
+      // For student CSV file, update the selected file name display and change button text
+      const selectedFile = targetInput.files[0];
+      const fileNameDisplay = document.getElementById("selectedStudentFileName");
+      if (fileNameDisplay) {
+          fileNameDisplay.textContent = selectedFile ? selectedFile.name : "";
+          fileNameDisplay.style.display = "block";
+      }
+      const addStudentBtn = document.getElementById("addStudentBtn");
+      if (addStudentBtn) {
+          addStudentBtn.textContent = "Add Students";
+      }
+  }
 }
 
 function handleFileDrop(e, type) {
@@ -102,7 +116,21 @@ function handleFileDrop(e, type) {
   }
 
   targetInput.files = newDataTransfer.files;
-  displayQueuedFiles(targetInput.files, fileQueue);
+  if (type === "upload") {
+      displayQueuedFiles(targetInput.files, fileQueue);
+  } else {
+      // For student CSV file drop, update the selected file name display and change button text
+      const selectedFile = targetInput.files[0];
+      const fileNameDisplay = document.getElementById("selectedStudentFileName");
+      if (fileNameDisplay) {
+          fileNameDisplay.textContent = selectedFile ? selectedFile.name : "";
+          fileNameDisplay.style.display = "block";
+      }
+      const addStudentBtn = document.getElementById("addStudentBtn");
+      if (addStudentBtn) {
+          addStudentBtn.textContent = "Add Students";
+      }
+  }
 }
 
 // Display the queued files with a Remove button
@@ -378,28 +406,38 @@ function submitNewStudent() {
     return;
   }
 
+  // Extract course_id from URL query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseId = urlParams.get("course_id");
+  if (!courseId) {
+    alert("Course ID is missing in the URL.");
+    return;
+  }
+
   fetch('/dashboard/add_student', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: studentEmail })
+    body: JSON.stringify({ email: studentEmail, course_id: courseId })
   })
   .then(response => response.json())
   .then(data => {
     if (data.success) {
       alert('Student added successfully!');
-      // Clear the input after success
+
+      // Clear the input
       document.getElementById('studentEmail').value = '';
-      
-      // Hide the add student modal using Bootstrap's modal API
+
+      // Hide the add-student modal
       let studentModalEl = document.getElementById('addStudentModal');
       let studentModal = bootstrap.Modal.getInstance(studentModalEl);
-      if (studentModal) {
-          studentModal.hide();
-      } else {
-          // If no instance exists, create one and then hide it
-          studentModal = new bootstrap.Modal(studentModalEl);
-          studentModal.hide();
+      if (!studentModal) {
+        studentModal = new bootstrap.Modal(studentModalEl);
       }
+      studentModal.hide();
+
+      // Add the newly added student to the list UI
+      addStudentToList(studentEmail);
+
     } else {
       const errorMessage = data.error || data.detail || "An error occurred while adding the student.";
       alert('Error adding student: ' + errorMessage);
@@ -411,15 +449,67 @@ function submitNewStudent() {
   });
 }
 
+function addStudentToList(email) {
+  const studentList = document.getElementById("studentList");
+  if (!studentList) return;
+
+  // Remove any placeholder if present
+  const placeholder = document.getElementById("noStudentsPlaceholder");
+  if (placeholder) {
+    placeholder.remove();
+  }
+
+  // Create a unique ID for the <li>
+  const sanitizedEmail = email.replace(/\s/g, '_').replace(/[\\/]/g, '_');
+
+  // Build the list item
+  const li = document.createElement("li");
+  li.className = "list-group-item d-flex justify-content-between align-items-center";
+  li.id = `student-${sanitizedEmail}`;
+
+  const span = document.createElement("span");
+  span.className = "flex-grow-1 text-truncate";
+  span.style.minWidth = "0";
+  span.textContent = email;
+
+  const divWrapper = document.createElement("div");
+  const divBtnGroup = document.createElement("div");
+  divBtnGroup.className = "btn-group";
+  divBtnGroup.role = "group";
+  divBtnGroup.style.whiteSpace = "normal";
+  divBtnGroup.style.overflow = "visible";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "btn btn-sm btn-danger";
+  removeBtn.textContent = "Remove";
+  removeBtn.onclick = () => removeStudent(email);
+
+  divBtnGroup.appendChild(removeBtn);
+  divWrapper.appendChild(divBtnGroup);
+  li.appendChild(span);
+  li.appendChild(divWrapper);
+
+  // append <li> to <ul id='studentList'>
+  studentList.appendChild(li);
+}
+
 function removeStudent(email) {
   if (!confirm(`Are you sure you want to remove "${email}"?`)) {
+    return;
+  }
+  
+  // Extract course_id from URL query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseId = urlParams.get("course_id");
+  if (!courseId) {
+    alert("Course ID is missing in the URL.");
     return;
   }
 
   fetch('/dashboard/remove_student', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email })
+    body: JSON.stringify({ email: email, course_id: courseId })
   })
   .then(response => response.json())
   .then(data => {
@@ -430,7 +520,6 @@ function removeStudent(email) {
       if (studentItem) {
         studentItem.remove();
       }
-      // Reload or remove from the UI
     } else {
       alert(`Error removing student: ${data.detail || 'Unknown error'}`);
     }
@@ -439,4 +528,124 @@ function removeStudent(email) {
     console.error('Error:', error);
     alert('An error occurred while removing the student.');
   });
+}
+
+// Attach event listener to the Add Student button
+document.getElementById("addStudentBtn").addEventListener("click", () => {
+    const fileInput = document.getElementById("studentFileInput");
+    if (fileInput.files.length > 0) {
+        // If a CSV file is selected, process the CSV upload
+        submitStudentCSV();
+    } else {
+        // No file selected, show the manual entry modal
+        const studentModalEl = document.getElementById("addStudentModal");
+        let studentModal = bootstrap.Modal.getInstance(studentModalEl);
+        if (!studentModal) {
+            studentModal = new bootstrap.Modal(studentModalEl);
+        }
+        studentModal.show();
+    }
+});
+
+// Function to process CSV file upload for bulk student addition
+async function submitStudentCSV() {
+    const fileInput = document.getElementById("studentFileInput");
+    if (!fileInput.files.length) return;
+    const csvFile = fileInput.files[0];
+
+    // Check that the file has a .csv extension
+    if (!csvFile.name.toLowerCase().endsWith(".csv")) {
+        alert("Please upload a valid CSV file with a .csv extension.");
+        return;
+    }
+
+    // Extract course_id from URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get("course_id");
+    if (!courseId) {
+        alert("Course ID is missing in the URL.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", csvFile);
+
+    try {
+        const response = await fetch(`/dashboard/add_students_bulk?course_id=${courseId}`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Failed to process CSV file.");
+        }
+
+        const data = await response.json();
+        let message = "CSV processed. Results:\n";
+        data.results.forEach(result => {
+            message += `${result.email}: ${result.status}`;
+            if (result.detail) {
+                message += ` (${result.detail})`;
+            }
+            message += "\n";
+            if (result.status === "success") {
+                addStudentToList(result.email);
+            }
+        });
+        alert(message);
+
+        // Clear the file input and remove the selected file display
+        fileInput.value = "";
+        const fileNameDisplay = document.getElementById("selectedStudentFileName");
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = "";
+            fileNameDisplay.style.display = "none";
+        }
+        const addStudentBtn = document.getElementById("addStudentBtn");
+        if (addStudentBtn) {
+            addStudentBtn.textContent = "Add Student";
+        }
+    } catch (error) {
+        console.error("CSV Upload Error:", error);
+        alert(`Error: ${error.message}`);
+    }
+}
+
+async function removeAllStudents() {
+  // Extract course_id from URL query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseId = urlParams.get("course_id");
+  if (!courseId) {
+    alert("Course ID is missing in the URL.");
+    return;
+  }
+  
+  if (!confirm("Are you sure you want to remove all students from this class?")) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/dashboard/remove_all_students?course_id=${courseId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" }
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      // Update the UI: Clear the student list
+      const studentList = document.getElementById("studentList");
+      if (studentList) {
+        studentList.innerHTML = `<li class="list-group-item text-muted" id="noStudentsPlaceholder">
+                                   No students added yet.
+                                 </li>`;
+      }
+      alert("All students have been removed.");
+    } else {
+      alert(`Error removing students: ${data.detail || "Unknown error"}`);
+    }
+  } catch (error) {
+    console.error("Error removing all students:", error);
+    alert("An error occurred while removing all students.");
+  }
 }

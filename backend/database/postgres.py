@@ -808,3 +808,61 @@ def delete_user_courses_by_course(course_id):
     finally:
         cur.close()
         conn.close()
+
+def read_courses_for_user(user_id: str) -> list[dict]:
+    conn: connection = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        # Example: joins user_courses and courses to find all courses for this user
+        select_query = """
+            SELECT c.*
+            FROM user_courses uc
+            JOIN courses c ON c.id = uc.course_id
+            WHERE uc.user_id = %s;
+        """
+        cur.execute(select_query, (user_id,))
+        rows = cur.fetchall()
+        return list(rows)  # Convert Row objects to list of RealDictRow
+
+    except Exception as e:
+        logging.error(f"Error retrieving courses for user {user_id}: {e}")
+        return []
+
+    finally:
+        cur.close()
+        conn.close()
+
+def delete_all_user_courses(course_id: str) -> bool:
+    """
+    Deletes all entries in the user_courses table for the given course_id.
+    Returns True on success; otherwise, returns False.
+    """
+    conn = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            DELETE FROM user_courses
+            WHERE course_id = %s;
+            """,
+            (course_id,)
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        logging.error(f"Error deleting user courses for course {course_id}: {e}")
+        conn.rollback()
+        return False
+    finally:
+        cur.close()
+        conn.close()

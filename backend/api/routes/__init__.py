@@ -5,7 +5,6 @@ from fastapi import Request
 from fastapi_msal import MSALAuthorization, MSALClientConfig
 from fastapi_msal.models import AuthToken, TokenStatus
 
-from backend.database.database_class_sections import get_user_classes
 from backend.database.database_user_conversations import get_user_conversations
 import backend.database.postgres as db
 
@@ -31,9 +30,8 @@ async def get_context(request: Request) -> dict:
         context.update({"logged_in": True})
 
         #TODO needs to be incorporated into user model
-        context.update({"class_list": get_user_classes(token.id_token_claims.user_id)})
         context.update({"conversation_list": get_user_conversations(token.id_token_claims.user_id)})
-    
+        
     if context.get("logged_in", None) and context.get("user", None) is None:
         email: str = token.id_token_claims.preferred_username
         user: User = db.read_user_by_email(email)
@@ -44,5 +42,6 @@ async def get_context(request: Request) -> dict:
                 user.id = uuid.UUID(token.id_token_claims.user_id)
 
         context.update({"user": user})
-
+        context.update({"courses" : user.get_courses()})
+        
     return context
