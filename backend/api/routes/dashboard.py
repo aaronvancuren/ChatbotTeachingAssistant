@@ -1,15 +1,24 @@
 import uuid
-
+import csv, io
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import initialize_chromadb, get_or_create_collection, add_documents
+from backend.models.course import Course
 from backend.models import Role, User
-from backend.database.postgres import read_user_by_email, create_user
+from backend.models.subject import Subject
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-
+from backend.database.postgres import (
+    read_user_by_email,
+    create_user,
+    create_user_course,
+    delete_user_course,
+    read_users_for_course,
+    delete_all_user_courses,
+    read_course_by_id
+)
 
 
 # Initialize templates directory
@@ -44,7 +53,6 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
 
 @dashboard_router.get("/class")
 async def teacher_class_view(request: Request, context: dict = Depends(get_context)):
-    from fastapi import HTTPException
     user: User = context.get("user")
     if user is None:
         raise HTTPError(status_code=401, detail="Unauthorized")
@@ -53,17 +61,15 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
     
     # Get the course_id from the query parameters, if provided.
     course_id = request.query_params.get("course_id")
-    from backend.models.course import Course
+    
     course = None
 
     if course_id:
-        from backend.database.postgres import read_course_by_id
         course_row = read_course_by_id(course_id)
         if not course_row:
             raise HTTPException(status_code=404, detail="Course not found")
         
         # Convert raw_subject from course_row to your Subject enum.
-        from backend.models.subject import Subject
         raw_subject = course_row.get("subject")
         try:
             subject_val = Subject(int(raw_subject))
@@ -200,13 +206,6 @@ async def delete_all_files_api(context: dict = Depends(get_context)):
 
 @dashboard_router.post("/add_student")
 async def add_student(request: Request):
-    from fastapi import HTTPException
-    from backend.database.postgres import (
-        read_user_by_email,
-        create_user,
-        create_user_course,
-        read_users_for_course,
-    )
 
     data = await request.json()
     email = data.get("email")
@@ -252,12 +251,6 @@ async def add_student(request: Request):
 
 @dashboard_router.delete("/remove_student")
 async def remove_student(request: Request):
-    from fastapi import HTTPException
-    from backend.database.postgres import (
-        read_user_by_email,
-        delete_user_course,
-        read_users_for_course,
-    )
 
     data = await request.json()
     email = data.get("email")
@@ -293,14 +286,7 @@ async def add_students_bulk(request: Request, file: UploadFile = File(...), cont
     The CSV is expected to have email addresses in the first column.
     The course_id is expected to be provided as a query parameter.
     """
-    from fastapi import HTTPException
-    import csv, io
-    from backend.database.postgres import (
-        read_user_by_email,
-        create_user,
-        create_user_course,
-        read_users_for_course,
-    )
+
 
     # Get course_id from URL query parameters only
     course_id = request.query_params.get("course_id")
@@ -356,8 +342,6 @@ async def add_students_bulk(request: Request, file: UploadFile = File(...), cont
 
 @dashboard_router.delete("/remove_all_students")
 async def remove_all_students(request: Request, context: dict = Depends(get_context)):
-    from fastapi import HTTPException
-    from backend.database.postgres import delete_all_user_courses
 
     # Ensure the user is authenticated and is not a student.
     user: User = context.get("user")

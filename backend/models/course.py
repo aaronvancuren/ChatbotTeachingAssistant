@@ -1,5 +1,7 @@
 import uuid
 from backend.models import CourseBase, UserBase
+from backend.database.postgres import read_users_for_course, read_user_by_id
+from backend.models.user import User
 
 class Course(CourseBase):
     students: list[UserBase]
@@ -8,8 +10,7 @@ class Course(CourseBase):
     #     pass
     
     def get_students(self) -> list[UserBase]:
-        from backend.database.postgres import read_users_for_course, read_user_by_id
-        from backend.models.user import User
+
 
         # Get all user IDs (as strings) for this course
         user_ids = read_users_for_course(str(self.id))
