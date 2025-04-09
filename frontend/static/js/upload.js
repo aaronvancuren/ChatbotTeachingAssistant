@@ -11,8 +11,6 @@ const uploadResult = document.getElementById("uploadResult");
 
 const allowedExtensions = [".txt", ".pdf", ".doc", ".docx", ".html", ".css"];
 
-// DataTransfer that holds all staged files
-let combinedFilesDataTransfer = new DataTransfer();
 
 // Dropzone click => open file dialog
 studentDropzone.addEventListener("click", () => {
@@ -190,10 +188,8 @@ removeAllBtn.addEventListener("click", removeAllFromQueue);
 
 function removeAllFromQueue() {
 
-  combinedFilesDataTransfer = new DataTransfer();
   uploadFileInput.value = ""; // reset the file input
   displayQueuedFiles([], fileQueueEl); // refresh UI
-  displayQueuedFiles([], studentList); // refresh student UI
 }
 
 // Click "Upload"
