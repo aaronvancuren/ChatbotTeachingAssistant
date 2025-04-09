@@ -188,6 +188,64 @@ async def delete_all_files_api(context: dict = Depends(get_context)):
 
     return {"message": "All files deleted successfully."}
 
+@dashboard_router.put("/update/{file_name}")
+async def update_file_api(
+    file_name: str,
+    request: Request,
+    file: UploadFile = File(None),
+    content: str = Form(None),
+    context: dict = Depends(get_context)
+):
+    """
+    Updates a file by replacing its existing chunks with new ones.
+    Can accept either a file or raw text content.
+    """
+    user: User = context.get("user")
+    if user.role is Role.student:
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    
+    # Check if the file exists in the database
+    existing = collection.get(where={"file_name": file_name})
+    if not existing['ids']:
+        raise HTTPException(status_code=404, detail="File not found.")
+
+    try:
+        if file:
+            new_content = await file.read()
+            new_chunks = process_file(new_content, file.filename)
+
+            if new_chunks is None:
+                raise HTTPException(status_code=400, detail="Unsupported file type")
+
+            if not new_chunks:
+                raise HTTPException(status_code=400, detail="Failed to extract text from file.")
+        elif content:
+            new_chunks = chunk_text(content)
+            if not new_chunks:
+                raise HTTPException(status_code=400, detail="No content provided for update.")
+        else:
+            raise HTTPException(status_code=400, detail="No content provided for update.")
+
+        # Generate new IDs/metadata
+        new_chunk_ids = [str(uuid.uuid4()) for _ in new_chunks]
+        new_metadatas = [
+            {"file_name": file_name, "chunk_index": idx} 
+            for idx, _ in enumerate(new_chunks)
+        ]
+
+        # Delete old entries
+        collection.delete(ids=existing['ids'])
+
+        # Add updated chunks
+        add_documents(collection, new_chunks, new_chunk_ids, new_metadatas)
+
+        return JSONResponse(
+            status_code=200, 
+            content={"message": "File updated successfully.", "file_name": file_name}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while updating the file: {str(e)}")
+
 @dashboard_router.post("/add_student")
 async def add_student(request: Request):
 
