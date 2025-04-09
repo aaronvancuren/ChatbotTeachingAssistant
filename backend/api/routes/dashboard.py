@@ -56,7 +56,6 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
-    # The courses list is retrieved from the context
     courses = user.courses
     if not courses:
         raise HTTPError(status_code=404, detail="No courses found for this user.")

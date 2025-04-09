@@ -6,7 +6,7 @@ from backend.models.user import User
 class Course(CourseBase):
     students: list[UserBase]
     
-    def get_students(self) -> list[UserBase]:
+    def get_students(self):
         # Get all user rows (as RealDictRow objects) for this course
         user_rows = read_students_for_course(str(self.id))
 

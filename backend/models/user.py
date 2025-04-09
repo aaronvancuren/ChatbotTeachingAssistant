@@ -10,7 +10,7 @@ class User(UserBase):
         super().__init__(id=row['id'], display_name=row['display_name'], email=row['email'], role=Role[row['role']])
         
     # Get user courses
-    def get_courses(self) -> list[CourseBase]:
+    def get_courses(self):
         from backend.database.postgres import read_courses_for_user
         from backend.models.course import Course
         # Query the DB to retrieve classes for this user
