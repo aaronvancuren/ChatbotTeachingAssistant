@@ -1,7 +1,6 @@
 import uuid
-from backend.models import UserBase, CourseBase, Message, Role, Subject
+from backend.models import UserBase, CourseBase, Message, Role
 from psycopg2.extras import RealDictRow
-from backend.models.subject import Subject
 
 class User(UserBase):
     courses: list[CourseBase] = []
@@ -10,40 +9,16 @@ class User(UserBase):
         super().__init__(id=row['id'], display_name=row['display_name'], email=row['email'], role=Role[row['role']])
         
     # Get user courses
-    def get_courses(self):
+    def get_courses(self):        
         from backend.database.postgres import read_courses_for_user, read_courses_for_instructor
-        from backend.models.course import Course
-        # Query the DB to retrieve classes for this user
         if self.role is Role.student:
-            class_list = read_courses_for_user(str(self.id))
-        if self.role is Role.instructor:
-            class_list = read_courses_for_instructor(str(self.id))
-
-        # Convert each row/dict into a Course
-        courses = []
-        for class_info in class_list:
-            raw_subject = class_info["subject"]
-            subject_val = Subject[raw_subject.upper()]
-
-            c = Course(
-                id=class_info["id"],
-                instructor_id=class_info["instructor_id"],
-                display_name=class_info["display_name"],
-                subject=subject_val,
-                course_number=class_info["course_number"],
-                section_number=class_info["section_number"],
-                title=class_info["title"],
-                model=class_info["model"],
-                prompt=class_info["prompt"],
-                documents_path=class_info["documents_path"],
-                image_path=class_info["image_path"],
-                students=[]
-            )
-
-            c.students = c.get_students()
-
-            courses.append(c)
-        self.courses = courses
+            updated_user = read_courses_for_user(str(self.id))
+            if updated_user is not None:
+                self.courses = updated_user.courses
+        elif self.role is Role.instructor:
+            updated_instructor = read_courses_for_instructor(str(self.id))
+            if updated_instructor is not None:
+                self.courses = updated_instructor.courses
     
     # Get user conversations by course
     def get_conversations(self, course_id: uuid) -> list[Message]:
