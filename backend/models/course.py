@@ -1,4 +1,3 @@
-import uuid
 from backend.models import CourseBase, UserBase
 from backend.database.postgres import read_students_for_course, read_user_by_id
 from backend.models.user import User

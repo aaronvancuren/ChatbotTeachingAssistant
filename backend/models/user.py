@@ -1,5 +1,5 @@
 import uuid
-from backend.models import UserBase, CourseBase, Message, Role
+from backend.models import UserBase, CourseBase, Message, Role, Subject
 from psycopg2.extras import RealDictRow
 from backend.models.subject import Subject
 

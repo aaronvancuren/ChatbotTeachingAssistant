@@ -29,7 +29,7 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
     
     Returns:
         Index Web Page Response
-    """
+    """  
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page

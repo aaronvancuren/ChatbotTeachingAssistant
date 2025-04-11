@@ -344,6 +344,34 @@ def read_course_by_id(course_id):
         cur.close()
         conn.close()
 
+def read_courses_for_user(user_id: str) -> list[dict]:
+    conn: connection = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        select_query = """
+            SELECT c.*
+            FROM user_courses uc
+            JOIN courses c ON c.id = uc.course_id
+            WHERE uc.user_id = %s;
+        """
+        cur.execute(select_query, (user_id,))
+        rows = cur.fetchall()
+        return list(rows)  # Convert Row objects to list of RealDictRow
+
+    except Exception as e:
+        logging.error(f"Error retrieving courses for user {user_id}: {e}")
+        return []
+
+    finally:
+        cur.close()
+        conn.close()
+        
 def update_course_title(course_id, new_title):
     """
     Updates the title of a course.
