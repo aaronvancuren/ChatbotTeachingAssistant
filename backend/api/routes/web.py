@@ -32,7 +32,7 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
     
     Returns:
         Index Web Page Response
-    """
+    """  
     if context.get("logged_in"):
         convos = read_conversations_by_user(context['user'].id, getenv("COURSE_ID"))
         if len(convos) == 0:
