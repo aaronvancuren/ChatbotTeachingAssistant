@@ -119,10 +119,8 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
             discussion.append({'role': 'developer', 'content': system_message})
-        print("Relevant documents added to the conversation.")
+       
         # Sends the entire conversation to ChatGPT
-        print(discussion)
-        print(str(conversationData.model.value))
         response = client.chat.completions.create(
             messages=discussion,
             model=str(conversationData.model.value),
@@ -134,7 +132,6 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
             user=str(user_id)
         )
 
-        print(response)
         # Adds the ChatGPT response to the conversation
         discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
 

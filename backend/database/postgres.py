@@ -522,39 +522,6 @@ def create_user_conversation(course_id, user_id, model, title) -> uuid:
         cur.close()
         conn.close()
 
-def get_conversation_data(conversation_id, field = "*"):
-    """
-    Retrieves a conversation data by a given id
-
-    Args:
-        conversation_id (str): The conversation's unique ID.
-
-    Returns:
-        list: A list of conversations IDs.
-    """
-    conn: connection = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        raise HTTPError(status_code=500, detail="Internal Server Error")
-    
-    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-    try:
-        select_query = "SELECT ? FROM user_conversations WHERE conversation_id = '%s';"
-        id=str(conversation_id).replace('-','')
-        cur.execute(select_query.replace("?", field) % id)
-        rows = cur.fetchone()
-        return rows.items().mapping.get(field)       
-    
-    except Exception as e:
-        logging.error(f"Error retrieving conversation ids: {e}")
-        raise HTTPError(status_code=500, detail="Internal Server Error")
-    
-    finally:
-        cur.close()
-        conn.close()
-
 def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[User_Conversation]:
     """
     Retrieves all conversations IDs for a given user.
@@ -564,7 +531,7 @@ def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[User_Conv
         course_id (str): The course's unique ID.
 
     Returns:
-        list: A list of conversations IDs.
+        list: A list of conversations.
     """
     conn: connection = get_db_connection()
 
