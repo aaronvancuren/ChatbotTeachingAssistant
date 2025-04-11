@@ -9,31 +9,28 @@ import psycopg2.extras
 
 from backend.api.errors import HTTPError
 
+from backend.models import User
+from backend.models.converstation import User_Conversation
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 register_uuid()
 
-def get_db_connection():
-    # Retrieve required environment variables
-    dbname = os.environ['DB_NAME']
-    user = os.environ['DB_USER']
-    password = os.environ['DB_PASSWORD']
-    host = os.getenv('DB_HOST', 'localhost')  # Default to 'localhost' if not set
-    port = int(os.getenv('DB_PORT', 5432))    # Default to 5432 if not set
-
+def get_db_connection() -> connection:
     # Database connection configuration
     db_config = {
-        "dbname": dbname,
-        "user": user,
-        "password": password,
-        "host": host,
-        "port": port
+        "dbname": os.environ['DB_NAME'],
+        "user": os.environ['DB_USER'],
+        "password": os.environ['DB_PASSWORD'],
+        "host": os.getenv('DB_HOST', 'localhost'),  # Default to 'localhost' if not set
+        "port": int(os.getenv('DB_PORT', 5432))     # Default to 5432 if not set
     }
 
     # Connect to PostgreSQL using psycopg2
     conn = psycopg2.connect(**db_config)
     conn.commit()
     return conn
+    return psycopg2.connect(**db_config)
 
 def create_user(display_name, email, role='student'):
     """
@@ -110,7 +107,7 @@ def read_user_by_id(user_id):
         cur.close()
         conn.close()
 
-def read_user_by_email(email) -> RealDictRow:
+def read_user_by_email(email) -> User:
     """
     Retrieves a user from the users table by email.
 
@@ -131,13 +128,13 @@ def read_user_by_email(email) -> RealDictRow:
 
     try:
         select_query = "SELECT id, display_name, email, role FROM users WHERE email = %s;"
-        cur.execute(select_query, (email))
+        cur.execute(select_query, (email,))
         row: RealDictRow = cur.fetchone()
 
         if row is None:
             return None
         
-        return row
+        return User(row)
     
     except Exception as e:
         logging.error(f"Error retrieving user by email: {e}")
@@ -232,7 +229,7 @@ def set_user_id(id: uuid, email: str):
         conn.commit()
         return True
     except Exception as e:
-        logging.error(f"Error updating user display name: {e}")
+        logging.error(f"Error updating user id with Microsoft user_id: {e}")
         conn.rollback()
         return False
     finally:
@@ -384,6 +381,34 @@ def read_course_by_id(course_id):
         cur.close()
         conn.close()
 
+def read_courses_for_user(user_id: str) -> list[dict]:
+    conn: connection = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        select_query = """
+            SELECT c.*
+            FROM user_courses uc
+            JOIN courses c ON c.id = uc.course_id
+            WHERE uc.user_id = %s;
+        """
+        cur.execute(select_query, (user_id,))
+        rows = cur.fetchall()
+        return list(rows)  # Convert Row objects to list of RealDictRow
+
+    except Exception as e:
+        logging.error(f"Error retrieving courses for user {user_id}: {e}")
+        return []
+
+    finally:
+        cur.close()
+        conn.close()
+        
 def update_course_title(course_id, new_title):
     """
     Updates the title of a course.
@@ -485,13 +510,14 @@ def delete_course(course_id):
         cur.close()
         conn.close()
 
-def create_user_conversation(course_id, user_id, title):
+def create_user_conversation(course_id, user_id, model, title) -> uuid:
     """
     Creates a new conversation.
 
     Args:
         course_id (str): The ID of the course.
         user_id (str): The user's unique ID.
+        model (str): The model type for the conversation.
         title (str): Title for the conversation.
 
     Returns:
@@ -504,19 +530,18 @@ def create_user_conversation(course_id, user_id, title):
         return None
     
     cur: cursor = conn.cursor()
-    cur.execute("select exists(select * from information_schema.tables where table_name=%s)", ('user_conversations',))
-    print(cur.fetchone()[0])
     try:
         insert_query = """
-            INSERT INTO user_conversations (course_id, user_id, title)
+            INSERT INTO user_conversations (course_id, user_id, model, title)
             VALUES (
                 %s, 
                 %s, 
+                %s,
                 %s
             )
             RETURNING conversation_id;
         """        
-        cur.execute(insert_query, (course_id.replace("-", ""), user_id.replace("-",""), title))
+        cur.execute(insert_query, (str(course_id).replace("-",""), str(user_id).replace("-",""), model, title))
         conversation_id = cur.fetchone()[0]
         conn.commit()
         return conversation_id
@@ -530,40 +555,7 @@ def create_user_conversation(course_id, user_id, title):
         cur.close()
         conn.close()
 
-def get_conversation_data(conversation_id, field = "*"):
-    """
-    Retrieves a conversation data by a given id
-
-    Args:
-        conversation_id (str): The conversation's unique ID.
-
-    Returns:
-        list: A list of conversations IDs.
-    """
-    conn: connection = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        raise HTTPError(status_code=500, detail="Internal Server Error")
-    
-    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-    try:
-        select_query = "SELECT ? FROM user_conversations WHERE conversation_id = '%s';"
-        id=str(conversation_id).replace("-","")
-        cur.execute(select_query.replace("?", field) % id)
-        rows = cur.fetchone()
-        return rows.items().mapping.get(field)       
-    
-    except Exception as e:
-        logging.error(f"Error retrieving conversation ids: {e}")
-        raise HTTPError(status_code=500, detail="Internal Server Error")
-    
-    finally:
-        cur.close()
-        conn.close()
-
-def read_conversations_by_user(user_id, course_id):
+def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[User_Conversation]:
     """
     Retrieves all conversations IDs for a given user.
 
@@ -572,7 +564,7 @@ def read_conversations_by_user(user_id, course_id):
         course_id (str): The course's unique ID.
 
     Returns:
-        list: A list of conversations IDs.
+        list: A list of conversations.
     """
     conn: connection = get_db_connection()
 
@@ -583,12 +575,13 @@ def read_conversations_by_user(user_id, course_id):
     cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s AND course_id = %s;"
-        cur.execute(select_query, (user_id.replace("-",""), course_id.replace("-","")))
+        select_query = "SELECT * FROM user_conversations WHERE user_id = %s AND course_id = %s;"
+        cur.execute(select_query, (str(user_id).replace("-",""), str(course_id).replace("-","")))
         rows = cur.fetchall()
-
-        conversation_ids = [row['conversation_id'] for row in rows]
-        return conversation_ids
+        tmp = []
+        for row in rows:
+            tmp.append(User_Conversation(row.values().mapping))
+        return tmp
     
     except Exception as e:
         logging.error(f"Error retrieving conversation ids: {e}")

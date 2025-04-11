@@ -1,39 +1,41 @@
 import uuid
-from backend.database.postgres import *
+from backend.models import UserBase, CourseBase, Message, Role, Subject
+from psycopg2.extras import RealDictRow
 
-from backend.models.role import Role
-from backend.models.message import Message
-from backend.models.course import Course
-
-class User:
-    id: uuid
-    display_name: str
-    email: str
-    role: Role
-    courses: list[Course] = []
-    conversation: list[Message] = []
+class User(UserBase):
+    courses: list[CourseBase] = []
     
-    def __init__(self, email: str, id: uuid):
-        # Find the user in the database
-        user: RealDictRow = read_user_by_email(email)
-        if(user is None):
-            # you have not been invited
-            pass
+    def __init__(self, row: RealDictRow):
+        super().__init__(id=row['id'], display_name=row['display_name'], email=row['email'], role=Role[row['role']])
         
-        # If found, inspect user id
-        self.id:uuid = uuid.UUID(user["id"])
-        if(self.id is None):
-            set_user_id(id, email)
-            pass
-        
-        # If id is null, update user with id argument (first time logging into application)
-        
-        # If id is not null compare to the argument id, throw an invalid user error if they do not match
-        pass
-    
     # Get user courses
-    def get_courses() -> list[Course]:
-        pass
+    def get_courses(self) -> list[CourseBase]:
+        from backend.database.postgres import read_courses_for_user
+        # Query the DB to retrieve classes for this user
+        class_list = read_courses_for_user(str(self.id))
+
+        # Convert each row/dict into a Course
+        courses = []
+        for class_info in class_list:
+            raw_subject = class_info["subject"]
+            subject_val = Subject[raw_subject.upper()]
+
+            c = CourseBase(
+                id=class_info["id"],
+                instructor_id=class_info["instructor_id"],
+                display_name=class_info["display_name"],
+                subject=subject_val,
+                course_number=class_info["course_number"],
+                section_number=class_info["section_number"],
+                title=class_info["title"],
+                model=class_info["model"],
+                prompt=class_info["prompt"],
+                documents_path=class_info["documents_path"],
+                image_path=class_info["image_path"],
+            )
+
+            courses.append(c)
+        return courses
     
     # Get user conversations by course
     def get_conversations(self, course_id: uuid) -> list[Message]:
@@ -51,4 +53,3 @@ class User:
         
         # Return the conversation (list[message])
         pass
-    

@@ -1,6 +1,7 @@
 """Contains OpenAI API calls"""
 
 import base64
+from datetime import date
 import os
 import json
 
@@ -13,12 +14,19 @@ from backend.models.converstation import Conversation
 from backend.api.routes.auth import msal_auth
 
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
+from backend.database.database_user_conversations import DEMO_LIST
+from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation
+from backend.models.converstation import User_Conversation, Model
+from backend.models import Role
+
+from fastapi import APIRouter, HTTPException, Request, Response, Depends
+
+from openai import OpenAI, _exceptions
 
 client = OpenAI()
 openai_router = APIRouter()
 chroma_client = initialize_chromadb()
 collection = get_or_create_collection(chroma_client, 'file_collection')
-
 
 class ChatRequest(Request):
     user_content: str
@@ -26,10 +34,10 @@ class ChatRequest(Request):
     context: str
     currentConversationId: str
 
-conversations: Dict[str,List[Conversation]] = {}
+conversations: dict[str, list[User_Conversation]] = {}
 
 @openai_router.post("/ask", tags=["Chatbot"])
-async def chat(request: ChatRequest, response: Response) -> str:
+async def chat(request: ChatRequest, response: Response, context: dict = Depends(get_context)) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
@@ -37,7 +45,9 @@ async def chat(request: ChatRequest, response: Response) -> str:
     Returns:
         str: conversation updated with the response from OpenAI as a JSON string
     """
-
+    if not context.get("logged_in"):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+        
     # Retrieve the usage cookie
     usage_cookie = request.cookies.get("chat_usage")
 
@@ -72,17 +82,17 @@ async def chat(request: ChatRequest, response: Response) -> str:
 
     try:
         reqBody = await request.json()
+        user_id = context.get("user").id
 
-        user_session = await msal_auth.handler.get_token_from_session(request)
-        user_id = user_session.id_token_claims.user_id
-
+        conversationData = [userConvo for userConvo in read_conversations_by_user(user_id, os.getenv("COURSE_ID")) if str(userConvo.conversation_id) == reqBody['currentConversationId']][0]
         currentConversation = read_messages_from_conversation(reqBody['currentConversationId'])
         
         discussion = []
+        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{conversationData.model.name.upper()}_PROMPT")})
         for message in currentConversation:
             discussion.append({'role': 'user', 'content': message["prompt"]})
             discussion.append({'role': 'assistant', 'content': message["response"]})
-        
+
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
 
@@ -96,9 +106,11 @@ async def chat(request: ChatRequest, response: Response) -> str:
             if moderation_response.results and moderation_response.results[0].flagged:
                 # Adds the ChatGPT response to the conversation
                 discussion.append({'role': 'assistant', 'content': "I can't answer that"})
+                # Adds the ChatGPT response to the conversation
+                discussion.append({'role': 'assistant', 'content': "I can't answer that"})
 
                 # Returns the conversation to the frontend to display
-                return json.dumps(currentConversation.discussion)
+                return json.dumps(discussion)
 
         except (KeyError, IndexError, AttributeError) as e:
             raise HTTPException(status_code=500, detail=f"Moderation API returned an unexpected response: {str(e)}")
@@ -131,13 +143,13 @@ async def chat(request: ChatRequest, response: Response) -> str:
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=discussion,
-            model=get_course_data(get_conversation_data(reqBody['currentConversationId'], 'course_id'),"model"),
+            model=str(conversationData.model.value),
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=['\0'],
             temperature=0.7,
             store=True,
-            user=user_id
+            user=str(user_id)
         )
 
         # Adds the ChatGPT response to the conversation

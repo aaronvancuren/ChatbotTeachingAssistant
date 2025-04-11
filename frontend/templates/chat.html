@@ -27,7 +27,7 @@
                 <div id="EMPTY" class="container my-auto">
                     <div class="p-3 text-center text-muted bg-body border border-dashed rounded-5">
                         <h1 style="font-size:56pt">👋</h1>
-                        <h1 class="text-body-emphasis">Hi {{ context.display_name }}</h1>
+                        <h1 class="text-body-emphasis">Hi {{ context.user.display_name }}</h1>
                         <p class="col-lg-6 mx-auto mb-4">
                             Need some help with something? Let's figure it out together!
                         </p>
@@ -102,7 +102,7 @@
                         <br>
                     </div>
                     <div style="pointer-events: none;">
-                    <p class="text-from left" style="bottom:3%;" id="disclaimer">{{context.conversation_model}} is an AI and will occassionally make
+                    <p class="text-from left" style="bottom:3%;" id="disclaimer">{{context.conversation_model.name|title}} is an AI and will occassionally make
                         mistakes.</p>
                         <p class="text-from right" style="bottom:3%;" id="counter"></p>
                     </div>

@@ -7,7 +7,7 @@
 
         {% if context.logged_in %}
         <div class="ms-auto d-flex align-items-center text-white mb-0">
-            <p class="link-light" style="margin: 1ch;">Welcome {{ context.display_name }}</p>
+            <p class="link-light" style="margin: 1ch;">Welcome {{ context.user.display_name }}</p>
             <div class="dropdown text-end">
                 <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle text-white"
                     data-bs-toggle="dropdown" aria-expanded="false">
@@ -19,12 +19,12 @@
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+                    <li><a class="dropdown-item" href="/_logout_route">Sign out</a></li>
                 </ul>
             </div>
         </div>
         {% else %}
-        <a href="/login" class="ms-auto btn btn-outline-light">Login</a>
+        <a href="/_login_route" class="ms-auto btn btn-outline-light">Login</a>
         {% endif %}
     </div>
 </header>

@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.user_conversations
     conversation_id uuid NOT NULL DEFAULT gen_random_uuid(),
     user_id uuid NOT NULL,
     course_id uuid NOT NULL,
+    model text COLLATE pg_catalog."default" NOT NULL,
     title text COLLATE pg_catalog."default" NOT NULL,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     archived boolean NOT NULL DEFAULT false,
@@ -13,15 +14,15 @@ CREATE TABLE IF NOT EXISTS public.user_conversations
     CONSTRAINT user_conversations_pkey PRIMARY KEY (conversation_id),
     CONSTRAINT user_conversations_archive_by_fkey FOREIGN KEY (archived_by)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CONSTRAINT user_conversations_course_id_fkey FOREIGN KEY (course_id)
         REFERENCES public.courses (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT,
     CONSTRAINT user_conversations_user_id_fkey FOREIGN KEY (user_id)
         REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
+        ON UPDATE CASCADE
         ON DELETE RESTRICT
 )
 

@@ -1,19 +1,23 @@
 """Initializing the FastAPI application"""
 
 import os
-
-from fastapi.exceptions import RequestValidationError
-from fastapi.templating import Jinja2Templates
+from dotenv import load_dotenv
+import uvicorn
+load_dotenv() # Load environment variables from .env
 
 from backend.api.errors import HTTPError
 from backend.api.routes.web import web_router
 from backend.api.routes.openai import openai_router
-from backend.api.routes.auth import msal_auth
+from backend.api.routes import msal_auth
 from backend.api.routes.dashboard import dashboard_router
+
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 from starlette.middleware.sessions import SessionMiddleware
 
 # Set up FastAPI settings
@@ -60,3 +64,9 @@ async def http_error_handler(request, exc):
     else:
         err = HTTPError(exc.status_code, exc.detail)
     return Jinja2Templates(directory='frontend/templates').TemplateResponse('/error.html', {"request": request, "context": err})
+
+if __name__ == "__main__":
+    uvicorn.run("main:app",
+                host=os.getenv("HOST"),
+                port=int(os.getenv("PORT")),
+                reload=True)
