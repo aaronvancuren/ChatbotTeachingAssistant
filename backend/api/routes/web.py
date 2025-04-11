@@ -3,21 +3,18 @@ from os import getenv
 import uuid
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
-from backend.database.database_user_conversations import get_user_conversations, add_user_conversation
-from backend.models.converstation import Conversation, Model
+from backend.models.converstation import Model
 from backend.models import User, Role
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import PlainTextResponse
 
-from backend.database.postgres import create_user_conversation, get_conversation_data, read_conversations_by_user, read_messages_from_conversation
-from backend.models.converstation import Conversation, Model
+from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation
 
 web_router = APIRouter()
 
 page_templates = Jinja2Templates(directory='frontend/templates')
-page_templates.env.filters['GetConvoData'] = get_conversation_data
 
 #region Endpoint Pages
 
@@ -37,14 +34,10 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
         Index Web Page Response
     """
     if context.get("logged_in"):
-        print(context['user'].id)
         convos = read_conversations_by_user(context['user'].id, getenv("COURSE_ID"))
-        print(len(convos))
         if len(convos) == 0:
-            convos = [create_user_conversation(getenv("COURSE_ID"), context['user'].id, Model.JOHN.name.lower(), "CS 232 Help")]
+            convos = [create_user_conversation(getenv("COURSE_ID"), context['user'].id, Model.JOHN.value.lower(), "CS 232 Help")]
         context.update({"conversation_list": convos})
-        for convo in convos:
-            print(convo.id)
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
@@ -63,12 +56,10 @@ async def chatpage(request: Request, chatID: str, context: dict = Depends(get_co
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     user: User = context.get("user")
-    print(user.id)
+
     userConvos = read_conversations_by_user(user.id, getenv("COURSE_ID"))
     try:
-        for userConvo in userConvos:
-            print(userConvo.id, chatID)
-        conversation = [userConvo for userConvo in userConvos if str(userConvo.id) == chatID][0]
+        conversation = [userConvo for userConvo in userConvos if str(userConvo.conversation_id) == chatID][0]
         context.update({"conversation_list": userConvos})
         context.update({"conversation_data": read_messages_from_conversation(chatID)})
         context.update({"conversation_model": conversation.model})
@@ -85,7 +76,6 @@ async def addChat(request: Request, context: dict = Depends(get_context)):
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     reqBody = await request.json()
-    print(reqBody)
     newConvo = create_user_conversation(getenv("COURSE_ID"), context['user'].id, reqBody['model'], "CS 232 Help")
     return PlainTextResponse(f"/chat?chatID={str(newConvo)}")
 

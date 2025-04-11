@@ -10,7 +10,7 @@ import psycopg2.extras
 from backend.api.errors import HTTPError
 
 from backend.models import User
-from backend.models.converstation import Conversation
+from backend.models.converstation import User_Conversation
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -449,7 +449,7 @@ def delete_course(course_id):
         cur.close()
         conn.close()
 
-def create_user_conversation(course_id, user_id, model, title):
+def create_user_conversation(course_id, user_id, model, title) -> uuid:
     """
     Creates a new conversation.
 
@@ -469,8 +469,6 @@ def create_user_conversation(course_id, user_id, model, title):
         return None
     
     cur: cursor = conn.cursor()
-    cur.execute("select exists(select * from information_schema.tables where table_name=%s)", ('user_conversations',))
-    print(cur.fetchone()[0])
     try:
         insert_query = """
             INSERT INTO user_conversations (course_id, user_id, model, title)
@@ -529,8 +527,7 @@ def get_conversation_data(conversation_id, field = "*"):
         cur.close()
         conn.close()
 
-
-def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[Conversation]:
+def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[User_Conversation]:
     """
     Retrieves all conversations IDs for a given user.
 
@@ -555,7 +552,7 @@ def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[Conversat
         rows = cur.fetchall()
         tmp = []
         for row in rows:
-            tmp.append(Conversation(row.values().mapping))
+            tmp.append(User_Conversation(row.values().mapping))
         return tmp
     
     except Exception as e:

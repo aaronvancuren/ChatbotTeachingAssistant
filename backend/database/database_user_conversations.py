@@ -1,12 +1,11 @@
 import uuid
 
 from backend.database.database_class_sections import get_user_classes
-from backend.models.converstation import Conversation, Model
-from backend.models.sampler import CreateSampleConversation
+from backend.models.converstation import User_Conversation, Model
 
 DEMO_LIST = []
 
-def get_user_conversations(UserID : str) -> list[Conversation]:
+def get_user_conversations(UserID : str) -> list[User_Conversation]:
     """
     Returns a list of conversations a given UserID is a part of
     Args:
@@ -24,7 +23,7 @@ def get_user_conversations(UserID : str) -> list[Conversation]:
 
 #TODO need to reevaluate this method and the use of the get_user_classes method
 def add_user_conversation(UserID : str, model: Model):
-    tmpConvo = Conversation(UserID, assistant=model,class_prompt=get_user_classes(UserID)[0].prompt)
+    tmpConvo = User_Conversation(UserID, assistant=model,class_prompt=get_user_classes(UserID)[0].prompt)
     tmpConvo.id = uuid.uuid4()
     tmpConvo.name = f"New chat with {model.name.title()}"                      # Replace with Name of conversation
     tmpConvo.classID = uuid.uuid4()                 # Replace with UUID of conversation
