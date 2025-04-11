@@ -2,7 +2,8 @@ import uuid
 from backend.models import UserBase, CourseBase, Message, Role
 from psycopg2.extras import RealDictRow
 from backend.models.subject import Subject
-
+from backend.database.postgres import read_courses_for_user
+from backend.models.course import Course
 
 class User(UserBase):
     courses: list[CourseBase] = []
@@ -12,8 +13,6 @@ class User(UserBase):
         
     # Get user courses
     def get_courses(self) -> list[CourseBase]:
-        from backend.database.postgres import read_courses_for_user
-        from backend.models.course import Course
         # Query the DB to retrieve classes for this user
         class_list = read_courses_for_user(str(self.id))
 
