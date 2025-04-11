@@ -29,8 +29,6 @@ async def get_context(request: Request) -> dict:
         email: str = token.id_token_claims.preferred_username
         user: User = db.read_user_by_email(email)
         
-        context.update({"conversation_list": get_user_conversations(token.id_token_claims.user_id)})
-
         # User id will return none if they are a new user. Must save the Microsoft user_id.
         if user.id != uuid.UUID(token.id_token_claims.user_id):
             if db.set_user_id(token.id_token_claims.user_id, email):
