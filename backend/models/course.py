@@ -1,11 +1,7 @@
-import uuid
 from backend.models import CourseBase, UserBase
 
 class Course(CourseBase):
     students: list[UserBase]
-    
-    def __init__(self):
-        pass
     
     # Get a list of students
     def get_students() -> list[UserBase]:
