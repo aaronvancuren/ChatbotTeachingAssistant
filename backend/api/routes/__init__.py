@@ -28,21 +28,17 @@ async def get_context(request: Request) -> dict:
     context: dict = {"logged_in": False}
     token: AuthToken = await msal_auth.get_session_token(request)
     if token and token.id_token_claims.validate_token() == TokenStatus.VALID:
-        context.update({"logged_in": True})
-
-        #TODO needs to be incorporated into user model
-        context.update({"class_list": get_user_classes(token.id_token_claims.user_id)})
-        context.update({"conversation_list": get_user_conversations(token.id_token_claims.user_id)})
-    
-    if context.get("logged_in", None) and context.get("user", None) is None:
         email: str = token.id_token_claims.preferred_username
         user: User = db.read_user_by_email(email)
-        
+
         # User id will return none if they are a new user. Must save the Microsoft user_id.
         if user.id != uuid.UUID(token.id_token_claims.user_id):
             if db.set_user_id(token.id_token_claims.user_id, email):
                 user.id = uuid.UUID(token.id_token_claims.user_id)
 
+        user.courses = await user.get_courses()
+
+        context.update({"logged_in": True})
         context.update({"user": user})
 
     return context
