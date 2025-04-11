@@ -45,8 +45,6 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
 
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
-    
-    context["courses"] = user.courses
 
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
 
