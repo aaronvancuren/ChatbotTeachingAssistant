@@ -1,11 +1,11 @@
 from backend.models import CourseBase, UserBase
-from backend.database.postgres import read_students_for_course, read_user_by_id
 from backend.models.user import User
 
 class Course(CourseBase):
     students: list[UserBase]
     
     def get_students(self):
+        from backend.database.postgres import read_students_for_course
         # Get all user rows (as RealDictRow objects) for this course
         user_rows = read_students_for_course(str(self.id))
 
