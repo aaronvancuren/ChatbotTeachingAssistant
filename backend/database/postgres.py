@@ -658,12 +658,13 @@ def delete_conversation(conversation_id):
         cur.close()
         conn.close()
 
-def create_message(conversation_id, prompt, response):
+def create_message(conversation_id: str, model: str, prompt: str, response: str)->str:
     """
     Adds a message to the messages table.
 
     Args:
         conversation_id (str): The ID of the conversation.
+        model (str): The model used in the conversation.
         prompt (str): The prompt given in the conversation.
         response (str): The response given in the conversation.
 
@@ -690,7 +691,7 @@ def create_message(conversation_id, prompt, response):
         """
         cur.execute(insert_query, (
             conversation_id, 
-            get_course_data(get_conversation_data(conversation_id, 'course_id'),"model"), 
+            model, 
             prompt.replace("\n", chr(10)),
             response.replace("\n", chr(10))
         ))

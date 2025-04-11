@@ -19,7 +19,7 @@
 
         {% include './elements/Sidebar_ChatOverview.html' %}
 
-        <p hidden id="openai_model">{{context.conversation_model}}</p>
+        <p hidden id="openai_model">{{context.conversation_model.name|title}}</p>
 
         <div id="content">
             <div id="conversation">
@@ -52,21 +52,19 @@
                 </div>
                 {% else %}
                 {% for dialogue in context.conversation_data %}
-                {% if dialogue['role'] == 'user' %}
                 <div class="talk-bubble right">
                     <p class="text-from right">You asked...</p>
                     <div class="tri-right btm-right student">
                         <article class="talktext">
-                            {{dialogue['content']}}
+                            {{dialogue['prompt']}}
                         </article>
                     </div>
                 </div>
-                {% else %}
                 <div class="talk-bubble left ">
-                    <p class="text-from left">{{context.conversation_model}} Says...</p>
+                    <p class="text-from left">{{context.conversation_model.name|title}} Says...</p>
                     <div class="tri-right btm-left teaching_assistant">
                         <article class="talktext">
-                            {{dialogue['content']}}
+                            {{dialogue['response']}}
                         </article>
                     </div>
                 </div>
@@ -75,7 +73,6 @@
                     <a class="bi bi-hand-thumbs-down" style="font-size:medium"></a>
                     <a class="bi bi-hand-thumbs-up" style="font-size:medium"></a>
                 </div>
-                {% endif %}
                 {% endfor %}
                 {% endif %}
                 <br>
