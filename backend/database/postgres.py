@@ -957,7 +957,11 @@ def read_students_for_course(course_id: str) -> list[dict]:
         """
         cur.execute(select_query, (course_id,))
         rows = cur.fetchall()
-        return list(rows)
+        students = []
+        from backend.models.user import User
+        for row in rows:
+            students.append(User(row))
+        return students
     except Exception as e:
         logging.error(f"Error retrieving student users for course {course_id}: {e}")
         return []
