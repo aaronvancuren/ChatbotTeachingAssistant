@@ -36,7 +36,7 @@ async def get_context(request: Request) -> dict:
             if db.set_user_id(token.id_token_claims.user_id, email):
                 user.id = uuid.UUID(token.id_token_claims.user_id)
 
-        user.courses = user.get_courses()
+        user.get_courses
 
         context.update({"logged_in": True})
         context.update({"user": user})
