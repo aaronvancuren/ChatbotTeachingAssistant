@@ -11,10 +11,13 @@ class User(UserBase):
         
     # Get user courses
     def get_courses(self):
-        from backend.database.postgres import read_courses_for_user
+        from backend.database.postgres import read_courses_for_user, read_courses_for_instructor
         from backend.models.course import Course
         # Query the DB to retrieve classes for this user
-        class_list = read_courses_for_user(str(self.id))
+        if self.role is Role.student:
+            class_list = read_courses_for_user(str(self.id))
+        if self.role is Role.instructor:
+            class_list = read_courses_for_instructor(str(self.id))
 
         # Convert each row/dict into a Course
         courses = []

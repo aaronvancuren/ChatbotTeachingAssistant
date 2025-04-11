@@ -903,4 +903,34 @@ def read_students_for_course(course_id: str) -> list[dict]:
         cur.close()
         conn.close()
 
-
+def read_courses_for_instructor(instructor_id: str) -> list[dict]:
+    """
+    Retrieves all courses taught by the instructor with the given instructor_id.
+    
+    Args:
+        instructor_id (str): The UUID of the instructor.
+    
+    Returns:
+        list[dict]: A list of course records as dictionaries, or an empty list if none found.
+    """
+    conn: connection = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+    
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        select_query = """
+            SELECT *
+            FROM courses
+            WHERE instructor_id = %s;
+        """
+        cur.execute(select_query, (instructor_id,))
+        rows = cur.fetchall()
+        return list(rows)
+    except Exception as e:
+        logging.error(f"Error retrieving courses for instructor {instructor_id}: {e}")
+        return []
+    finally:
+        cur.close()
+        conn.close()
