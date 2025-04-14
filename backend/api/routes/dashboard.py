@@ -1,14 +1,23 @@
 import uuid
-
+import csv, io
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.text_processor import process_file, chunk_text
 from backend.database.chroma_database import initialize_chromadb, get_or_create_collection, add_documents
+from backend.models.course import Course
 from backend.models import Role, User
-
+from backend.models.subject import Subject
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+from backend.database.postgres import (
+    read_user_by_email,
+    create_user,
+    create_user_course,
+    delete_user_course,
+    read_users_for_course,
+    delete_all_student_user_courses,
+)
 
 
 # Initialize templates directory
@@ -33,27 +42,42 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
         Index Web Page Response
     """
     user: User = context.get("user")
-    if user.role is Role.student:
+
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
-    
+
     return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
 
 @dashboard_router.get("/class")
-async def teacher_class_view(request : Request, context: dict = Depends(get_context)):
+async def teacher_class_view(request: Request, context: dict = Depends(get_context)):
     user: User = context.get("user")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
-    # Retrieve all documents from the collection
+    courses = user.courses
+    if not courses:
+        raise HTTPError(status_code=404, detail="No courses found for this user.")
+
+    # Get the course_id from the query parameters
+    course_id = request.query_params.get("course_id")
+    
+    if course_id:
+        # Attempt to find a matching Course object in context["courses"]
+        selected_course = next((c for c in courses if str(c.id) == course_id), None)
+        if not selected_course:
+            raise HTTPError(status_code=404, detail="Course not found in context.")
+    else:
+        # If no course_id is provided
+        raise HTTPError(status_code=404, detail="No courses found for this user.")
+        
+    selected_course.get_students()
+    students = selected_course.students
+    
     documents = collection.get()
-
-    # Extract unique file names from metadatas
-    file_names = set()
-    for metadata in documents.get('metadatas', []):
-        file_names.add(metadata['file_name'])
-
-    # Pass list of file names into the template
-    return templates.TemplateResponse("Teacher_ClassView.html", {"request": request, "context": context, "file_names": file_names})
+    file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}
+    
+    return templates.TemplateResponse("Teacher_ClassView.html",{"request": request, "context": context, "file_names": file_names, "students": students}
+    )
 
 @dashboard_router.post("/upload")
 async def upload_file_api(request: Request, files: list[UploadFile] = File(...), context: dict = Depends(get_context)):
@@ -62,7 +86,7 @@ async def upload_file_api(request: Request, files: list[UploadFile] = File(...),
     and add them to the ChromaDB collection if they do not already exist.
     """
     user: User = context.get("user")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = []
@@ -124,7 +148,7 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
     Deletes all chunks associated with the given file_name.
     """
     user: User = context.get("user")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     results = collection.get(where={"file_name": file_name})
@@ -138,7 +162,7 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
 async def delete_all_files_api(context: dict = Depends(get_context)):
     # Get all documents in the collection
     user: User = context.get("user")
-    if user.role is Role.student:
+    if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     all_docs = collection.get()
@@ -207,3 +231,146 @@ async def update_file_api(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while updating the file: {str(e)}")
+
+@dashboard_router.post("/add_student")
+async def add_student(request: Request):
+
+    data = await request.json()
+    email = data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email must be provided")
+
+    course_id = request.query_params.get("course_id") or data.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    # Retrieve the student record by email; if it doesn't exist, create it.
+    user_record = read_user_by_email(email)
+    if user_record is None:
+        if not create_user(email, email, 'student'):
+            raise HTTPException(status_code=500, detail="Failed to create student")
+        user_record = read_user_by_email(email)
+        if user_record is None:
+            raise HTTPException(status_code=500, detail="Student record not found after creation")
+
+    student_id = user_record.id
+
+    # Use the specified course_id
+    course_id = request.query_params.get("course_id") or data.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    # Check if the student is already enrolled in the course.
+    enrolled_users = read_users_for_course(course_id)
+    if str(student_id) in enrolled_users:
+        raise HTTPException(status_code=400, detail="Student is already enrolled in course")
+
+
+    # Enroll the student in the specified course
+    success = create_user_course(course_id, str(student_id))
+    if not success:
+        if str(student_id) not in enrolled_users:
+            raise HTTPException(status_code=500, detail="Failed to enroll student in course")
+
+    return {"success": True, "message": "Student added successfully and enrolled in course."}
+
+@dashboard_router.delete("/remove_student")
+async def remove_student(request: Request):
+
+    data = await request.json()
+    email = data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email must be provided")
+
+    course_id = request.query_params.get("course_id") or data.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    # Retrieve the student record by email
+    user_record = read_user_by_email(email)
+    if user_record is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    student_id = user_record.id
+
+    # Attempt to remove the student from the specified course
+    success = delete_user_course(course_id, str(student_id))
+    if not success:
+        # Double-check whether the student is still enrolled in the course
+        enrolled_users = read_users_for_course(course_id)
+        if str(student_id) in enrolled_users:
+            raise HTTPException(status_code=500, detail="Failed to remove student from course")
+
+    return {"success": True, "message": "Student removed from course."}
+
+@dashboard_router.post("/add_students_bulk")
+async def add_students_bulk(request: Request, file: UploadFile = File(...), context: dict = Depends(get_context)):
+    """
+    Bulk add students from a CSV file to a course.
+    """
+
+    course_id = request.query_params.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided.")
+
+    content = await file.read()
+    decoded_content = content.decode("utf-8")
+    
+    # Use csv.reader to process the file.
+    reader = csv.reader(io.StringIO(decoded_content))
+    results = []
+
+    for row in reader:
+        if not row:
+            continue
+        email = row[0].strip()
+        if not email:
+            continue
+
+        # Try to get the student record by email; if none exists, create one.
+        user_record = read_user_by_email(email)
+        if user_record is None:
+            if not create_user(email, email, 'student'):
+                results.append({"email": email, "status": "failed", "detail": "Failed to create student."})
+                continue
+            user_record = read_user_by_email(email)
+            if user_record is None:
+                results.append({"email": email, "status": "failed", "detail": "Student record not found after creation."})
+                continue
+        
+        student_id = user_record.id
+
+        enrolled_users = read_users_for_course(course_id)
+        if str(student_id) in enrolled_users:
+            # Record that this student is already enrolled, and continue to the next record.
+            results.append({"email": email, "status": "already enrolled"})
+            continue
+
+        # Enroll the student in the specified course.
+        success = create_user_course(course_id, str(student_id))
+        if not success:
+            enrolled_users = read_users_for_course(course_id)
+            if str(student_id) not in enrolled_users:
+                results.append({"email": email, "status": "failed", "detail": "Failed to enroll student in course."})
+                continue
+        
+        results.append({"email": email, "status": "success"})
+
+    return {"results": results, "message": "Bulk student enrollment completed."}
+
+@dashboard_router.delete("/remove_all_students")
+async def remove_all_students(request: Request, context: dict = Depends(get_context)):
+
+    user: User = context.get("user")
+    if user is None or user.role == Role.student:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    course_id = request.query_params.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+
+    success = delete_all_student_user_courses(course_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to remove all students from course")
+
+    return {"success": True, "message": "All students have been removed from the course."}

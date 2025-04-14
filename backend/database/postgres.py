@@ -9,7 +9,9 @@ import psycopg2.extras
 
 from backend.api.errors import HTTPError
 
-from backend.models import User
+from backend.models.user import User
+from backend.models.course import Course
+from backend.models.subject import Subject
 from backend.models.converstation import User_Conversation
 
 # Configure logging
@@ -52,13 +54,17 @@ def create_user(display_name, email, role='student'):
     
     cur: cursor = conn.cursor()
 
+    # Generate a temporary UUID here
+    user_id = str(uuid.uuid4())
+
     try:
+        # Insert user row with that UUID
         insert_query = """
-            INSERT INTO users (display_name, email, role)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (id) DO NOTHING;
+            INSERT INTO users (id, display_name, email, role)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (email) DO NOTHING;
         """
-        cur.execute(insert_query, (display_name, email, role))
+        cur.execute(insert_query, (user_id, display_name, email, role))
         conn.commit()
         return True
     
@@ -90,7 +96,7 @@ def read_user_by_id(user_id):
     cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        select_query = "SELECT display_name, role FROM users WHERE id = %s;"
+        select_query = "SELECT id, email, display_name, role FROM users WHERE id = %s;"
         cur.execute(select_query, (user_id,))
         row = cur.fetchone()
         
@@ -225,7 +231,7 @@ def set_user_id(id: uuid, email: str):
     
     try:
         update_query = "UPDATE users SET id = %s WHERE email = %s;"
-        cur.execute(update_query, (id, email))
+        cur.execute(update_query, (str(id), email))
         conn.commit()
         return True
     except Exception as e:
@@ -366,7 +372,31 @@ def read_courses_for_user(user_id: str) -> list[dict]:
         """
         cur.execute(select_query, (user_id,))
         rows = cur.fetchall()
-        return list(rows)  # Convert Row objects to list of RealDictRow
+        from backend.models.course import Course
+        from backend.models.subject import Subject
+        courses = []
+        for class_info in rows:
+            raw_subject = class_info["subject"]
+            subject_val = Subject[raw_subject.upper()]
+
+            c = Course(
+                id=class_info["id"],
+                instructor_id=class_info["instructor_id"],
+                display_name=class_info["display_name"],
+                subject=subject_val,
+                course_number=class_info["course_number"],
+                section_number=class_info["section_number"],
+                title=class_info["title"],
+                model=class_info["model"],
+                prompt=class_info["prompt"],
+                documents_path=class_info["documents_path"],
+                image_path=class_info["image_path"],
+                students=[]
+            )
+
+            c.students = c.get_students()
+            courses.append(c)
+        return courses
 
     except Exception as e:
         logging.error(f"Error retrieving courses for user {user_id}: {e}")
@@ -847,3 +877,175 @@ def delete_user_courses_by_course(course_id):
     finally:
         cur.close()
         conn.close()
+
+def read_courses_for_user(user_id: str) -> list[dict]:
+    # Get the base user info
+    user_row = read_user_by_id(user_id)
+    if user_row is None:
+        return None
+
+    user = User(user_row)  # Build a user object from the row
+
+    conn: connection = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return user
+
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        select_query = """
+            SELECT c.*
+            FROM user_courses uc
+            JOIN courses c ON c.id = uc.course_id
+            WHERE uc.user_id = %s;
+        """
+        cur.execute(select_query, (user_id,))
+        rows = cur.fetchall()
+        course_list = list(rows)
+    except Exception as e:
+        logging.error(f"Error retrieving courses for user {user_id}: {e}")
+        course_list = []
+    finally:
+        cur.close()
+        conn.close()
+
+    # Assign the course list directly to the user’s courses field
+    user.courses = course_list
+    return user
+
+def delete_all_student_user_courses(course_id: str) -> bool:
+    """
+    Deletes all entries in the user_courses table for the given course_id.
+    Returns True on success; otherwise, returns False.
+    """
+    conn = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            DELETE FROM user_courses
+            USING users
+            WHERE user_courses.course_id = %s
+              AND user_courses.user_id = users.id
+              AND users.role = 'student';
+            """,
+            (course_id,)
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        logging.error(f"Error deleting user courses for course {course_id}: {e}")
+        conn.rollback()
+        return False
+    finally:
+        cur.close()
+        conn.close()
+
+def read_students_for_course(course_id: str) -> list[dict]:
+    """
+    Retrieves all users who are students (role = 'student') for a given course.
+
+    Args:
+        course_id (str): The UUID of the course.
+
+    Returns:
+        list[dict]: A list of rows with user info (RealDictRow), or an empty list if none found.
+    """
+    conn: connection = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        select_query = """
+            SELECT u.*
+            FROM user_courses uc
+            JOIN users u ON uc.user_id = u.id
+            WHERE uc.course_id = %s
+            AND u.role = 'student';
+        """
+        cur.execute(select_query, (course_id,))
+        rows = cur.fetchall()
+        students = []
+        from backend.models.user import User
+        for row in rows:
+            students.append(User(row))
+        return students
+    except Exception as e:
+        logging.error(f"Error retrieving student users for course {course_id}: {e}")
+        return []
+    finally:
+        cur.close()
+        conn.close()
+
+def read_courses_for_instructor(instructor_id: str) -> list[dict]:
+    """
+    Retrieves all courses taught by the instructor with the given instructor_id.
+    
+    Args:
+        instructor_id (str): The UUID of the instructor.
+    
+    Returns:
+        list[dict]: A list of course records as dictionaries, or an empty list if none found.
+    """
+
+    user_row = read_user_by_id(instructor_id)
+    if user_row is None:
+        return None
+    
+    user_obj = User(user_row)
+
+    conn: connection = get_db_connection()
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return []
+    
+    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        select_query = """
+            SELECT *
+            FROM courses
+            WHERE instructor_id = %s;
+        """
+        cur.execute(select_query, (instructor_id,))
+        rows = cur.fetchall()
+
+        courses = []
+        for class_info in rows:
+            raw_subject = class_info["subject"]
+            subject_val = Subject[raw_subject.upper()]
+
+            c = Course(
+                id=class_info["id"],
+                instructor_id=class_info["instructor_id"],
+                display_name=class_info["display_name"],
+                subject=subject_val,
+                course_number=class_info["course_number"],
+                section_number=class_info["section_number"],
+                title=class_info["title"],
+                model=class_info["model"],
+                prompt=class_info["prompt"],
+                documents_path=class_info["documents_path"],
+                image_path=class_info["image_path"],
+                students=[]
+            )
+
+            c.students = c.get_students()
+
+            courses.append(c)
+
+    except Exception as e:
+        logging.error(f"Error retrieving courses for instructor {instructor_id}: {e}")
+        return []
+    finally:
+        cur.close()
+        conn.close()
+    
+    user_obj.courses = courses
+    return user_obj
