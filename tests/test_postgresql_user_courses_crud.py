@@ -1,13 +1,7 @@
-import unittest
-from unittest.mock import patch, MagicMock
+from tests import *
 
 # Import updated CRUD methods
-from backend.database.postgres import (
-    create_user_course,
-    read_users_for_course,
-    delete_user_course,
-    delete_user_courses_by_course
-)
+from backend.database.postgres import *
 
 class TestUserCoursesCrudOps(unittest.TestCase):
 

@@ -1,15 +1,7 @@
-import unittest
-from unittest.mock import patch, MagicMock
+from tests import *
 
 # Import the functions under test
-from backend.database.postgres import (
-    create_user,
-    read_user_by_id,
-    read_user_by_email,
-    read_email_by_id,
-    update_user_display_name,
-    delete_user
-)
+from backend.database.postgres import *
 
 class TestUserCrudOps(unittest.TestCase):
 

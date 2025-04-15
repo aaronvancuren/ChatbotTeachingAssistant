@@ -1,22 +1,12 @@
 # made with ChatGPT
 
-import unittest
-from unittest.mock import patch, MagicMock
+from tests import *
 import os
 import shutil
 import tempfile
 
 # Import the functions to test
-from backend.database.chroma_database import (
-    generate_embedding,
-    initialize_chromadb,
-    get_or_create_collection,
-    add_documents,
-    retrieve_by_file_name,
-    update_entry,
-    delete_entry,
-    nearest_neighbor_search
-)
+from backend.database.chroma_database import *
 
 class TestChromaDatabase(unittest.TestCase):
 

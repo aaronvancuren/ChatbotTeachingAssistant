@@ -1,14 +1,7 @@
-import unittest
-from unittest.mock import patch, MagicMock
+from tests import *
 
 # Import the updated functions under test
-from backend.database.postgres import (
-    create_course,
-    read_course_by_id,
-    update_course_title,
-    update_course_model,
-    delete_course
-)
+from backend.database.postgres import *
 
 class TestCourseCrudOps(unittest.TestCase):
 

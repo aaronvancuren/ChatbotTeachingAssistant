@@ -1,13 +1,7 @@
-import unittest
-from unittest.mock import patch, MagicMock
+from tests import *
 
 # Import the updated CRUD methods under test
-from backend.database.postgres import (
-    create_user_conversation,
-    read_conversations_by_user,
-    update_conversation_title,
-    delete_conversation
-)
+from backend.database.postgres import *
 
 class TestUserConversationsCrudOps(unittest.TestCase):
 
