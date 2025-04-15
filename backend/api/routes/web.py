@@ -8,7 +8,7 @@ from backend.models import User, Role
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation
 from backend.models.converstation import Model
@@ -33,17 +33,21 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
     
     Returns:
         Index Web Page Response
-    """  
-    if context.get("logged_in"):
-        convos = read_conversations_by_user(context['user'].id, getenv("COURSE_ID"))
-        if len(convos) == 0:
-            convos = [create_user_conversation(getenv("COURSE_ID"), context['user'].id, Model.JOHN.value.lower(), "CS 232 Help")]
-        context.update({"conversation_list": convos})
+    """         
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
-@web_router.get("/chat")
-async def chatpage(request: Request, chatID: str, context: dict = Depends(get_context)):
+@web_router.get("/chat/{courseID}")
+async def populate_chats(request: Request, courseID: str, context: dict = Depends(get_context)):
+    if not context.get("logged_in"):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    user: User = context.get("user")
+    convo = user.get_conversations(uuid.UUID(courseID))
+    context.update({"user": user})
+    return RedirectResponse(f"/chat/{courseID}/{convo[0].conversation_id}")
+
+@web_router.get("/chat/{courseID}/{chatID}")
+async def chatpage(request: Request, courseID: str, chatID: str, context: dict = Depends(get_context)):
     """
     Chat page of application
     Args:
@@ -57,28 +61,21 @@ async def chatpage(request: Request, chatID: str, context: dict = Depends(get_co
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     user: User = context.get("user")
+    user.get_conversations(uuid.UUID(courseID))
+    user.get_conversation(uuid.UUID(chatID))
+    context.update({"user": user})
+    return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
+    
 
-    userConvos = read_conversations_by_user(user.id, getenv("COURSE_ID"))
-    try:
-        conversation = [userConvo for userConvo in userConvos if str(userConvo.conversation_id) == chatID][0]
-        context.update({"conversation_list": userConvos})
-        context.update({"conversation_data": read_messages_from_conversation(chatID)})
-        context.update({"conversation_model": conversation.model})
-        context.update({"chatID": chatID})
-        
-        return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
-    except Exception as e:
-        raise HTTPError(status_code=404, detail="Chat not found")
-
-@web_router.post("/addChat")
-async def addChat(request: Request, context: dict = Depends(get_context)):
+@web_router.post("/addChat/{classID}")
+async def addChat(request: Request, classID: str, context: dict = Depends(get_context)):
     role: Role = context.get("user").role
     if role is not Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     reqBody = await request.json()
-    newConvo = create_user_conversation(getenv("COURSE_ID"), context['user'].id, reqBody['model'], "CS 232 Help")
-    return PlainTextResponse(f"/chat?chatID={str(newConvo)}")
+    newConvo = create_user_conversation(classID, context['user'].id, reqBody['model'], "New Conversation")
+    return PlainTextResponse(f"/chat/{classID}/{newConvo}")
 
 @web_router.get("/profile")
 async def profilepage(request: Request, context: dict = Depends(get_context)):
@@ -91,22 +88,5 @@ async def profilepage(request: Request, context: dict = Depends(get_context)):
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     return page_templates.TemplateResponse('profile.html', {"request": request, "context": context})
-
-#endregion
-
-#region Error Pages
-
-async def Error_401(request: Request, context: dict):
-    """
-    401 page of application
-    Args:
-        request: the data contained in the request that the server received
-        user_context: the authentication context attached to the request
-    
-    Returns:
-
-        401 error page
-    """
-    return page_templates.TemplateResponse('/errors/401.html', {"request": request, "context": context})
 
 #endregion

@@ -9,7 +9,7 @@ window.addEventListener("load", () => {
 function addChat() {
     $.ajax({
         type: "POST",
-        url: "/addChat",
+        url: "/addChat/" + window.location.pathname.split('/')[2],
         data: JSON.stringify({
             model: $('input[name="ai_list"]:checked')[0].id
         }),
@@ -34,7 +34,7 @@ function addChat() {
 }
 
 function AskQuestion() {
-    let convoID = new URLSearchParams(window.location.search).get('chatID').toString();
+    let convoID = window.location.pathname.split('/')[3];
     $.ajax({
         type: "POST",
         url: "/ask",
