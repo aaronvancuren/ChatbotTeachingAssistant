@@ -9,7 +9,7 @@ window.addEventListener("load", () => {
 function addChat() {
     $.ajax({
         type: "POST",
-        url: "/addChat",
+        url: "/addChat/" + window.location.pathname.split('/')[2],
         data: JSON.stringify({
             model: $('input[name="ai_list"]:checked')[0].id
         }),
@@ -39,7 +39,7 @@ function AskQuestion() {
         url: "/ask",
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
-            currentConversationId: new URLSearchParams(window.location.search).get('chatID').toString(),
+            currentConversationId: window.location.pathname.split('/')[3],
         }),        
         headers: {
             "X-Content-Type-Options": "nosniff",

@@ -1,4 +1,3 @@
-import os
 import uuid
 
 from datetime import datetime
@@ -16,14 +15,14 @@ class Model(Enum):
 class User_Conversation:
     model_config = ConfigDict(from_attributes=True)
 
-    conversation_id: uuid
-    user_id: uuid
-    course_id: uuid
-    model: Model
-    title: str
-    created_at: datetime
-    archived: bool
-    archived_at: datetime
+    conversation_id: uuid.UUID | None = uuid.uuid4()
+    user_id: uuid.UUID | None = uuid.uuid4()
+    course_id: uuid.UUID | None = uuid.uuid4()
+    model: Model | None = Model.JOHN
+    title: str | None = "New Conversation"
+    created_at: datetime | None = datetime.max
+    archived: bool | None = False
+    archived_at: datetime | None = datetime.max
 
     def __init__(self, row: RealDictRow):
         self.conversation_id = row['conversation_id']

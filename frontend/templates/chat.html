@@ -3,11 +3,11 @@
 
 {% include './elements/HTML_Head.html' %}
 
-<script src="../static/js/chat.js"></script>
+<script src="/static/js/chat.js"></script>
 <script type="text/javascript" src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
 <script type="text/javascript" src="https://unpkg.com/@jitbit/htmlsanitizer@latest/HtmlSanitizer.js"></script>
 
-<link rel="stylesheet" href="../static/css/chat.css"/>
+<link rel="stylesheet" href="/static/css/chat.css" />
 
 <body class="bg-body-tertiary" style="overflow:hidden">
 
@@ -23,7 +23,7 @@
 
         <div id="content">
             <div id="conversation">
-                {% if not context.conversation_data %}
+                {% if not context.user.conversation %}
                 <div id="EMPTY" class="container my-auto">
                     <div class="p-3 text-center text-muted bg-body border border-dashed rounded-5">
                         <h1 style="font-size:56pt">👋</h1>
@@ -51,22 +51,20 @@
                     </div>
                 </div>
                 {% else %}
-                {% for dialogue in context.conversation_data %}
-                {% if dialogue['role'] == 'user' %}
+                {% for dialogue in context.user.conversation %}
                 <div class="talk-bubble right">
                     <p class="text-from right">You asked...</p>
                     <div class="tri-right btm-right student">
                         <article class="talktext">
-                            {{dialogue['content']}}
+                            {{dialogue.prompt}}
                         </article>
                     </div>
                 </div>
-                {% else %}
                 <div class="talk-bubble left ">
-                    <p class="text-from left">{{context.conversation_model}} Says...</p>
+                    <p class="text-from left">{{context.user.conversation.model}} Says...</p>
                     <div class="tri-right btm-left teaching_assistant">
                         <article class="talktext">
-                            {{dialogue['content']}}
+                            {{dialogue.response}}
                         </article>
                     </div>
                 </div>
@@ -75,7 +73,6 @@
                     <a class="bi bi-hand-thumbs-down" style="font-size:medium"></a>
                     <a class="bi bi-hand-thumbs-up" style="font-size:medium"></a>
                 </div>
-                {% endif %}
                 {% endfor %}
                 {% endif %}
                 <br>
@@ -97,13 +94,16 @@
             <div class="chat-box position-relative">
                 <form id="input" onsubmit="AskQuestion();return false;" method="post">
                     <div class="mx-auto">
-                        <input class="form-control" id="question" name="question" type="text" required placeholder="What's your question?" />
-                        <label class="text-from right bi bi-arrow-right" style="z-index: 100; font-size:medium; padding:1.5vh; pointer-events:none !important"></label>
+                        <input class="form-control" id="question" name="question" type="text" required
+                            placeholder="What's your question?" />
+                        <label class="text-from right bi bi-arrow-right"
+                            style="z-index: 100; font-size:medium; padding:1.5vh; pointer-events:none !important"></label>
                         <br>
                     </div>
                     <div style="pointer-events: none;">
-                    <p class="text-from left" style="bottom:3%;" id="disclaimer">{{context.conversation_model.name|title}} is an AI and will occassionally make
-                        mistakes.</p>
+                        <p class="text-from left" style="bottom:3%;" id="disclaimer">
+                            {{context.user.conversation.model|title}} is an AI and will occassionally make
+                            mistakes.</p>
                         <p class="text-from right" style="bottom:3%;" id="counter"></p>
                     </div>
                 </form>
@@ -111,4 +111,5 @@
         </div>
     </main>
 </body>
+
 </html>

@@ -9,10 +9,9 @@ import psycopg2.extras
 
 from backend.api.errors import HTTPError
 
-from backend.models.user import User
-from backend.models.course import Course
-from backend.models.subject import Subject
+from backend.models import User
 from backend.models.converstation import User_Conversation
+from backend.models.course import Course
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -354,7 +353,7 @@ def read_course_by_id(course_id):
         cur.close()
         conn.close()
 
-def read_courses_for_user(user_id: str) -> list[dict]:
+def read_courses_for_user(user_id: str) -> list[Course]:
     conn: connection = get_db_connection()
 
     if conn is None:
@@ -577,7 +576,7 @@ def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[User_Conv
         rows = cur.fetchall()
         tmp = []
         for row in rows:
-            tmp.append(User_Conversation(row.values().mapping))
+            tmp.append(User_Conversation(row))
         return tmp
     
     except Exception as e:
@@ -655,7 +654,7 @@ def delete_conversation(conversation_id):
         cur.close()
         conn.close()
 
-def create_message(conversation_id, prompt, response):
+def create_message(conversation_id, model, prompt, response):
     """
     Adds a message to the messages table.
 
@@ -677,11 +676,11 @@ def create_message(conversation_id, prompt, response):
 
     try:
         insert_query = """
-            INSERT INTO messages (conversation_id, prompt, response)
-            VALUES (%s, %s, %s)
+            INSERT INTO messages (conversation_id, model, prompt, response)
+            VALUES (%s, %s, %s, %s)
             RETURNING id;
         """
-        cur.execute(insert_query, (conversation_id, prompt, response))
+        cur.execute(insert_query, (conversation_id, model, prompt, response))
         message_id = cur.fetchone()[0]
         conn.commit()
         return message_id
@@ -878,41 +877,6 @@ def delete_user_courses_by_course(course_id):
         cur.close()
         conn.close()
 
-def read_courses_for_user(user_id: str) -> list[dict]:
-    # Get the base user info
-    user_row = read_user_by_id(user_id)
-    if user_row is None:
-        return None
-
-    user = User(user_row)  # Build a user object from the row
-
-    conn: connection = get_db_connection()
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        return user
-
-    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-    try:
-        select_query = """
-            SELECT c.*
-            FROM user_courses uc
-            JOIN courses c ON c.id = uc.course_id
-            WHERE uc.user_id = %s;
-        """
-        cur.execute(select_query, (user_id,))
-        rows = cur.fetchall()
-        course_list = list(rows)
-    except Exception as e:
-        logging.error(f"Error retrieving courses for user {user_id}: {e}")
-        course_list = []
-    finally:
-        cur.close()
-        conn.close()
-
-    # Assign the course list directly to the user’s courses field
-    user.courses = course_list
-    return user
 
 def delete_all_student_user_courses(course_id: str) -> bool:
     """
