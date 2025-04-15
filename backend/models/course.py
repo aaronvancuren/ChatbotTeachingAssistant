@@ -2,7 +2,7 @@ from backend.models import CourseBase, UserBase
 from backend.models.converstation import User_Conversation
 
 class Course(CourseBase):
-    students: list[UserBase]
+    students: list[UserBase] | None = []
 
     def get_students(self):
         from backend.database.postgres import read_students_for_course

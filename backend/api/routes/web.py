@@ -73,7 +73,6 @@ async def addChat(request: Request, classID: str, context: dict = Depends(get_co
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     reqBody = await request.json()
-    print(classID)
     newConvo = create_user_conversation(classID, context['user'].id, reqBody['model'], "New Conversation")
     return PlainTextResponse(f"/chat/{classID}/{newConvo}")
 

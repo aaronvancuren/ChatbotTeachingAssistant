@@ -18,7 +18,7 @@ class User(UserBase):
         if self.role is Role.student:
             updated_user = read_courses_for_user(str(self.id))
             if updated_user is not None:
-                self.courses = updated_user
+                self.courses = updated_user.courses
         elif self.role is Role.instructor:
             updated_instructor = read_courses_for_instructor(str(self.id))
             if updated_instructor is not None:
@@ -26,16 +26,14 @@ class User(UserBase):
     
     # Get user conversations by course
     def get_conversations(self, course_id: uuid) -> list[User_Conversation]:
-        course = [course for course in self.courses if course.id == course_id][0]
+        from backend.models.course import Course
+        course = [course for course in self.courses if course['id'] == course_id][0]
+        course['subject'] = int(course['subject'])
+        course = Course(**course)
         self.activeCourse = course
-        return course.get_conversations(self)
+        return self.activeCourse.get_conversations(self)
     
     def get_conversation(self, conversation_id: uuid) -> list[Message]:
         from backend.database.postgres import read_messages_from_conversation
-        # Get messages from the messages table using the conversation_id
         self.conversation = read_messages_from_conversation(conversation_id)
         return self.conversation
-        # Update the conversation property
-        
-        # Return the conversation (list[message])
-        pass
