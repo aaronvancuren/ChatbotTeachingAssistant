@@ -8,6 +8,7 @@ class User(UserBase):
     courses: list[CourseBase] = []
     conversation: list[Message] = []
     activeCourse: CourseBase | None = None
+    activeConversation: object | None = None
 
     def __init__(self, row: RealDictRow):
         super().__init__(id=row['id'], display_name=row['display_name'], email=row['email'], role=Role[row['role']])
@@ -33,7 +34,17 @@ class User(UserBase):
         self.activeCourse = course
         return self.activeCourse.get_conversations(self)
     
+    def find_conversation(self, conversation_id: uuid) -> User_Conversation:
+        if self.courses == []:
+            self.get_courses()
+        for course in self.courses:
+            for conversation in self.get_conversations(course['id']):
+                if conversation.conversation_id == conversation_id:
+                    return conversation
+        raise Exception("Conversation not found")
+
     def get_conversation(self, conversation_id: uuid) -> list[Message]:
         from backend.database.postgres import read_messages_from_conversation
         self.conversation = read_messages_from_conversation(conversation_id)
-        return self.conversation
+        self.activeConversation = self.find_conversation(conversation_id)
+        return { 'conversation': self.activeConversation, 'messages': self.conversation }
