@@ -2,7 +2,7 @@
 from tests import *
 from backend.database.text_processor import *
 
-class TestFileProcessing(unittest.TestCase):
+class TestFileProcessing(TestCase):
 
     def setUp(self):
         """
@@ -72,4 +72,4 @@ class TestFileProcessing(unittest.TestCase):
         pass
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

@@ -1,18 +1,18 @@
 # made with ChatGPT
-
 from tests import *
-import os
 import shutil
 import tempfile
 
 # Import the functions to test
+os.environ["OPENAI_API_KEY"] = ""
 from backend.database.chroma_database import *
 
-class TestChromaDatabase(unittest.TestCase):
+class TestChromaDatabase(TestCase):
 
     def setUp(self):
         # Create a temporary directory for persistent storage
         self.test_persistence_path = tempfile.mkdtemp()
+        os.chmod(self.test_persistence_path, 0o777)
 
         # Set the environment variable to the temporary directory
         os.environ["CHROMA_PERSISTENT_DIRECTORY"] = self.test_persistence_path
@@ -80,7 +80,6 @@ class TestChromaDatabase(unittest.TestCase):
 
         # Ensure the persistence directory is clean before the test
         if os.path.exists(test_persistence_path):
-            import shutil
             shutil.rmtree(test_persistence_path)
 
         # Mock the embedding generation
@@ -119,7 +118,6 @@ class TestChromaDatabase(unittest.TestCase):
 
         # Remove the test persistence directory after the test
         if os.path.exists(test_persistence_path):
-            import shutil
             shutil.rmtree(test_persistence_path)
 
     def test_get_or_create_collection(self):
@@ -248,4 +246,4 @@ class TestChromaDatabase(unittest.TestCase):
         mock_generate_embedding.assert_called_with(input_text)
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
