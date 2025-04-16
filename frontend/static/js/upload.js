@@ -645,3 +645,27 @@ async function removeAllStudents() {
     alert("An error occurred while removing all students.");
   }
 }
+
+async function getStudentChats(student) {
+    let firstConvo ="";
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get("course_id");
+    $.ajax({
+      method: "POST",
+      url: '/dashboard/get_chat?course_id='+courseId,
+      data: JSON.stringify({
+        student_email: student
+      }),
+      success: function(data) {
+        document.getElementById("chat_header").innerText = "Viewing " + student + " Chat History";
+        if (data === null){
+          document.getElementById("chatview_host_iframe").hidden = true;
+          document.getElementById("chat_error").hidden = false;
+        }else {
+          document.getElementById("chatview_host_iframe").hidden = false;
+          document.getElementById("chat_error").hidden = true;
+          document.getElementById("chatview_host_iframe").src = "/chat/" + courseId + "/" +firstConvo;
+        }
+      },
+    })
+}

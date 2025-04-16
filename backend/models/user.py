@@ -27,10 +27,12 @@ class User(UserBase):
     
     # Get user conversations by course
     def get_conversations(self, course_id: uuid) -> list[User_Conversation]:
-        from backend.models.course import Course
-        course = [course for course in self.courses if course['id'] == course_id][0]
-        course['subject'] = int(course['subject'])
-        course = Course(**course)
+        try:
+            course = [course for course in self.courses if course.id == course_id][0]
+        except:
+            course = [course for course in self.courses if course['id'] == course_id][0]
+            from backend.models.course import Course
+            course = Course(**course)
         self.activeCourse = course
         return self.activeCourse.get_conversations(self)
     
@@ -38,7 +40,11 @@ class User(UserBase):
         if self.courses == []:
             self.get_courses()
         for course in self.courses:
-            for conversation in self.get_conversations(course['id']):
+            try:
+                conversations = self.get_conversations(course.id)
+            except:
+                conversations = self.get_conversations(course['id'])
+            for conversation in conversations:
                 if conversation.conversation_id == conversation_id:
                     return conversation
         raise Exception("Conversation not found")

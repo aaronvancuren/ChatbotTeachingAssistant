@@ -12,6 +12,7 @@ from backend.api.errors import HTTPError
 from backend.models import User
 from backend.models.converstation import User_Conversation
 from backend.models.course import Course
+from backend.models.subject import Subject
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
