@@ -226,6 +226,7 @@ python -m unittest test_module.TestClass
 ```bash
 python -m unittest test_module.TestClass.test_method
 ```
+
 # Setting up PostgreSQL Locally
 Windows Install:
 
