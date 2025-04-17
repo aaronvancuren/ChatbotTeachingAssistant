@@ -7,8 +7,6 @@ from fastapi_msal.models import AuthToken, TokenStatus
 
 import backend.database.postgres as db
 from backend.models import User
-from backend.database.database_user_conversations import get_user_conversations
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
