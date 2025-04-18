@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.user_conversations
     conversation_id uuid NOT NULL DEFAULT gen_random_uuid(),
     user_id uuid NOT NULL,
     course_id uuid NOT NULL,
+    model text COLLATE pg_catalog."default" NOT NULL,
     title text COLLATE pg_catalog."default" NOT NULL,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     archived boolean NOT NULL DEFAULT false,
