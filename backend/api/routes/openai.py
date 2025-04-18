@@ -96,8 +96,8 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
         discussion = []
         discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{getModelAlias(conversationData['conversation'].model)}_PROMPT")})
         for message in conversationData['messages']:
-            discussion.append({'role': 'user', 'content': message["prompt"]})
-            discussion.append({'role': 'assistant', 'content': message["response"]})
+            discussion.append({'role': 'user', 'content': message.prompt})
+            discussion.append({'role': 'assistant', 'content': message.response})
 
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
@@ -110,8 +110,6 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
             )
 
             if moderation_response.results and moderation_response.results[0].flagged:
-                # Adds the ChatGPT response to the conversation
-                discussion.append({'role': 'assistant', 'content': "I can't answer that"})
                 # Adds the ChatGPT response to the conversation
                 discussion.append({'role': 'assistant', 'content': "I can't answer that"})
 
