@@ -5,13 +5,9 @@ import uuid
 import psycopg2
 from psycopg2.extensions import connection, cursor
 from psycopg2.extras import RealDictCursor, RealDictRow, register_uuid
-import psycopg2.extras
 
 from backend.api.errors import HTTPError
-
-from backend.models import User
-from backend.models.converstation import User_Conversation
-from backend.models.course import Course
+from backend.models import User, UserConversation, Course, Message
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -404,30 +400,13 @@ def read_courses_for_user(user_id: str) -> list[Course]:
         """
         cur.execute(select_query, (user_id,))
         rows = cur.fetchall()
-        from backend.models.course import Course
-        from backend.models.subject import Subject
-        courses = []
-        for class_info in rows:
-            raw_subject = class_info["subject"]
-            subject_val = Subject[raw_subject.upper()]
-
-            c = Course(
-                id=class_info["id"],
-                instructor_id=class_info["instructor_id"],
-                display_name=class_info["display_name"],
-                subject=subject_val,
-                course_number=class_info["course_number"],
-                section_number=class_info["section_number"],
-                title=class_info["title"],
-                model=class_info["model"],
-                prompt=class_info["prompt"],
-                documents_path=class_info["documents_path"],
-                image_path=class_info["image_path"],
-                students=[]
-            )
-
-            c.students = c.get_students()
-            courses.append(c)
+        
+        courses: list[Course] = []
+        for row in rows:
+            course: Course = Course(row)
+            course.students = read_students_for_course(course.id)
+            courses.append(course)
+            
         return courses
 
     except Exception as e:
@@ -584,7 +563,7 @@ def create_user_conversation(course_id, user_id, model, title) -> uuid:
         cur.close()
         conn.close()
 
-def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[User_Conversation]:
+def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[UserConversation]:
     """
     Retrieves all conversations IDs for a given user.
 
@@ -607,10 +586,10 @@ def read_conversations_by_user(user_id: uuid, course_id: uuid) -> list[User_Conv
         select_query = "SELECT * FROM user_conversations WHERE user_id = %s AND course_id = %s;"
         cur.execute(select_query, (str(user_id).replace("-",""), str(course_id).replace("-","")))
         rows = cur.fetchall()
-        tmp = []
+        userConversations: list[UserConversation] = []
         for row in rows:
-            tmp.append(User_Conversation(row))
-        return tmp
+            userConversations.append(UserConversation(row))
+        return userConversations
     
     except Exception as e:
         logging.error(f"Error retrieving conversation ids: {e}")
@@ -727,7 +706,7 @@ def create_message(conversation_id: str, model: str, prompt: str, response: str)
         cur.close()
         conn.close()
 
-def read_messages_from_conversation(conversation_id):
+def read_messages_from_conversation(conversation_id) -> list[Message]:
     """
     Retrieves all messages for a conversation.
 
@@ -747,15 +726,15 @@ def read_messages_from_conversation(conversation_id):
 
     try:
         select_query = """
-            SELECT prompt, response FROM messages WHERE conversation_id = %s ORDER BY id ASC;
+            SELECT model, prompt, response FROM messages WHERE conversation_id = %s ORDER BY id ASC;
         """
         cur.execute(select_query, (conversation_id,))
-       
-        messages = cur.fetchall()
-        message_list = []
-        for message in messages:
-            message_list.append(dict(message))
-        return message_list
+        rows = cur.fetchall()
+        messages: list[Message] = []
+        for row in rows:
+            messages.append(Message(row))
+            
+        return messages
     
     except Exception as e:
         logging.error(f"Error retrieving messages: {e}")
@@ -913,15 +892,7 @@ def delete_user_courses_by_course(course_id):
         cur.close()
         conn.close()
 
-def read_courses_for_user(user_id: str) -> list[dict]:
-    
-    # Get the base user info
-    user_row = read_user_by_id(user_id)
-    if user_row is None:
-        return None
-
-    user = User(user_row)  # Build a user object from the row
-
+def read_courses_for_user(user_id: str) -> list[Course]:
     conn: connection = get_db_connection()
     if conn is None:
         logging.error("Failed to connect to the database.")
@@ -938,18 +909,16 @@ def read_courses_for_user(user_id: str) -> list[dict]:
         """
         cur.execute(select_query, (user_id,))
         rows = cur.fetchall()
-        course_list = list(rows)
+        courses: list[Course] = []
+        for row in rows:
+            courses.append(Course(row))
+            
+        return courses
     except Exception as e:
         logging.error(f"Error retrieving courses for user {user_id}: {e}")
-        course_list = []
     finally:
         cur.close()
         conn.close()
-
-    # Assign the course list directly to the user’s courses field
-    user.courses = course_list
-    return user
-
 
 def delete_all_student_user_courses(course_id: str) -> bool:
     """
@@ -968,8 +937,8 @@ def delete_all_student_user_courses(course_id: str) -> bool:
             DELETE FROM user_courses
             USING users
             WHERE user_courses.course_id = %s
-              AND user_courses.user_id = users.id
-              AND users.role = 'student';
+                AND user_courses.user_id = users.id
+                AND users.role = 'student';
             """,
             (course_id,)
         )
@@ -983,7 +952,7 @@ def delete_all_student_user_courses(course_id: str) -> bool:
         cur.close()
         conn.close()
 
-def read_students_for_course(course_id: str) -> list[dict]:
+def read_students_for_course(course_id: str) -> list[User]:
     """
     Retrieves all users who are students (role = 'student') for a given course.
 
@@ -1009,10 +978,10 @@ def read_students_for_course(course_id: str) -> list[dict]:
         """
         cur.execute(select_query, (course_id,))
         rows = cur.fetchall()
-        students = []
-        from backend.models.user import User
+        students: list[User] = []
         for row in rows:
             students.append(User(row))
+            
         return students
     except Exception as e:
         logging.error(f"Error retrieving student users for course {course_id}: {e}")
@@ -1021,7 +990,7 @@ def read_students_for_course(course_id: str) -> list[dict]:
         cur.close()
         conn.close()
 
-def read_courses_for_instructor(instructor_id: str) -> list[dict]:
+def read_courses_for_instructor(instructor_id: str) -> list[Course]:
     """
     Retrieves all courses taught by the instructor with the given instructor_id.
     
@@ -1031,13 +1000,6 @@ def read_courses_for_instructor(instructor_id: str) -> list[dict]:
     Returns:
         list[dict]: A list of course records as dictionaries, or an empty list if none found.
     """
-
-    user_row = read_user_by_id(instructor_id)
-    if user_row is None:
-        return None
-    
-    user_obj = User(user_row)
-
     conn: connection = get_db_connection()
     if conn is None:
         logging.error("Failed to connect to the database.")
@@ -1053,36 +1015,16 @@ def read_courses_for_instructor(instructor_id: str) -> list[dict]:
         cur.execute(select_query, (instructor_id,))
         rows = cur.fetchall()
 
-        courses = []
-        for class_info in rows:
-            raw_subject = class_info["subject"]
-            subject_val = Subject[raw_subject.upper()]
-
-            c = Course(
-                id=class_info["id"],
-                instructor_id=class_info["instructor_id"],
-                display_name=class_info["display_name"],
-                subject=subject_val,
-                course_number=class_info["course_number"],
-                section_number=class_info["section_number"],
-                title=class_info["title"],
-                model=class_info["model"],
-                prompt=class_info["prompt"],
-                documents_path=class_info["documents_path"],
-                image_path=class_info["image_path"],
-                students=[]
-            )
-
-            c.students = c.get_students()
-
-            courses.append(c)
-
+        courses: list[Course] = []
+        for row in rows:
+            course: Course = Course(row)
+            course.students = read_students_for_course(course.id)
+            courses.append(course)
+            
+        return courses
     except Exception as e:
         logging.error(f"Error retrieving courses for instructor {instructor_id}: {e}")
         return []
     finally:
         cur.close()
         conn.close()
-    
-    user_obj.courses = courses
-    return user_obj

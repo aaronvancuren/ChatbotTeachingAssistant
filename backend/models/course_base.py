@@ -1,6 +1,5 @@
 import uuid
 from backend.models import BaseModel, ConfigDict, Subject
-from backend.models.converstation import User_Conversation
 
 class CourseBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -16,5 +15,3 @@ class CourseBase(BaseModel):
     prompt: str
     documents_path: str
     image_path: str
-
-    conversations: list | None = []

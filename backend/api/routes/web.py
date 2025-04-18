@@ -3,7 +3,6 @@ from os import getenv
 import uuid
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
-from backend.models.converstation import Model
 from backend.models import User, Role
 
 from fastapi import APIRouter, Request, Depends
