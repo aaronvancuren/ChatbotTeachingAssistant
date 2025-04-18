@@ -12,7 +12,6 @@ class TestChromaDatabase(TestCase):
     def setUp(self):
         # Create a temporary directory for persistent storage
         self.test_persistence_path = tempfile.mkdtemp()
-        os.chmod(self.test_persistence_path, 0o777)
 
         # Set the environment variable to the temporary directory
         os.environ["CHROMA_PERSISTENT_DIRECTORY"] = self.test_persistence_path
@@ -34,6 +33,7 @@ class TestChromaDatabase(TestCase):
         if hasattr(self, 'client'):
             del self.client
         if os.path.exists(self.test_persistence_path):
+            yield self.test_persistence_path
             shutil.rmtree(self.test_persistence_path)
         if "CHROMA_PERSISTENT_DIRECTORY" in os.environ:
             del os.environ["CHROMA_PERSISTENT_DIRECTORY"]
