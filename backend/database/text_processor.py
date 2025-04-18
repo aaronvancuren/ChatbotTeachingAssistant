@@ -164,20 +164,25 @@ def process_file(file_bytes, filename):
     Main function to process a file: detects file type, extracts text, and chunks it.
     """
     extension = Path(filename).suffix.lower()
-    extractor = extension_to_extractor.get(extension)
+    extension_extractor = extension_to_extractor.get(extension)
+    
+    detected_mime = detect_mime_type(file_bytes)
+    detected_mime_extractor = mime_type_to_extractor.get(detected_mime)
+    if extension_extractor != detected_mime_extractor:
+        logging.error(f"MIME type mismatch. Extension: '{extension}' and Detected: '{detected_mime}'")
+        return None
 
-    if extractor:
+    extractor = None
+    if extension_extractor:
+        extractor = extension_extractor
         logging.info(f"Using extractor for file extension: '{extension}'")
+    elif detected_mime_extractor:
+        extractor = detected_mime_extractor
+        logging.info(f"Using extractor for MIME type: '{detected_mime}'")
     else:
-        detected_mime = detect_mime_type(file_bytes)
-        extractor = mime_type_to_extractor.get(detected_mime)
-        if extractor:
-            logging.info(f"Using extractor for MIME type: '{detected_mime}'")
-        else:
-            error_message = (f"No extractor found for file '{filename}' "
-                             f"with extension '{extension}' and MIME type '{detected_mime}'.")
-            logging.error(error_message)
-            return None
+        error_message = (f"No extractor found for file '{filename}' with extension '{extension}' and MIME type '{detected_mime}'.")
+        logging.error(error_message)
+        return None
 
     text = extractor(file_bytes)
     if not text:

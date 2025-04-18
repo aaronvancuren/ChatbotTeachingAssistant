@@ -9,10 +9,12 @@ class TestFileProcessing(TestCase):
         Set up test resources: files, byte content, etc.
         """
         # Example text file content
-        self.txt_content = b"Hello, this is a simple text file for testing."
+        with open("tests/test.txt", "rb") as f:
+            self.txt_content = f.read()
         
         # Mock PDF content as binary data (simulating a small PDF file)
-        self.pdf_content = b"%PDF-1.4\n%Test PDF content"
+        with open("tests/test.pdf", "rb") as f:
+            self.pdf_content = f.read()
 
     def test_detect_mime_type_txt(self):
         mime_type = detect_mime_type(self.txt_content)
@@ -23,17 +25,17 @@ class TestFileProcessing(TestCase):
         expected_text = "Hello, this is a simple text file for testing."
         self.assertEqual(extracted_text.strip(), expected_text, "Text extraction from TXT file failed")
 
-    @patch('backend.database.text_processor.extract_text_from_pdf')
-    def test_extract_text_from_pdf(self, mock_extract_text_from_pdf):
+    @patch('backend.database.text_processor.pypdf.PageObject.extract_text')
+    def test_extract_text_from_pdf(self, mock_extract_text):
         # Mock the extracted text from PDF
-        mock_extract_text_from_pdf.return_value = "Mock PDF extracted text"
+        mock_extract_text.return_value = "Mock PDF extracted text"
         
         # Call the function under test
         extracted_text = extract_text_from_pdf(self.pdf_content)
         
         # Assertions
         self.assertEqual(extracted_text, "Mock PDF extracted text", "Text extraction from PDF should return mocked data")
-        mock_extract_text_from_pdf.assert_called_once()
+        mock_extract_text.assert_called_once()
 
     def test_chunk_text(self):
         text = "This is a long text that should be split into multiple chunks if needed. " * 10
@@ -44,9 +46,6 @@ class TestFileProcessing(TestCase):
     def test_process_file_pdf(self, mock_extract_text_from_pdf):
         # Mock the extracted text from PDF
         mock_extract_text_from_pdf.return_value = "Mock PDF extracted text"
-
-        # Update the mime_type_to_extractor mapping to use the mocked function
-        mime_type_to_extractor['application/pdf'] = mock_extract_text_from_pdf
 
         # Call the function under test
         chunks = process_file(self.pdf_content, "test.pdf")
@@ -62,7 +61,7 @@ class TestFileProcessing(TestCase):
 
     def test_mime_mismatch_warning(self):
         with self.assertLogs(level="WARNING") as log:
-            _ = process_file(self.txt_content, "test.pdf")  # Using wrong extension to simulate mismatch
+            _ = process_file(self.txt_content, "test")  # Using wrong extension to simulate mismatch
             self.assertTrue(any("MIME type mismatch" in message for message in log.output))
 
     def tearDown(self):
