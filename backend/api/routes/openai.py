@@ -7,11 +7,9 @@ import json
 
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
+from backend.models import Message
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
-from backend.database.database_user_conversations import DEMO_LIST
-from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation
-from backend.models.converstation import User_Conversation, Model
-from backend.models import Role
+from backend.database.postgres import read_messages_from_conversation
 
 from fastapi import APIRouter, HTTPException, Request, Response, Depends
 
@@ -28,7 +26,15 @@ class ChatRequest(Request):
     context: str
     currentConversationId: str
 
-conversations: dict[str, list[User_Conversation]] = {}
+def getModelAlias(model: str):
+    if(model == "gpt-3.5-turbo"):
+        return "VICTOR"
+    elif(model == "gpt-4o-mini-2024-07-18"):
+        return "JOHN"
+    elif(model == "gpt-4o-mini"):
+        return "HEDY"
+    elif(model == "gpt-4o"):
+        return "HENRIETTA"
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest, response: Response, context: dict = Depends(get_context)) -> str:
@@ -77,15 +83,14 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
     try:
         reqBody = await request.json()
         user_id = context.get("user").id
-
-        conversationData = [userConvo for userConvo in read_conversations_by_user(user_id, os.getenv("COURSE_ID")) if str(userConvo.conversation_id) == reqBody['currentConversationId']][0]
-        currentConversation = read_messages_from_conversation(reqBody['currentConversationId'])
+        currentConversation: list[Message] = read_messages_from_conversation(reqBody['currentConversationId'])
+        model = currentConversation[-1].model
         
         discussion = []
-        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{conversationData.model.name.upper()}_PROMPT")})
+        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{getModelAlias(model)}_PROMPT")})
         for message in currentConversation:
-            discussion.append({'role': 'user', 'content': message["prompt"]})
-            discussion.append({'role': 'assistant', 'content': message["response"]})
+            discussion.append({'role': 'user', 'content': message.prompt})
+            discussion.append({'role': 'assistant', 'content': message.response})
 
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
@@ -119,11 +124,11 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
             for idx, doc in enumerate(relevant_docs, 1):
                 system_message += f"{idx}. {doc['content']}\n"
             discussion.append({'role': 'developer', 'content': system_message})
-       
+
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=discussion,
-            model=str(conversationData.model.value),
+            model=str(model),
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=['\0'],
