@@ -31,7 +31,7 @@ class User(UserBase):
                     return conversation
         raise Exception("Conversation not found")
 
-    def get_conversation(self, conversation_id: uuid) -> list[Message]:
+    def get_conversation(self, conversation_id: uuid) -> tuple[UserConversation, Message]:
         from backend.database.postgres import read_messages_from_conversation
         self.conversation = read_messages_from_conversation(conversation_id)
         self.activeConversation = self.find_conversation(conversation_id)
