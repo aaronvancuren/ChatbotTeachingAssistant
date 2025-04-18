@@ -37,7 +37,7 @@ class TestFileProcessing(TestCase):
 
     def test_chunk_text(self):
         text = "This is a long text that should be split into multiple chunks if needed. " * 10
-        chunks = chunk_text(text, max_tokens=50)
+        chunks = chunk_text(text, chunk_size=250)
         self.assertTrue(len(chunks) > 1, "Chunking did not split the text properly")
 
     @patch('backend.database.text_processor.extract_text_from_pdf')
