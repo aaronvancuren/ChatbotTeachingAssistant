@@ -1,13 +1,15 @@
 """TODO: update docstring"""
+from os import getenv
+import uuid
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
-from backend.database.database_user_conversations import get_user_conversations, add_user_conversation
-from backend.models.converstation import Conversation, Model
 from backend.models import User, Role
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
+
+from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation
 
 web_router = APIRouter()
 
@@ -29,12 +31,21 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
     
     Returns:
         Index Web Page Response
-    """  
+    """         
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
-@web_router.get("/chat")
-async def chatpage(request: Request, chatID: str, context: dict = Depends(get_context)):
+@web_router.get("/chat/{courseID}")
+async def populate_chats(request: Request, courseID: str, context: dict = Depends(get_context)):
+    if not context.get("logged_in"):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    user: User = context.get("user")
+    convo = user.get_conversations(uuid.UUID(courseID))
+    context.update({"user": user})
+    return RedirectResponse(f"/chat/{courseID}/{convo[0].conversation_id}")
+
+@web_router.get("/chat/{courseID}/{chatID}")
+async def chatpage(request: Request, courseID: str, chatID: str, context: dict = Depends(get_context)):
     """
     Chat page of application
     Args:
@@ -48,27 +59,21 @@ async def chatpage(request: Request, chatID: str, context: dict = Depends(get_co
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     user: User = context.get("user")
-    userConvos = get_user_conversations(user.id) #TODO update method of getting user conversations
-    if (chatID in [str(convo.id) for convo in userConvos]):
-        conversation = next((convo for convo in userConvos if str(convo.id) == chatID), Conversation(user.id, class_prompt=context.get("class_list")[0].prompt))
-        context.update({"conversation_list": userConvos})
-        context.update({"conversation_data": conversation.getDiscussion()}) #TODO update method of getting the discussion (should be conversation) Need Neal to clarify method purpose.
-        context.update({"conversation_model": conversation.model.name.title()})
-        context.update({"chatID": chatID})
-        
-        return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
-    else:
-        raise HTTPError(status_code=404, detail="Chat not found")
+    user.get_conversations(uuid.UUID(courseID))
+    user.get_conversation(uuid.UUID(chatID))
+    context.update({"user": user})
+    return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
+    
 
-@web_router.post("/addChat")
-async def addChat(request: Request, context: dict = Depends(get_context)):
-    role: Role = context.get("role")
+@web_router.post("/addChat/{classID}")
+async def addChat(request: Request, classID: str, context: dict = Depends(get_context)):
+    role: Role = context.get("user").role
     if role is not Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     reqBody = await request.json()
-    newConvo = add_user_conversation(context.get("id"), Model[reqBody["model"].upper()])
-    return PlainTextResponse(f"/chat?chatID={str(newConvo.id)}")
+    newConvo = create_user_conversation(classID, context['user'].id, reqBody['model'], "New Conversation")
+    return PlainTextResponse(f"/chat/{classID}/{newConvo}")
 
 @web_router.get("/profile")
 async def profilepage(request: Request, context: dict = Depends(get_context)):
@@ -81,22 +86,5 @@ async def profilepage(request: Request, context: dict = Depends(get_context)):
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     return page_templates.TemplateResponse('profile.html', {"request": request, "context": context})
-
-#endregion
-
-#region Error Pages
-
-async def Error_401(request: Request, context: dict):
-    """
-    401 page of application
-    Args:
-        request: the data contained in the request that the server received
-        user_context: the authentication context attached to the request
-    
-    Returns:
-
-        401 error page
-    """
-    return page_templates.TemplateResponse('/errors/401.html', {"request": request, "context": context})
 
 #endregion
