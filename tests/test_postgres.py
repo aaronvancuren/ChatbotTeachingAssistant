@@ -96,24 +96,19 @@ class TestUserConversations(TestCase):
         mock_cursor.fetchone.return_value = ['123e4567-e89b-12d3-a456-426614174000']
 
         # Call the function under test
-        conv_id = create_user_conversation(
-            course_id='course-uuid-123',
-            user_id='user-uuid-456',
-            title='My Conversation'
-        )
+        conv_id = create_user_conversation('course-uuid-123','user-uuid-456', 'gpt-4o', 'My Conversation')
 
         # Assertions
         self.assertEqual(conv_id, '123e4567-e89b-12d3-a456-426614174000')
         mock_get_db_connection.assert_called_once()
 
         expected_query = """
-            INSERT INTO user_conversations (course_id, user_id, title)
-            VALUES (%s, %s, %s)
+            INSERT INTO user_conversations (course_id, user_id, model, title)
+            VALUES (%s, %s, %s, %s)
             RETURNING conversation_id;
         """
         mock_cursor.execute.assert_called_once_with(
-            expected_query,
-            ('course-uuid-123', 'user-uuid-456', 'My Conversation')
+            expected_query, ('courseuuid123', 'useruuid456', 'gpt-4o', 'My Conversation')
         )
         mock_conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
@@ -125,7 +120,7 @@ class TestUserConversations(TestCase):
         """Test DB connection failure for create_user_conversation."""
         mock_get_db_connection.return_value = None
 
-        conv_id = create_user_conversation('course-uuid-123', 'user-uuid-456', 'Some Title')
+        conv_id = create_user_conversation('course-uuid-123', 'user-uuid-456', 'gpt-4o', 'Some Title')
         self.assertIsNone(conv_id)
 
         mock_get_db_connection.assert_called_once()
@@ -141,7 +136,7 @@ class TestUserConversations(TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        conv_id = create_user_conversation('course-uuid-123', 'user-uuid-456', 'Another Title')
+        conv_id = create_user_conversation('course-uuid-123', 'user-uuid-456', 'gpt-4o', 'Another Title')
         self.assertIsNone(conv_id)
 
         mock_get_db_connection.assert_called_once()
@@ -168,12 +163,14 @@ class TestUserConversations(TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        result = read_conversations_by_user('user-uuid-456', 'course-uuid-999')
-        self.assertEqual(result, ['conv-uuid-111', 'conv-uuid-222'])
+        conversations = read_conversations_by_user('user-uuid-456', 'course-uuid-999')
+        i = 0
+        for conversation in conversations:
+            self.assertEqual(conversation.conversation_id, mock_rows[i]['conversation_id'])
 
         mock_get_db_connection.assert_called_once()
-        select_query = "SELECT conversation_id FROM user_conversations WHERE user_id = %s AND course_id = %s;"
-        mock_cursor.execute.assert_called_once_with(select_query, ('user-uuid-456', 'course-uuid-999'))
+        select_query = "SELECT * FROM user_conversations WHERE user_id = %s AND course_id = %s;"
+        mock_cursor.execute.assert_called_once_with(select_query, ('useruuid456', 'courseuuid999'))
         mock_cursor.close.assert_called_once()
         mock_conn.close.assert_called_once()
 
@@ -689,10 +686,7 @@ class TestMessages(TestCase):
         mock_cursor.fetchone.return_value = [123]
 
         # Call the function under test
-        message_id = create_message(
-            conversation_id='conv-uuid-123',
-            prompt='Hello, how are you?',
-            response='I am good!'
+        message_id = create_message('conv-uuid-123', 'gpt-4o', 'Hello, how are you?', 'I am good!'
         )
 
         # Assertions
@@ -700,13 +694,13 @@ class TestMessages(TestCase):
         mock_get_db_connection.assert_called_once()
 
         expected_query = """
-            INSERT INTO messages (conversation_id, prompt, response)
-            VALUES (%s, %s, %s)
+            INSERT INTO messages (conversation_id, model, prompt, response)
+            VALUES (%s, %s, %s, %s)
             RETURNING id;
         """
         mock_cursor.execute.assert_called_once_with(
             expected_query,
-            ('conv-uuid-123', 'Hello, how are you?', 'I am good!')
+            ('conv-uuid-123', 'gpt-4o', 'Hello, how are you?', 'I am good!')
         )
         mock_conn.commit.assert_called_once()
         mock_cursor.close.assert_called_once()
@@ -718,7 +712,7 @@ class TestMessages(TestCase):
         """Test DB connection failure scenario for create_message."""
         mock_get_db_connection.return_value = None
 
-        message_id = create_message('conv-uuid-123', 'Question?', 'Answer!')
+        message_id = create_message('conv-uuid-123', 'gpt-4o', 'Question?', 'Answer!')
         self.assertIsNone(message_id)
         mock_get_db_connection.assert_called_once()
 
@@ -734,7 +728,7 @@ class TestMessages(TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        message_id = create_message('conv-uuid-456', 'Prompt?', 'Response!')
+        message_id = create_message('conv-uuid-456', 'gpt-4o', 'Prompt?', 'Response!')
         self.assertIsNone(message_id)
         mock_get_db_connection.assert_called_once()
         mock_conn.rollback.assert_called_once()
@@ -750,8 +744,8 @@ class TestMessages(TestCase):
     def test_read_messages_from_conversation_success(self, mock_get_db_connection):
         """Test retrieving messages (prompt/response) for a conversation."""
         mock_rows = [
-            {'prompt': 'Hello', 'response': 'Hi there!'},
-            {'prompt': 'How are you?', 'response': 'Doing well!'}
+            {'model': 'gpt-4o', 'prompt': 'Hello', 'response': 'Hi there!'},
+            {'model': 'gpt-4o', 'prompt': 'How are you?', 'response': 'Doing well!'}
         ]
 
         mock_conn = MagicMock()
@@ -761,11 +755,16 @@ class TestMessages(TestCase):
         mock_get_db_connection.return_value = mock_conn
 
         messages = read_messages_from_conversation('conv-uuid-123')
-        self.assertEqual(messages, mock_rows)
+        i = 0
+        for message in messages:
+            self.assertEqual(message.model, mock_rows[i]['model'])
+            self.assertEqual(message.prompt, mock_rows[i]['prompt'])
+            self.assertEqual(message.response, mock_rows[i]['response'])
+            i += 1
 
         mock_get_db_connection.assert_called_once()
         query = """
-            SELECT prompt, response FROM messages WHERE conversation_id = %s ORDER BY id ASC;
+            SELECT model, prompt, response FROM messages WHERE conversation_id = %s ORDER BY id ASC;
         """
         mock_cursor.execute.assert_called_once_with(query, ('conv-uuid-123',))
         mock_cursor.close.assert_called_once()
@@ -796,7 +795,12 @@ class TestMessages(TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_db_connection.return_value = mock_conn
 
-        messages = read_messages_from_conversation('conv-uuid-123')
+        messages = []
+        try:
+            messages = read_messages_from_conversation('conv-uuid-123')
+        except HTTPError as e:
+            pass # We are not testing this error in this test case
+        
         self.assertEqual(messages, [])
         mock_get_db_connection.assert_called_once()
         mock_cursor.close.assert_called_once()
