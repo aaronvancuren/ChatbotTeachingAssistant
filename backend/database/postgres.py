@@ -508,12 +508,7 @@ def create_user_conversation(course_id, user_id, model, title) -> uuid:
     try:
         insert_query = """
             INSERT INTO user_conversations (course_id, user_id, model, title)
-            VALUES (
-                %s, 
-                %s, 
-                %s,
-                %s
-            )
+            VALUES (%s, %s, %s, %s)
             RETURNING conversation_id;
         """        
         cur.execute(insert_query, (str(course_id).replace("-",""), str(user_id).replace("-",""), model, title))
