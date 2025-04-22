@@ -6,7 +6,7 @@ import os
 import json
 import uuid
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response, Depends
 from openai import OpenAI, _exceptions
 from datetime import date
 
@@ -42,8 +42,8 @@ def getModelAlias(model: str):
     elif(model == "gpt-4o"):
         return "HENRIETTA"
 
-@openai_router.post("/ask", tags=["Chatbot"])
-async def chat(request: ChatRequest, response: Response, context: dict = Depends(get_context)) -> str:
+@openai_router.post("/ask/{course_id}/{conversation_id}", tags=["Chatbot"])
+async def chat(request: ChatRequest, course_id: str, conversation_id: str, response: Response, context: dict = Depends(get_context)) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
@@ -51,10 +51,9 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
     Returns:
         str: conversation updated with the response from OpenAI as a JSON string
     """
+    print("test")
     if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
-
-    course_id = request.query_params.get("course_id")
 
     # Retrieve the usage cookie
     usage_cookie = request.cookies.get("chat_usage")

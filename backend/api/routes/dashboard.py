@@ -252,7 +252,7 @@ async def add_student(request: Request):
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
-    course_id = request.query_params.get("course_id") or data.get("course_id")
+    course_id = request.query_params.get("course_id")
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
@@ -268,7 +268,7 @@ async def add_student(request: Request):
     student_id = user_record.id
 
     # Use the specified course_id
-    course_id = request.query_params.get("course_id") or data.get("course_id")
+    course_id = request.query_params.get("course_id")  
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
@@ -294,7 +294,7 @@ async def remove_student(request: Request):
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
-    course_id = request.query_params.get("course_id") or data.get("course_id")
+    course_id = request.query_params.get("course_id")  
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
