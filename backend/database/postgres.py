@@ -691,6 +691,7 @@ def create_message(conversation_id: str, model: str, prompt: str, response: str)
         cur.execute(insert_query, (conversation_id, model, prompt, response))
         message_id = cur.fetchone()[0]
         conn.commit()
+        return message_id
     
     except Exception as e:
         logging.error(f"Error adding message: {e}")
