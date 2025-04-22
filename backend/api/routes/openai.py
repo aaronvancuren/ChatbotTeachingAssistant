@@ -51,7 +51,6 @@ async def chat(request: ChatRequest, course_id: str, conversation_id: str, respo
     Returns:
         str: conversation updated with the response from OpenAI as a JSON string
     """
-    print("test")
     if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
 
