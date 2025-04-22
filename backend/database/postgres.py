@@ -678,8 +678,8 @@ def create_message(conversation_id: str, model: str, prompt: str, response: str)
 
     if conn is None:
         logging.error("Failed to connect to the database.")
-        raise HTTPError(status_code=500, detail="Internal Server Error")
-    
+        return None
+      
     cur: cursor = conn.cursor()
 
     try:
@@ -696,7 +696,7 @@ def create_message(conversation_id: str, model: str, prompt: str, response: str)
     except Exception as e:
         logging.error(f"Error adding message: {e}")
         conn.rollback()
-        raise HTTPError(status_code=500, detail="Internal Server Error")
+        return None
     
     finally:
         cur.close()
