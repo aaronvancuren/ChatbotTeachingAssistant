@@ -16,17 +16,14 @@ register_uuid()
 def get_db_connection() -> connection:
     # Database connection configuration
     db_config = {
-        "dbname": os.environ['DB_NAME'],
+        "host": os.getenv('DB_HOST', 'localhost'),
+        "port": int(os.getenv('DB_PORT', 5432)),
+        "dbname": os.environ['DB_NAME', 'chatbot'],
         "user": os.environ['DB_USER'],
         "password": os.environ['DB_PASSWORD'],
-        "host": os.getenv('DB_HOST', 'localhost'),  # Default to 'localhost' if not set
-        "port": int(os.getenv('DB_PORT', 5432))     # Default to 5432 if not set
     }
 
     # Connect to PostgreSQL using psycopg2
-    conn = psycopg2.connect(**db_config)
-    conn.commit()
-    return conn
     return psycopg2.connect(**db_config)
 
 def create_user(display_name, email, role='student'):
