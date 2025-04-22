@@ -19,7 +19,6 @@ from openai import OpenAI, _exceptions
 client = OpenAI()
 openai_router = APIRouter()
 chroma_client = initialize_chromadb()
-collection = get_or_create_collection(chroma_client, 'file_collection')
 
 class ChatRequest(Request):
     user_content: str
@@ -40,7 +39,9 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
     """
     if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
-        
+
+    course_id = request.query_params.get("course_id")
+
     # Retrieve the usage cookie
     usage_cookie = request.cookies.get("chat_usage")
 
@@ -110,7 +111,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
                 
         currentConversation.discussion.append({'role': 'user', 'content': reqBody['user_content']})
 
-        relevant_docs = nearest_neighbor_search(collection=collection,input_text=reqBody['user_content'], n_results=3)
+        relevant_docs = nearest_neighbor_search(get_or_create_collection(chroma_client, course_id),input_text=reqBody['user_content'], n_results=3)
 
         if relevant_docs:
             system_message = "Relevant information:\n"
