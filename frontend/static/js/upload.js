@@ -3,11 +3,13 @@ const fileDropzone = document.getElementById("fileDropzone");
 const studentFileInput = document.getElementById("studentFileInput");
 const uploadFileInput = document.getElementById("uploadFileInput");
 const fileQueueEl = document.getElementById("fileQueue");
-const studentList = document.getElementById("studentList"); // NEW
-const removeAllBtn = document.getElementById("removeAllBtn"); // <-- NEW
+const studentList = document.getElementById("studentList");
+const removeAllBtn = document.getElementById("removeAllBtn");
 const uploadBtn = document.getElementById("uploadBtn");
 const progressBar = document.getElementById("uploadProgress");
 const uploadResult = document.getElementById("uploadResult");
+// Grab courseId from hidden input in upload_index.html
+const courseId = document.getElementById("courseId")?.value;
 
 const allowedExtensions = [".txt", ".pdf", ".doc", ".docx", ".html", ".css"];
 
@@ -214,7 +216,7 @@ uploadBtn.addEventListener("click", async () => {
   }
 
   try {
-    const response = await fetch("/dashboard/upload", {
+    const response = await fetch(`/dashboard/upload?course_id=${courseId}`, {
       method: "POST",
       body: formData
     });
@@ -299,7 +301,7 @@ async function deleteFile(fileName) {
     return;
   }
   try {
-    const response = await fetch(`/dashboard/delete/${fileName}`, {
+    const response = await fetch(`/dashboard/delete/${fileName}?course_id=${courseId}`, {
       method: "DELETE"
     });
     if (!response.ok) {
@@ -336,7 +338,7 @@ async function handleUpdateFile(event) {
   formData.append("file", newFile);
 
   try {
-    const response = await fetch(`/dashboard/update/${fileName}`, {
+    const response = await fetch(`/dashboard/update/${fileName}?course_id=${courseId}`, {
       method: "PUT",
       body: formData
     });
@@ -374,7 +376,7 @@ async function deleteAllFiles() {
       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
   
     try {
-      const response = await fetch("/dashboard/delete_all", {
+      const response = await fetch(`/dashboard/delete_all?course_id=${courseId}`, {
         method: "DELETE",
       });
   
@@ -496,7 +498,7 @@ function removeStudent(email) {
   
   // Extract course_id from URL query parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const courseId = urlParams.get("course_id");
+  const courseId = document.getElementById("courseId")?.value;
   if (!courseId) {
     alert("Course ID is missing in the URL.");
     return;
