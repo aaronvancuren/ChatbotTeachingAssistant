@@ -3,6 +3,10 @@
 
 {% include './elements/HTML_Head.html' %}
 
+{% if context.student %}
+<base href="{{ context.hostname }}/">
+{% endif %}
+
 {% if not context.student %}
 <script src="/static/js/chat.js"></script>
 {% endif %}

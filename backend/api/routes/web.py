@@ -75,6 +75,7 @@ async def chatpage(request: Request, courseID: str, chatID: str, context: dict =
         student.get_conversations(uuid.UUID(courseID))
         student.get_conversation(uuid.UUID(chatID))
         context.update({"student": student})
+        context.update({"hostname": getenv("ORIGINS")})
     else:
         user.get_conversations(uuid.UUID(courseID))
         user.get_conversation(uuid.UUID(chatID))
@@ -85,7 +86,7 @@ async def chatpage(request: Request, courseID: str, chatID: str, context: dict =
 @web_router.post("/addChat/{classID}")
 async def addChat(request: Request, classID: str, context: dict = Depends(get_context)):
     role: Role = context.get("user").role
-    if role is not Role.student:
+    if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     reqBody = await request.json()
