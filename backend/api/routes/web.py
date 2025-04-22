@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
-from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation
+from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation, read_user_by_email
 from backend.models.converstation import Model
 
 web_router = APIRouter()
@@ -44,9 +44,12 @@ async def populate_chats(request: Request, courseID: str, context: dict = Depend
     if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
     user: User = context.get("user")
-    convo = user.get_conversations(uuid.UUID(courseID))
+    try:
+        convoID = user.get_conversations(uuid.UUID(courseID))[0].conversation_id
+    except:
+        convoID = create_user_conversation(courseID, user.id, Model.JOHN.value.lower(), "New Conversation")
     context.update({"user": user})
-    return RedirectResponse(f"/chat/{courseID}/{convo[0].conversation_id}")
+    return RedirectResponse(f"/chat/{courseID}/{convoID}")
 
 @web_router.get("/chat/{courseID}/{chatID}")
 async def chatpage(request: Request, courseID: str, chatID: str, context: dict = Depends(get_context)):
@@ -63,9 +66,21 @@ async def chatpage(request: Request, courseID: str, chatID: str, context: dict =
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     user: User = context.get("user")
-    user.get_conversations(uuid.UUID(courseID))
-    user.get_conversation(uuid.UUID(chatID))
-    context.update({"user": user})
+
+    if user.role == Role.student and request.headers.get('X-Auditee'):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    elif user.role != Role.instructor or user.role != Role.admin and request.headers.get('X-Auditee'):
+        student = read_user_by_email(request.headers.get('X-Auditee'))
+        if student is None:
+            raise HTTPError(status_code=404, detail="User not found")
+        student.get_courses()
+        student.get_conversations(uuid.UUID(courseID))
+        student.get_conversation(uuid.UUID(chatID))
+        context.update({"student": student})
+    else:
+        user.get_conversations(uuid.UUID(courseID))
+        user.get_conversation(uuid.UUID(chatID))
+        context.update({"user": user})
     return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
     
 

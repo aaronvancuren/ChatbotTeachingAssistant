@@ -2,13 +2,22 @@
     <div>
         <h1>Chats</h1>
         <div class="d-grid p-2">
+            {% if not context.student %}
             <a class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#chooseTA">Add Chat</a>
+            {% endif %}
             <hr>
             <div id="convos" class="d-grid gap-2 p-2">
+                {% if context.student %}
+                    {% for conversation in context.student.activeCourse.conversations %}
+                        {% set isActive=context.student.activeConversation.conversation_id == conversation.conversation_id %}
+                        <a href="/chat/{{context.student.activeCourse.id}}/{{conversation.conversation_id}}" id="{{conversation.conversation_id}}" class="btn btn-secondary {{  'active' if isActive else '' }}">{{conversation.title}}</a>
+                    {% endfor %}
+                {% else %}
                 {% for conversation in context.user.activeCourse.conversations %}
                     {% set isActive=context.user.activeConversation.conversation_id == conversation.conversation_id %}
                     <a href="/chat/{{context.user.activeCourse.id}}/{{conversation.conversation_id}}" id="{{conversation.conversation_id}}" class="btn btn-secondary {{  'active' if isActive else '' }}">{{conversation.title}}</a>
                 {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>
