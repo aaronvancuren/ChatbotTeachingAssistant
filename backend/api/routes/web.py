@@ -45,7 +45,7 @@ async def populate_chats(request: Request, courseID: str, context: dict = Depend
     try:
         convoID = user.get_conversations(uuid.UUID(courseID))[0].conversation_id
     except:
-        convoID = create_user_conversation(courseID, user.id, Model.JOHN.value.lower(), "New Conversation")
+        convoID = create_user_conversation(courseID, user.id, "gpt-4o-mini-2024-07-18", "New Conversation")
     context.update({"user": user})
     return RedirectResponse(f"/chat/{courseID}/{convoID}")
 
@@ -67,7 +67,7 @@ async def chatpage(request: Request, courseID: str, chatID: str, context: dict =
 
     if user.role == Role.student and request.headers.get('X-Auditee'):
         raise HTTPError(status_code=401, detail="Unauthorized")
-    elif user.role != Role.instructor or user.role != Role.admin and request.headers.get('X-Auditee'):
+    elif user.role != Role.student and request.headers.get('X-Auditee'):
         student = read_user_by_email(request.headers.get('X-Auditee'))
         if student is None:
             raise HTTPError(status_code=404, detail="User not found")

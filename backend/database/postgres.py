@@ -661,7 +661,7 @@ def delete_conversation(conversation_id):
         cur.close()
         conn.close()
 
-def create_message(conversation_id, model, prompt, response):
+def create_message(conversation_id, model, prompt, response) -> str:
     """
     Adds a message to the messages table.
 
@@ -690,7 +690,8 @@ def create_message(conversation_id, model, prompt, response):
         cur.execute(insert_query, (conversation_id, model, prompt, response))
         message_id = cur.fetchone()[0]
         conn.commit()
-    
+        return message_id
+
     except Exception as e:
         logging.error(f"Error adding message: {e}")
         conn.rollback()

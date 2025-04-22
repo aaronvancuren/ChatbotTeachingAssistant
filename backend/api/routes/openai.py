@@ -15,7 +15,6 @@ from backend.api.routes import get_context
 from backend.models import Message
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 from backend.database.postgres import create_message, read_conversations_by_user, read_messages_from_conversation, update_conversation_title
-from backend.models.converstation import User_Conversation, Model
 
 from fastapi import APIRouter, HTTPException, Request, Response, Depends
 
@@ -95,10 +94,10 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
         conversationData = user.get_conversation(uuid.UUID(reqBody['currentConversationId']))
 
         discussion = []
-        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{conversationData['conversation'].model.name}_PROMPT")})
+        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{getModelAlias(conversationData['conversation'].model)}_PROMPT")})
         for message in conversationData['messages']:
-            discussion.append({'role': 'user', 'content': message["prompt"]})
-            discussion.append({'role': 'assistant', 'content': message["response"]})
+            discussion.append({'role': 'user', 'content': message.prompt})
+            discussion.append({'role': 'assistant', 'content': message.response})
 
         if not reqBody['user_content'].strip():
                 raise HTTPException(status_code=400, detail="The input content cannot be empty.")
@@ -127,7 +126,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
         if conversationData['messages'] == []:
             response = client.chat.completions.create(
                 messages=[{'role': 'user', 'content': os.getenv("SUMMARY_PROMPT") + reqBody['user_content']}],
-                model=conversationData['conversation'].model.value,
+                model=conversationData['conversation'].model,
                 max_completion_tokens=10,
                 n=1,
                 stop=['\0'],
@@ -150,7 +149,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=discussion,
-            model=str(conversationData['conversation'].model.value),
+            model=conversationData['conversation'].model,
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=['\0'],
@@ -161,7 +160,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
 
         # Adds the ChatGPT response to the conversation
         discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
-        create_message(reqBody['currentConversationId'], conversationData['conversation'].model.value, reqBody['user_content'], response.choices[0].message.content.strip())
+        create_message(reqBody['currentConversationId'], conversationData['conversation'].model, reqBody['user_content'], response.choices[0].message.content.strip())
 
         # Returns the conversation to the frontend to display
         return json.dumps({"name": name, "dialogue": [ dial for dial in discussion if dial['role'] != 'developer']})
