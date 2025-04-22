@@ -4,16 +4,23 @@ import base64
 from datetime import date
 import os
 import json
+import uuid
+
+from fastapi import APIRouter, HTTPException, Request, Response
+from openai import OpenAI, _exceptions
+from datetime import date
 
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.models import Message
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
-from backend.database.postgres import read_messages_from_conversation
+from backend.database.postgres import create_message, read_conversations_by_user, read_messages_from_conversation, update_conversation_title
 
 from fastapi import APIRouter, HTTPException, Request, Response, Depends
 
 from openai import OpenAI, _exceptions
+
+from backend.models.user import User
 
 client = OpenAI()
 openai_router = APIRouter()
@@ -82,13 +89,13 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
 
     try:
         reqBody = await request.json()
-        user_id = context.get("user").id
-        currentConversation: list[Message] = read_messages_from_conversation(reqBody['currentConversationId'])
-        model = currentConversation[-1].model
-        
+        user: User = context.get("user")
+
+        conversationData = user.get_conversation(uuid.UUID(reqBody['currentConversationId']))
+
         discussion = []
-        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{getModelAlias(model)}_PROMPT")})
-        for message in currentConversation:
+        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{getModelAlias(conversationData['conversation'].model)}_PROMPT")})
+        for message in conversationData['messages']:
             discussion.append({'role': 'user', 'content': message.prompt})
             discussion.append({'role': 'assistant', 'content': message.response})
 
@@ -115,6 +122,20 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
         except _exceptions.APIError as e:
             raise HTTPException(status_code=502, detail=f"Moderation API error: {str(e)}")
                 
+        name = conversationData['conversation'].title
+        if conversationData['messages'] == []:
+            response = client.chat.completions.create(
+                messages=[{'role': 'user', 'content': os.getenv("SUMMARY_PROMPT") + reqBody['user_content']}],
+                model=conversationData['conversation'].model,
+                max_completion_tokens=10,
+                n=1,
+                stop=['\0'],
+                temperature=0.7,
+                user=str(user.id)
+            )
+            name = response.choices[0].message.content.strip()
+            update_conversation_title(reqBody['currentConversationId'], name)
+
         discussion.append({'role': 'user', 'content': reqBody['user_content']})
 
         relevant_docs = nearest_neighbor_search(collection=collection,input_text=reqBody['user_content'], n_results=3)
@@ -125,23 +146,25 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
                 system_message += f"{idx}. {doc['content']}\n"
             discussion.append({'role': 'developer', 'content': system_message})
 
+
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=discussion,
-            model=str(model),
+            model=conversationData['conversation'].model,
             max_completion_tokens=int(os.getenv("OPENAI_MAX_COMPLETION_TOKENS")),
             n=1,
             stop=['\0'],
             temperature=0.7,
             store=True,
-            user=str(user_id)
+            user=str(user.id)
         )
 
         # Adds the ChatGPT response to the conversation
         discussion.append({'role': 'assistant', 'content': response.choices[0].message.content.strip()})
+        create_message(reqBody['currentConversationId'], conversationData['conversation'].model, reqBody['user_content'], response.choices[0].message.content.strip())
 
         # Returns the conversation to the frontend to display
-        return json.dumps(discussion)
+        return json.dumps({"name": name, "dialogue": [ dial for dial in discussion if dial['role'] != 'developer']})
     except _exceptions.APIConnectionError as e:
         print("The server could not be reached")
         print(e.__cause__)  # an underlying Exception, likely raised within httpx.

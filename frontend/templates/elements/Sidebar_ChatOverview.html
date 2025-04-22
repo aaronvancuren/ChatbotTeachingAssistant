@@ -6,8 +6,8 @@
             <hr>
             <div id="convos" class="d-grid gap-2 p-2">
                 {% for conversation in context.user.activeCourse.conversations %}
-                    {% set isActive=FALSE%}
-                    <a href="/chat/{{context.user.activeCourse.id}}/{{conversation.conversation_id}}" class="btn btn-secondary {{  'active' if isActive else '' }}">{{conversation.title}}</a>
+                    {% set isActive=context.user.activeConversation.conversation_id == conversation.conversation_id %}
+                    <a href="/chat/{{context.user.activeCourse.id}}/{{conversation.conversation_id}}" id="{{conversation.conversation_id}}" class="btn btn-secondary {{  'active' if isActive else '' }}">{{conversation.title}}</a>
                 {% endfor %}
             </div>
         </div>

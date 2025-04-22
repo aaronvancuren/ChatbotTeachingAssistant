@@ -53,9 +53,9 @@ BEGIN
 	INSERT INTO public.user_courses (user_id, course_id) VALUES (studentTwo, courseTwo);
 	INSERT INTO public.user_courses (user_id, course_id) VALUES (studentThree, courseTwo);
 	
-	INSERT INTO public.user_conversations (conversation_id, user_id, course_id, title) VALUES (conversationOne, studentOne, courseOne, 'Test Conversation');
-	INSERT INTO public.user_conversations (conversation_id, user_id, course_id, title) VALUES (conversationTwo, studentTwo, courseOne, 'Test Conversation');
-	INSERT INTO public.user_conversations (conversation_id, user_id, course_id, title) VALUES (conversationThree, studentThree, courseOne, 'Test Conversation');
+	INSERT INTO public.user_conversations (conversation_id, user_id, course_id, title, model) VALUES (conversationOne, studentOne, courseOne, 'Test Conversation', 'gpt-4o');
+	INSERT INTO public.user_conversations (conversation_id, user_id, course_id, title, model) VALUES (conversationTwo, studentTwo, courseOne, 'Test Conversation', 'gpt-4o');
+	INSERT INTO public.user_conversations (conversation_id, user_id, course_id, title, model) VALUES (conversationThree, studentThree, courseOne, 'Test Conversation', 'gpt-4o');
 	
 	INSERT INTO public.messages (conversation_id, model, prompt, response) VALUES (conversationOne, 'gpt-4o', 'Echo Hello World', 'Hello World');
 	INSERT INTO public.messages (conversation_id, model, prompt, response) VALUES (conversationTwo, 'gpt-4o', 'Echo Hello World', 'Hello World');
