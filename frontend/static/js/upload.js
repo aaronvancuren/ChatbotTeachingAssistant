@@ -3,8 +3,8 @@ const fileDropzone = document.getElementById("fileDropzone");
 const studentFileInput = document.getElementById("studentFileInput");
 const uploadFileInput = document.getElementById("uploadFileInput");
 const fileQueueEl = document.getElementById("fileQueue");
-const studentList = document.getElementById("studentList"); // NEW
-const removeAllBtn = document.getElementById("removeAllBtn"); // <-- NEW
+const studentList = document.getElementById("studentList");
+const removeAllBtn = document.getElementById("removeAllBtn");
 const uploadBtn = document.getElementById("uploadBtn");
 const progressBar = document.getElementById("uploadProgress");
 const uploadResult = document.getElementById("uploadResult");
@@ -26,10 +26,12 @@ studentDropzone.addEventListener("dragover", (e) => {
   e.preventDefault();
   studentDropzone.classList.add("bg-info", "text-white");
 });
+
 studentDropzone.addEventListener("dragleave", (e) => {
   e.preventDefault();
   studentDropzone.classList.remove("bg-info", "text-white");
 });
+
 studentDropzone.addEventListener("drop", (e) => {
   e.preventDefault();
   studentDropzone.classList.remove("bg-info", "text-white");
@@ -40,10 +42,12 @@ fileDropzone.addEventListener("dragover", (e) => {
   e.preventDefault();
   fileDropzone.classList.add("bg-info", "text-white");
 });
+
 fileDropzone.addEventListener("dragleave", (e) => {
   e.preventDefault();
   fileDropzone.classList.remove("bg-info", "text-white");
 });
+
 fileDropzone.addEventListener("drop", (e) => {
   e.preventDefault();
   fileDropzone.classList.remove("bg-info", "text-white");

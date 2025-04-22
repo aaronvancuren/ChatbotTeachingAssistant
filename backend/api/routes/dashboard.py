@@ -1,23 +1,15 @@
-import uuid
-import csv, io
-from backend.api.errors import HTTPError
-from backend.api.routes import get_context
-from backend.database.text_processor import process_file, chunk_text
-from backend.database.chroma_database import initialize_chromadb, get_or_create_collection, add_documents
-from backend.models.course import Course
-from backend.models import Role, User
-from backend.models.subject import Subject
+import csv, io, os, uuid
+
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from backend.database.postgres import (
-    read_user_by_email,
-    create_user,
-    create_user_course,
-    delete_user_course,
-    read_users_for_course,
-    delete_all_student_user_courses,
-)
+
+from backend.api.errors import HTTPError
+from backend.api.routes import get_context
+from backend.database.text_processor import *
+from backend.database.chroma_database import *
+from backend.models import Role, User
+from backend.database.postgres import *
 
 
 # Initialize templates directory
@@ -374,3 +366,60 @@ async def remove_all_students(request: Request, context: dict = Depends(get_cont
         raise HTTPException(status_code=500, detail="Failed to remove all students from course")
 
     return {"success": True, "message": "All students have been removed from the course."}
+
+ASSETS_DIR = "frontend/static/assets"
+DEFAULT_IMAGE = "20230504-Crecent-Bridge-Drone-TE-001.jpg"
+
+@dashboard_router.post("/create_course")
+async def create_course_api(
+    request: Request,
+    classType: str = Form(...),
+    courseNumber: int = Form(...),
+    sectionNumber: int = Form(...),
+    className: str = Form(...),
+    customPrompt: str = Form(""),
+    model: str = Form("gpt-4"),
+    courseImage: UploadFile = File(None),
+    context: dict = Depends(get_context)
+):
+    try:
+        user: User = context.get("user")
+
+        # 1. Generate documents_path from Chroma
+        client = initialize_chromadb()
+        collection_name = f"class_{uuid.uuid4().hex[:8]}"  # unique-ish
+        get_or_create_collection(client, collection_name)
+        documents_path = os.path.join(os.getenv("CHROMA_PERSISTENT_DIRECTORY", "chroma_data"), collection_name)
+
+        # 2. Handle image upload
+        image_path = os.path.join(ASSETS_DIR, DEFAULT_IMAGE)
+        if courseImage:
+            filename = f"{uuid.uuid4().hex}_{courseImage.filename}"
+            destination = os.path.join(ASSETS_DIR, filename)
+            with open(destination, "wb") as out_file:
+                content = await courseImage.read()
+                out_file.write(content)
+            image_path = os.path.relpath(destination, "frontend")  # strip `frontend/` for serving under /static/
+
+        # 3. Create course in DB
+        course_id = create_course(
+            instructor_id=user.id,
+            display_name=className,
+            subject=classType,
+            course_number=courseNumber,
+            section_number=sectionNumber,
+            title=className,
+            model=model,
+            prompt=customPrompt,
+            documents_path=documents_path,
+            image_path=image_path
+        )
+
+        if course_id:
+            create_user_course(course_id, user.id)
+            return JSONResponse({"success": True, "course_id": course_id})
+        else:
+            return JSONResponse({"success": False, "error": "Course creation failed"})
+
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})

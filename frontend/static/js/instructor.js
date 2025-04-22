@@ -5,7 +5,7 @@ async function submitNewCourseForm() {
     // Include default values
     formData.append("model", "gpt-4");
 
-    const response = await fetch("/api/create-course", {
+    const response = await fetch("/dashboard/create_course-course", {
         method: "POST",
         body: formData
     });
