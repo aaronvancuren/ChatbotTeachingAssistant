@@ -146,6 +146,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
                 system_message += f"{idx}. {doc['content']}\n"
             discussion.append({'role': 'developer', 'content': system_message})
 
+
         # Sends the entire conversation to ChatGPT
         response = client.chat.completions.create(
             messages=discussion,
