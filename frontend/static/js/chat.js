@@ -9,7 +9,7 @@ window.addEventListener("load", () => {
 function addChat() {
     $.ajax({
         type: "POST",
-        url: "/addChat",
+        url: "/addChat/" + window.location.pathname.split('/')[2],
         data: JSON.stringify({
             model: $('input[name="ai_list"]:checked')[0].id
         }),
@@ -34,12 +34,13 @@ function addChat() {
 }
 
 function AskQuestion() {
+    let convoID = window.location.pathname.split('/')[3];
     $.ajax({
         type: "POST",
         url: "/ask",
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
-            currentConversationId: new URLSearchParams(window.location.search).get('chatID').toString(),
+            currentConversationId: convoID,
         }),        
         headers: {
             "X-Content-Type-Options": "nosniff",
@@ -48,7 +49,9 @@ function AskQuestion() {
             "Content-Type": "application/json"
         },
         success: function(data) {
-            conversation = JSON.parse(data);
+            let response = JSON.parse(data)
+            document.getElementById(convoID).textContent = response.name;
+            conversation = response.dialogue;
             document.getElementById("LOADING").classList.add("hidden");
             createChatBubble(conversation.at(-1)["content"], ["btm-left", "teaching_assistant"]);
             document.getElementById("question").value = "";

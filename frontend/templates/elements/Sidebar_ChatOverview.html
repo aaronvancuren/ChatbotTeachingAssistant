@@ -5,9 +5,9 @@
             <a class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#chooseTA">Add Chat</a>
             <hr>
             <div id="convos" class="d-grid gap-2 p-2">
-                {% for conversation in context.conversation_list %}
-                    {% set isActive=conversation.id ~ '' == context.chatID.strip("") %}
-                    <a href="/chat?chatID={{conversation.id}}" class="btn btn-secondary {{  'active' if isActive else '' }}">{{conversation.name}}</a>
+                {% for conversation in context.user.activeCourse.conversations %}
+                    {% set isActive=context.user.activeConversation.conversation_id == conversation.conversation_id %}
+                    <a href="/chat/{{context.user.activeCourse.id}}/{{conversation.conversation_id}}" id="{{conversation.conversation_id}}" class="btn btn-secondary {{  'active' if isActive else '' }}">{{conversation.title}}</a>
                 {% endfor %}
             </div>
         </div>
