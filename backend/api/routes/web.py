@@ -3,7 +3,6 @@ from os import getenv
 import uuid
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
-from backend.models.converstation import Model
 from backend.models import User, Role
 
 from fastapi import APIRouter, Request, Depends
@@ -11,7 +10,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation, read_user_by_email
-from backend.models.converstation import Model
 
 web_router = APIRouter()
 

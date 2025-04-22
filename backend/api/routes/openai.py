@@ -12,6 +12,7 @@ from datetime import date
 
 from backend.api.errors import HTTPError
 from backend.api.routes import get_context
+from backend.models import Message
 from backend.database.chroma_database import nearest_neighbor_search, get_or_create_collection,initialize_chromadb
 from backend.database.postgres import create_message, read_conversations_by_user, read_messages_from_conversation, update_conversation_title
 from backend.models.converstation import User_Conversation, Model
@@ -33,7 +34,15 @@ class ChatRequest(Request):
     context: str
     currentConversationId: str
 
-conversations: dict[str, list[User_Conversation]] = {}
+def getModelAlias(model: str):
+    if(model == "gpt-3.5-turbo"):
+        return "VICTOR"
+    elif(model == "gpt-4o-mini-2024-07-18"):
+        return "JOHN"
+    elif(model == "gpt-4o-mini"):
+        return "HEDY"
+    elif(model == "gpt-4o"):
+        return "HENRIETTA"
 
 @openai_router.post("/ask", tags=["Chatbot"])
 async def chat(request: ChatRequest, response: Response, context: dict = Depends(get_context)) -> str:
@@ -102,8 +111,6 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
             )
 
             if moderation_response.results and moderation_response.results[0].flagged:
-                # Adds the ChatGPT response to the conversation
-                discussion.append({'role': 'assistant', 'content': "I can't answer that"})
                 # Adds the ChatGPT response to the conversation
                 discussion.append({'role': 'assistant', 'content': "I can't answer that"})
 
