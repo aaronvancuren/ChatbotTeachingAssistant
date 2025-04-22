@@ -18,7 +18,7 @@ def get_db_connection() -> connection:
     db_config = {
         "host": os.getenv('DB_HOST', 'localhost'),
         "port": int(os.getenv('DB_PORT', 5432)),
-        "dbname": os.environ['DB_NAME', 'chatbot'],
+        "dbname": os.environ['DB_NAME'],
         "user": os.environ['DB_USER'],
         "password": os.environ['DB_PASSWORD'],
     }
