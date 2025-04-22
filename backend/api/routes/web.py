@@ -40,9 +40,12 @@ async def populate_chats(request: Request, courseID: str, context: dict = Depend
     if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
     user: User = context.get("user")
-    convo = user.get_conversations(uuid.UUID(courseID))
+    try:
+        convoID = user.get_conversations(uuid.UUID(courseID))[0].conversation_id
+    except:
+        convoID = create_user_conversation(courseID, user.id, "gpt-4o-mini-2024-07-18", "New Conversation")
     context.update({"user": user})
-    return RedirectResponse(f"/chat/{courseID}/{convo[0].conversation_id}")
+    return RedirectResponse(f"/chat/{courseID}/{convoID}")
 
 @web_router.get("/chat/{courseID}/{chatID}")
 async def chatpage(request: Request, courseID: str, chatID: str, context: dict = Depends(get_context)):
