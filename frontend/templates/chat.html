@@ -3,7 +3,13 @@
 
 {% include './elements/HTML_Head.html' %}
 
+{% if context.student %}
+<base href="{{ context.hostname }}/">
+{% endif %}
+
+{% if not context.student %}
 <script src="/static/js/chat.js"></script>
+{% endif %}
 <script type="text/javascript" src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
 <script type="text/javascript" src="https://unpkg.com/@jitbit/htmlsanitizer@latest/HtmlSanitizer.js"></script>
 
@@ -11,23 +17,31 @@
 
 <body class="bg-body-tertiary" style="overflow:hidden">
 
+    {% if not context.student %}
     {% include './elements/Header_General.html' %}
 
     {% include './elements/Main_ModelModal.html' %}
-
+    {% endif %}
+    
     <main id="host">
 
         {% include './elements/Sidebar_ChatOverview.html' %}
 
-        <p hidden id="openai_model">{{context.user.conversation.model|title}}</p>
+        {% if context.student %}
+        {% set user = context.student %}
+        {% else %}
+        {% set user = context.user %}
+        {% endif %}
+
+        <p hidden id="openai_model">{{user.conversation.model|title}}</p>
 
         <div id="content">
             <div id="conversation">
-                {% if not context.user.conversation %}
+                {% if not user.conversation %}
                 <div id="EMPTY" class="container my-auto">
                     <div class="p-3 text-center text-muted bg-body border border-dashed rounded-5">
                         <h1 style="font-size:56pt">👋</h1>
-                        <h1 class="text-body-emphasis">Hi {{ context.user.display_name }}</h1>
+                        <h1 class="text-body-emphasis">Hi {{ user.display_name }}</h1>
                         <p class="col-lg-6 mx-auto mb-4">
                             Need some help with something? Let's figure it out together!
                         </p>
@@ -51,7 +65,7 @@
                     </div>
                 </div>
                 {% else %}
-                {% for dialogue in context.user.conversation %}
+                {% for dialogue in user.conversation %}
                 <div class="talk-bubble right">
                     <p class="text-from right">You asked...</p>
                     <div class="tri-right btm-right student">
@@ -61,7 +75,7 @@
                     </div>
                 </div>
                 <div class="talk-bubble left ">
-                    <p class="text-from left">{{context.user.activeConversation.model.name|title}} Says...</p>
+                    <p class="text-from left">{{user.activeConversation.model.name|title}} Says...</p>
                     <div class="tri-right btm-left teaching_assistant">
                         <article class="talktext">
                             {{dialogue.response}}
@@ -91,6 +105,7 @@
                     </div>
                 </div>
             </div>
+            {% if not context.student %}
             <div class="chat-box position-relative">
                 <form id="input" onsubmit="AskQuestion();return false;" method="post">
                     <div class="mx-auto">
@@ -100,16 +115,17 @@
                             style="z-index: 100; font-size:medium; padding:1.5vh; pointer-events:none !important"></label>
                         <br>
                     </div>
-                    <div style="pointer-events: none;">
-                        <p class="text-from left" style="bottom:3%;" id="disclaimer">
-                            {{context.user.activeConversation.model.name|title}} is an AI and will occassionally make
-                            mistakes.</p>
-                        <p class="text-from right" style="bottom:3%;" id="counter"></p>
-                    </div>
+                    <p class="text-from right" style="bottom: 8vh" id="counter"></p>
                 </form>
             </div>
+            {% endif %}
         </div>
     </main>
+    <div style="pointer-events: none;bottom:2vh; position:fixed" class="d-flex w-100 mx-auto text-center">
+        <p class="text-from" id="disclaimer">
+            {{user.activeConversation.model.name|title}} is an AI and will occassionally make
+            mistakes. By using this chat, you consent to chat monitoring and agree to the <span><a href="https://openai.com/policies/"">policies of the service</a></span>.</p>
+    </div>
 </body>
 
 </html>

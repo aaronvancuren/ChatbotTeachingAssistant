@@ -53,6 +53,7 @@
                             <span class="flex-grow-1 text-truncate" style="min-width: 0;">{{ student.email }}</span>
                             <div>
                                 <div class="btn-group" role="group" style="white-space: normal; overflow: visible;">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="getStudentChats('{{ student.email }}')" data-bs-toggle="modal" data-bs-target="#chatview_host">View Chats</button>
                                     <button class="btn btn-sm btn-danger" onclick="removeStudent('{{ student.email }}')">
                                         Remove
                                     </button>
@@ -190,8 +191,22 @@
     <input type="file" id="update-file-input" accept=".txt,.pdf,.doc,.docx,.html,.css" class="d-none"
         onchange="handleUpdateFile(event)" />
 
+    <div class="modal fade" id="chatview_host" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 80%;">
+            <div class="modal-content" >
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="chat_header"></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 style="width: 100%; text-align: center;" id="chat_error" hidden>No chats found for user.</h6>
+                    <iframe src="" id="chatview_host_iframe" style="padding:0; width: 100%; height: 75vh;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    {% endblock %}
+        {% endblock %}
 
     {% block scripts %}
     <script src="/static/js/upload.js"></script>
