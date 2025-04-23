@@ -3,7 +3,7 @@ window.addEventListener("load", () => {
     for (let i = 0; i < preloads.length; i++) {
         preloads[i].innerHTML = RenderMarkdown(preloads[i].innerHTML.trim());
     }
-        preloads[preloads.length - 1].scrollIntoView({ behavior: "smooth", block: "end" });
+    preloads[preloads.length - 1].scrollIntoView({ behavior: "smooth", block: "end" });
 });
 
 function addChat() {
