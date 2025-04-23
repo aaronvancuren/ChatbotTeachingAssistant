@@ -3,170 +3,113 @@
 
 {% include './elements/HTML_Head.html' %}
 
+<script src="../static/js/instructor.js"></script>
+
 <body class="alert-light">
-    {% include './elements/Header_General.html' %}
-    <main class="container-fluid">
-        <div class="container">
-            <h2 class="py-3">Your Classes</h2>
-            <div class="container p-2" style="background-color: white;">
-                <!-- Single row container for all cards -->
-                <div class="row row-cols-1 row-cols-md-3 g-4">
-                  
-                  <!-- Teacher Class Cards -->
-                  {% include './elements/Teacher_ClassCards.html' %}
-                  
-                  <!-- Add Class Cards-->
-                  <div class="col">
-                    <div class="d-flex justify-content-center align-items-center"
-                        style="height: 100%; cursor: pointer; background: transparent; border: none;"
-                        data-bs-toggle="modal" data-bs-target="#addClassModal">
-                      <div class="d-flex justify-content-center align-items-center"
-                          style="width: 100px; height: 100px; border-radius: 50%;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                          <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm0 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1z"/>
-                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  {% include './elements/Header_General.html' %}
+  <main class="container-fluid">
+    <div class="container">
+      <h2 class="py-3">Your Classes</h2>
+      <div class="container p-2" style="background-color: white;">
+        <!-- Single row container for all cards -->
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          <!-- Teacher Class Cards -->
+          {% include './elements/Teacher_ClassCards.html' %}
+          
+          <!-- Add Class Cards-->
+          <div class="col">
+            <div class="d-flex justify-content-center align-items-center" style="height: 100%; cursor: pointer; background: transparent; border: none;"
+                data-bs-toggle="modal" data-bs-target="#addClassModal">
+              <div class="d-flex justify-content-center align-items-center" style="width: 100px; height: 100px; border-radius: 50%;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                  <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm0 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1z"/>
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
               </div>
+            </div>
+          </div>
         </div>
-        {% include './elements/Footer_General.html' %}
-    </main>
+      </div>
+    </div>
+    {% include './elements/Footer_General.html' %}
+  </main>
 
   <!-- Add New Class Modal -->
-  <div
-    class="modal fade"
-    id="addClassModal"
-    tabindex="-1"
-    aria-labelledby="addClassModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="addClassModal" tabindex="-1" aria-labelledby="addClassModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <!-- Modal Header -->
         <div class="modal-header">
           <h5 class="modal-title" id="addClassModalLabel">Add New Class</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <div class="modal-body">
           <form id="newClassForm" enctype="multipart/form-data">
-            <!-- Subject -->
+            <!-- Course Subject -->
             <div class="mb-3">
-              <label for="classType" class="form-label">Class Subject</label>
-              <select
-                class="form-select"
-                id="classType"
-                name="classType"
-                required
-              >
-                <!-- Placeholder subjects-->
-                <option value="">-- Select Subject --</option>
-                <option value="ComputerScience">Computer Science</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="English">English</option>
-                <option value="Biology">Biology</option>
+              <label for="courseSubject" class="form-label">Class Subject</label>
+              <select class="form-select" id="courseSubject" name="courseSubject" required>
+                {% for subject in subjects %}
+                  <option value="{{ subject.name }}">{{ subject.name }}</option>
+                {% endfor %}
               </select>
             </div>
-        
+
             <!-- Course Number -->
             <div class="mb-3">
               <label for="courseNumber" class="form-label">Course Number</label>
-              <input
-                type="text"
-                class="form-control"
-                id="courseNumber"
-                name="courseNumber"
-                placeholder="e.g. 101"
-                required
-              />
+              <input type="text" class="form-control" id="courseNumber" name="courseNumber" placeholder="e.g. 101" required />
             </div>
-        
+
             <!-- Section Number -->
             <div class="mb-3">
               <label for="sectionNumber" class="form-label">Section Number</label>
-              <input
-                type="text"
-                class="form-control"
-                id="sectionNumber"
-                name="sectionNumber"
-                placeholder="e.g. 01"
-                required
-              />
-            </div>
-        
-            <!-- Class Name -->
-            <div class="mb-3">
-              <label for="className" class="form-label">Class Name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="className"
-                name="className"
-                placeholder="e.g. Intro to Programming"
-                required
-              />
+              <input type="text" class="form-control" id="sectionNumber" name="sectionNumber" placeholder="e.g. 01" required />
             </div>
 
-            <!-- Model -->
+            <!-- Course Title -->
             <div class="mb-3">
-              <label for="model" class="form-label">Model Type</label>
-              <select class="form-select" id="model" name="model" required>
-                <option value="gpt-4">GPT-4</option>
-                <option value="gpt-3.5">GPT-3.5</option>
+              <label for="courseTitle" class="form-label">Course Title</label>
+              <input type="text" class="form-control" id="courseTitle" name="courseTitle" placeholder="e.g. Intro to C and Unix" required />
+            </div>
+
+            <!-- Course Model -->
+            <div class="mb-3">
+              <label for="courseModel" class="form-label">AI Model</label>
+              <select class="form-select" id="courseModel" name="courseModel" required>
+                <option value="gpt-3.5-turbo">GPT-3.5</option>
+                <option value="gpt-4o-mini-2024-07-18">GPT-4o-mini (2024-07-18)</option>
+                <option value="gpt-4o-mini">GPT-4o-mini Latest</option>
+                <option value="gpt-4o">GPT-4o</option>
               </select>
             </div>
-            
 
             <!-- Custom Prompt -->
             <div class="mb-3">
               <label for="customPrompt" class="form-label">Custom Prompt</label>
-              <textarea class="form-control" id="customPrompt" name="customPrompt" rows="3"
-                        placeholder="Enter a custom prompt for this class"></textarea>
+              <textarea class="form-control" id="customPrompt" name="customPrompt" rows="3" placeholder="Enter a custom prompt for this class"></textarea>
             </div>
 
             <!-- Course Image -->
             <div class="mb-3">
               <label for="courseImage" class="form-label">Course Image (Optional)</label>
-              <input
-                type="file"
-                class="form-control"
-                id="courseImage"
-                name="courseImage"
-                accept="image/*"
-              />
+              <input type="file" class="form-control" id="courseImage" name="courseImage" accept="image/*" />
             </div>
-
           </form>
         </div>
 
         <!-- Modal Footer: Submit & Close -->
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             Close
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            onclick="submitNewClass()"
-          >
+          <button type="button" class="btn btn-primary" onclick="submitNewCourseForm()">
             Create Class
           </button>
         </div>
       </div>
     </div>
   </div>
-
 </body>
 </html>

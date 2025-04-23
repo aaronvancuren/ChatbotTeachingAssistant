@@ -8,7 +8,7 @@ from backend.api.errors import HTTPError
 from backend.api.routes import get_context
 from backend.database.text_processor import *
 from backend.database.chroma_database import *
-from backend.models import Role, User
+from backend.models import Role, User, Subject
 from backend.database.postgres import *
 
 # Initialize ChromaDB client
@@ -32,11 +32,12 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
         Index Web Page Response
     """
     user: User = context.get("user")
+    subject_options = [{"name": s.name} for s in Subject]
 
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
 
-    return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
+    return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context, "subjects": subject_options})
 
 @dashboard_router.get("/class")
 async def teacher_class_view(request: Request, context: dict = Depends(get_context)):
@@ -398,59 +399,59 @@ async def retrieve_studentchats(request: Request, context: dict = Depends(get_co
     except:
         return None
 
-ASSETS_DIR = "frontend/static/assets"
-DEFAULT_IMAGE = "20230504-Crecent-Bridge-Drone-TE-001.jpg"
-
 @dashboard_router.post("/create_course")
 async def create_course_api(
     request: Request,
-    classType: str = Form(...),
+    courseSubject: str = Form(...),
     courseNumber: int = Form(...),
     sectionNumber: int = Form(...),
-    className: str = Form(...),
+    courseTitle: str = Form(...),
     customPrompt: str = Form(""),
-    model: str = Form("gpt-4"),
+    courseModel: str = Form("gpt-4o"),
     courseImage: UploadFile = File(None),
     context: dict = Depends(get_context)
 ):
     try:
         user: User = context.get("user")
+        if user is None or user.role == Role.student:
+            raise HTTPException(status_code=401, detail="Unauthorized")
 
-        # 1. Generate documents_path from Chroma
-        client = initialize_chromadb()
-        collection_name = f"class_{uuid.uuid4().hex[:8]}"  # unique-ish
-        get_or_create_collection(client, collection_name)
-        documents_path = os.path.join(os.getenv("CHROMA_PERSISTENT_DIRECTORY", "chroma_data"), collection_name)
-
-        # 2. Handle image upload
-        image_path = os.path.join(ASSETS_DIR, DEFAULT_IMAGE)
+        # Handle image upload
+        image_path = "frontend/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
         if courseImage:
             filename = f"{uuid.uuid4().hex}_{courseImage.filename}"
-            destination = os.path.join(ASSETS_DIR, filename)
+            destination = os.path.join("frontend/static/assets", filename)
             with open(destination, "wb") as out_file:
                 content = await courseImage.read()
                 out_file.write(content)
-            image_path = os.path.relpath(destination, "frontend")  # strip `frontend/` for serving under /static/
+            image_path = os.path.relpath(destination, "frontend")
 
-        # 3. Create course in DB
+        # Create course in DB
         course_id = create_course(
             instructor_id=user.id,
-            display_name=className,
-            subject=classType,
+            display_name=f"{courseSubject}{courseNumber}-{sectionNumber} {courseTitle}",
+            subject=courseSubject,
             course_number=courseNumber,
             section_number=sectionNumber,
-            title=className,
-            model=model,
+            title=courseTitle,
+            model=courseModel,
             prompt=customPrompt,
-            documents_path=documents_path,
+            documents_path=os.getenv("CHROMA_PERSISTENT_DIRECTORY"), # TEMPORARY VALUE
             image_path=image_path
         )
 
         if course_id:
-            create_user_course(course_id, user.id)
-            return JSONResponse({"success": True, "course_id": course_id})
+            collection: Collection = get_or_create_collection(client, str(course_id))
+            
+            # Updates ChromaDB documents path for course
+            documents_path = os.path.join(os.getenv("CHROMA_PERSISTENT_DIRECTORY"), collection.name)
+            if update_course_documents_path(course_id, documents_path):
+                create_user_course(course_id, user.id)
+                return JSONResponse({"success": True, "course_id": str(course_id)})
+            else:
+                delete_course(course_id)
+                raise Exception("Course documents database creation failed")
         else:
-            return JSONResponse({"success": False, "error": "Course creation failed"})
-
+            raise Exception("Course creation failed")
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)})
