@@ -11,13 +11,11 @@ from backend.database.chroma_database import *
 from backend.models import Role, User
 from backend.database.postgres import *
 
+# Initialize ChromaDB client
+client = initialize_chromadb()
 
 # Initialize templates directory
 templates = Jinja2Templates(directory="frontend/templates")
-
-# Initialize ChromaDB client and collection
-client = initialize_chromadb()
-collection = get_or_create_collection(client, 'file_collection')
 
 page_templates = Jinja2Templates(directory='frontend/templates')
 
@@ -64,11 +62,13 @@ async def teacher_class_view(request: Request, context: dict = Depends(get_conte
         
     selected_course.get_students()
     students = selected_course.students
+
+    collection = get_or_create_collection(client, course_id)
     
     documents = collection.get()
     file_names = {metadata['file_name'] for metadata in documents.get('metadatas', [])}
     
-    return templates.TemplateResponse("Teacher_ClassView.html",{"request": request, "context": context, "file_names": file_names, "students": students}
+    return templates.TemplateResponse("Teacher_ClassView.html",{"request": request, "context": context, "file_names": file_names, "students": students, "course": selected_course}
     )
 
 @dashboard_router.post("/upload")
@@ -80,6 +80,9 @@ async def upload_file_api(request: Request, files: list[UploadFile] = File(...),
     user: User = context.get("user")
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
+    
+    course_id = request.query_params.get("course_id")
+    collection = get_or_create_collection(client, course_id)
     
     results = []
 
@@ -143,6 +146,9 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
     
+    course_id = request.query_params.get("course_id")
+    collection = get_or_create_collection(client, course_id)
+    
     results = collection.get(where={"file_name": file_name})
     if results['ids']:
         collection.delete(ids=results['ids'])
@@ -151,11 +157,14 @@ async def delete_file_api(file_name: str, request: Request, context: dict = Depe
         raise HTTPException(status_code=404, detail="File not found.")
     
 @dashboard_router.delete("/delete_all")
-async def delete_all_files_api(context: dict = Depends(get_context)):
+async def delete_all_files_api( request: Request, context: dict = Depends(get_context)):
     # Get all documents in the collection
     user: User = context.get("user")
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
+    
+    course_id = request.query_params.get("course_id")
+    collection = get_or_create_collection(client, course_id)
     
     all_docs = collection.get()
     all_ids = all_docs.get('ids', [])
@@ -181,6 +190,9 @@ async def update_file_api(
     user: User = context.get("user")
     if user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
+    
+    course_id = request.query_params.get("course_id")
+    collection = get_or_create_collection(client, course_id)
     
     # Check if the file exists in the database
     existing = collection.get(where={"file_name": file_name})
@@ -232,7 +244,7 @@ async def add_student(request: Request):
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
-    course_id = request.query_params.get("course_id") or data.get("course_id")
+    course_id = request.query_params.get("course_id")
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
@@ -248,7 +260,7 @@ async def add_student(request: Request):
     student_id = user_record.id
 
     # Use the specified course_id
-    course_id = request.query_params.get("course_id") or data.get("course_id")
+    course_id = request.query_params.get("course_id")  
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
@@ -274,7 +286,7 @@ async def remove_student(request: Request):
     if not email:
         raise HTTPException(status_code=400, detail="Email must be provided")
 
-    course_id = request.query_params.get("course_id") or data.get("course_id")
+    course_id = request.query_params.get("course_id")  
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
 
