@@ -6,7 +6,7 @@ import os
 import json
 import uuid
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response, Depends
 from openai import OpenAI, _exceptions
 from datetime import date
 
@@ -25,7 +25,6 @@ from backend.models.user import User
 client = OpenAI()
 openai_router = APIRouter()
 chroma_client = initialize_chromadb()
-collection = get_or_create_collection(chroma_client, 'file_collection')
 
 class ChatRequest(Request):
     user_content: str
@@ -43,8 +42,8 @@ def getModelAlias(model: str):
     elif(model == "gpt-4o"):
         return "HENRIETTA"
 
-@openai_router.post("/ask", tags=["Chatbot"])
-async def chat(request: ChatRequest, response: Response, context: dict = Depends(get_context)) -> str:
+@openai_router.post("/ask/{course_id}/{conversation_id}", tags=["Chatbot"])
+async def chat(request: ChatRequest, course_id: str, conversation_id: str, response: Response, context: dict = Depends(get_context)) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
     Args:
         ChatRequest: contains the user's question, the OpenAI model to use, and the user context.
@@ -54,7 +53,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
     """
     if not context.get("logged_in"):
         raise HTTPError(status_code=401, detail="Unauthorized")
-        
+
     # Retrieve the usage cookie
     usage_cookie = request.cookies.get("chat_usage")
 
@@ -138,7 +137,7 @@ async def chat(request: ChatRequest, response: Response, context: dict = Depends
 
         discussion.append({'role': 'user', 'content': reqBody['user_content']})
 
-        relevant_docs = nearest_neighbor_search(collection=collection,input_text=reqBody['user_content'], n_results=3)
+        relevant_docs = nearest_neighbor_search(get_or_create_collection(chroma_client, course_id),input_text=reqBody['user_content'], n_results=3)
 
         if relevant_docs:
             system_message = "Relevant information:\n"

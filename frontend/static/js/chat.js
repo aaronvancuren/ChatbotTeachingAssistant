@@ -3,7 +3,7 @@ window.addEventListener("load", () => {
     for (let i = 0; i < preloads.length; i++) {
         preloads[i].innerHTML = RenderMarkdown(preloads[i].innerHTML.trim());
     }
-    preloads[preloads.length-1].scrollIntoView({ behavior: "smooth", block:"end" });
+    preloads[preloads.length - 1].scrollIntoView({ behavior: "smooth", block: "end" });
 });
 
 function addChat() {
@@ -35,9 +35,10 @@ function addChat() {
 
 function AskQuestion() {
     let convoID = window.location.pathname.split('/')[3];
+    const courseID = window.location.pathname.split('/')[2];
     $.ajax({
         type: "POST",
-        url: "/ask",
+        url: `/ask/${courseID}/${convoID}`,
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
             currentConversationId: convoID,
