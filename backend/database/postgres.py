@@ -317,39 +317,6 @@ def create_course(instructor_id, display_name, subject, course_number, section_n
         cur.close()
         conn.close()
 
-def get_course_data(course_id, field = "*"):
-    """
-    Retrieves a conversation data by a given id
-
-    Args:
-        conversation_id (str): The conversation's unique ID.
-
-    Returns:
-        list: A list of conversations IDs.
-    """
-    conn: connection = get_db_connection()
-
-    if conn is None:
-        logging.error("Failed to connect to the database.")
-        raise HTTPError(status_code=500, detail="Internal Server Error")
-    
-    cur: cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-    try:
-        select_query = "SELECT ? FROM courses WHERE id = '%s';"
-        id=str(course_id).replace("-","")
-        cur.execute(select_query.replace("?", field) % id)
-        rows = cur.fetchone()
-        return rows.items().mapping.get(field)       
-    
-    except Exception as e:
-        logging.error(f"Error retrieving conversation ids: {e}")
-        raise HTTPError(status_code=500, detail="Internal Server Error")
-    
-    finally:
-        cur.close()
-        conn.close()
-
 def read_course_by_id(course_id):
     """
     Retrieves a course by ID.
@@ -692,7 +659,7 @@ def create_message(conversation_id: str, model: str, prompt: str, response: str)
         message_id = cur.fetchone()[0]
         conn.commit()
         return message_id
-    
+
     except Exception as e:
         logging.error(f"Error adding message: {e}")
         conn.rollback()

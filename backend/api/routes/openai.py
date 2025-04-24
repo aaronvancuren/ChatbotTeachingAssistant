@@ -32,16 +32,6 @@ class ChatRequest(Request):
     context: str
     currentConversationId: str
 
-def getModelAlias(model: str):
-    if(model == "gpt-3.5-turbo"):
-        return "VICTOR"
-    elif(model == "gpt-4o-mini-2024-07-18"):
-        return "JOHN"
-    elif(model == "gpt-4o-mini"):
-        return "HEDY"
-    elif(model == "gpt-4o"):
-        return "HENRIETTA"
-
 @openai_router.post("/ask/{course_id}/{conversation_id}", tags=["Chatbot"])
 async def chat(request: ChatRequest, course_id: str, conversation_id: str, response: Response, context: dict = Depends(get_context)) -> str:
     """OpenAI chat endpoint for communciating with the specified OpenAI model
@@ -93,7 +83,7 @@ async def chat(request: ChatRequest, course_id: str, conversation_id: str, respo
         conversationData = user.get_conversation(uuid.UUID(reqBody['currentConversationId']))
 
         discussion = []
-        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{getModelAlias(conversationData['conversation'].model)}_PROMPT")})
+        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{conversationData['conversation'].getModelAlias()}_PROMPT")})
         for message in conversationData['messages']:
             discussion.append({'role': 'user', 'content': message.prompt})
             discussion.append({'role': 'assistant', 'content': message.response})

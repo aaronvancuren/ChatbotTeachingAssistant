@@ -386,3 +386,21 @@ async def remove_all_students(request: Request, context: dict = Depends(get_cont
         raise HTTPException(status_code=500, detail="Failed to remove all students from course")
 
     return {"success": True, "message": "All students have been removed from the course."}
+
+@dashboard_router.post("/get_chat")
+async def retrieve_studentchats(request: Request, context: dict = Depends(get_context)):
+    user: User = context.get("user")
+    if user is None or user.role == Role.student:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    course_id = request.query_params.get("course_id")
+    if not course_id:
+        raise HTTPException(status_code=400, detail="Course ID must be provided")
+    
+    reqBody = await request.json()
+    student = read_user_by_email(reqBody['student_email'])
+    student.get_courses()
+    try:
+        return student.get_conversations(uuid.UUID(course_id))[0].conversation_id
+    except:
+        return None

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
-from backend.database.postgres import create_user_conversation
+from backend.database.postgres import create_user_conversation, read_conversations_by_user, read_messages_from_conversation, read_user_by_email
 
 web_router = APIRouter()
 
@@ -31,7 +31,9 @@ async def homepage(request: Request, context: dict = Depends(get_context)):
     
     Returns:
         Index Web Page Response
-    """         
+    """
+    if context.get("logged_in") and context.get("user").role == Role.instructor:
+        return RedirectResponse("/dashboard")
     return page_templates.TemplateResponse('index.html', {"request": request, "context": context})
 
 # The Chat Page
@@ -62,9 +64,22 @@ async def chatpage(request: Request, courseID: str, chatID: str, context: dict =
         raise HTTPError(status_code=401, detail="Unauthorized")
     
     user: User = context.get("user")
-    user.get_conversations(uuid.UUID(courseID))
-    user.get_conversation(uuid.UUID(chatID))
-    context.update({"user": user})
+
+    if user.role == Role.student and request.headers.get('X-Auditee'):
+        raise HTTPError(status_code=401, detail="Unauthorized")
+    elif user.role != Role.student and request.headers.get('X-Auditee'):
+        student = read_user_by_email(request.headers.get('X-Auditee'))
+        if student is None:
+            raise HTTPError(status_code=404, detail="User not found")
+        student.get_courses()
+        student.get_conversations(uuid.UUID(courseID))
+        student.get_conversation(uuid.UUID(chatID))
+        context.update({"student": student})
+        context.update({"hostname": getenv("ORIGINS")})
+    else:
+        user.get_conversations(uuid.UUID(courseID))
+        user.get_conversation(uuid.UUID(chatID))
+        context.update({"user": user})
     return page_templates.TemplateResponse('chat.html', {"request": request, "context": context})
     
 

@@ -6,7 +6,12 @@ window.addEventListener("load", () => {
     preloads[preloads.length - 1].scrollIntoView({ behavior: "smooth", block: "end" });
 });
 
+function isIframe() {
+    return window.top !== window.self
+}
+
 function addChat() {
+    if (isIframe()) {return;}
     $.ajax({
         type: "POST",
         url: "/addChat/" + window.location.pathname.split('/')[2],
@@ -18,10 +23,10 @@ function addChat() {
             "Content-Security-Policy": "frame-ancestors 'none'",
             "X-Frame-Options": "DENY",
         },
-        success: function(data) {
-            window.location.href = data;            
+        success: function (data) {
+            window.location.href = data;
         },
-        statusCode:  {
+        statusCode: {
             405: (value) => {
                 alert("Error: " + JSON.parse(value.responseText).detail);
             },
@@ -29,27 +34,28 @@ function addChat() {
                 alert("Error 401: Unauthorised");
             }
         }
-    })    
+    })
     $('#chooseTA').modal('hide');
 }
 
 function AskQuestion() {
     let convoID = window.location.pathname.split('/')[3];
     const courseID = window.location.pathname.split('/')[2];
+    if (isIframe()) {return;}
     $.ajax({
         type: "POST",
         url: `/ask/${courseID}/${convoID}`,
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
             currentConversationId: convoID,
-        }),        
+        }),
         headers: {
             "X-Content-Type-Options": "nosniff",
             "Content-Security-Policy": "frame-ancestors 'none'",
             "X-Frame-Options": "DENY",
             "Content-Type": "application/json"
         },
-        success: function(data) {
+        success: function (data) {
             let response = JSON.parse(data)
             document.getElementById(convoID).textContent = response.name;
             conversation = response.dialogue;
@@ -58,7 +64,7 @@ function AskQuestion() {
             document.getElementById("question").value = "";
             document.getElementById("question").disabled = false;
         },
-        statusCode:  {
+        statusCode: {
             405: (value) => {
                 alert("Error: " + JSON.parse(value.responseText).detail);
             },
@@ -77,23 +83,23 @@ function AskQuestion() {
             }
         }
     });
-    createChatBubble(document.getElementById("question").value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'), ["btm-right", "student"]);
+    createChatBubble(document.getElementById("question").value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'), ["btm-right", "student"]);
     document.getElementById("question").disabled = true;
     document.getElementById("LOADING").classList.remove("hidden");
     try {
         document.getElementById("EMPTY").remove();
-    } catch {}
+    } catch { }
 }
 
-function createChatBubble(dialogue, classes){
+function createChatBubble(dialogue, classes) {
     wrapper = document.getElementById("conversation");
-    
+
     containerWrapper = document.createElement("div");
     containerWrapper.classList.add('talk-bubble');
     chatWrapper = document.createElement("p");
-    
+
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.text = `${document.getElementById("openai_model").text} says...`;
+        chatWrapper.innerText = `${document.getElementById("openai_model").innerText} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
@@ -107,7 +113,7 @@ function createChatBubble(dialogue, classes){
 
     container = document.createElement("div");
     container.classList.add("tri-right", ...classes);
-        
+
     displayContainer = document.createElement("div");
     displayContainer.classList.add("talktext");
 
@@ -135,7 +141,7 @@ function createChatBubble(dialogue, classes){
         feedbackWrapper.appendChild(good);
         wrapper.appendChild(feedbackWrapper);
     }
-    containerWrapper.scrollIntoView({ behavior: "smooth", block:"end" });
+    containerWrapper.scrollIntoView({ behavior: "smooth", block: "end" });
 }
 
 function RenderMarkdown(text) {
@@ -146,9 +152,9 @@ function RenderMarkdown(text) {
 
 function UpdateChatNum() {
     try {
-        let log = JSON.parse(atob(decodeURIComponent(document.cookie).split(';').find((e)=>{return e.includes("chat_usage")}).trim().substring(14).split("").reverse().join("").substring(2)));
+        let log = JSON.parse(atob(decodeURIComponent(document.cookie).split(';').find((e) => { return e.includes("chat_usage") }).trim().substring(14).split("").reverse().join("").substring(2)));
         document.getElementById("counter").innerHTML = 'Daily Questions Left: ' + (log.max - log.count) + '/' + log.max;
         if (log.max - log.count === 0)
             document.getElementById("question").disabled = true;
-    } catch{}
+    } catch { }
 }

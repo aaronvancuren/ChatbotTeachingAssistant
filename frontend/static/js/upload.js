@@ -64,8 +64,8 @@ studentFileInput.addEventListener("change", (e) => {
 function handleFileSelection(e, type) {
   const targetInput = type === "upload" ? uploadFileInput : studentFileInput;
   const fileQueue = type === "upload" ? fileQueueEl : studentList;
-  const allowedExtensions = type === "upload" 
-    ? [".txt", ".pdf", ".doc", ".docx", ".html", ".css"] 
+  const allowedExtensions = type === "upload"
+    ? [".txt", ".pdf", ".doc", ".docx", ".html", ".css"]
     : [".txt", ".csv", ".xls", ".xlsx"];
 
   const newDataTransfer = new DataTransfer();
@@ -81,27 +81,27 @@ function handleFileSelection(e, type) {
 
   targetInput.files = newDataTransfer.files;
   if (type === "upload") {
-      displayQueuedFiles(targetInput.files, fileQueue);
+    displayQueuedFiles(targetInput.files, fileQueue);
   } else {
-      // For student CSV file, update the selected file name display and change button text
-      const selectedFile = targetInput.files[0];
-      const fileNameDisplay = document.getElementById("selectedStudentFileName");
-      if (fileNameDisplay) {
-          fileNameDisplay.textContent = selectedFile ? selectedFile.name : "";
-          fileNameDisplay.style.display = "block";
-      }
-      const addStudentBtn = document.getElementById("addStudentBtn");
-      if (addStudentBtn) {
-          addStudentBtn.textContent = "Add Students";
-      }
+    // For student CSV file, update the selected file name display and change button text
+    const selectedFile = targetInput.files[0];
+    const fileNameDisplay = document.getElementById("selectedStudentFileName");
+    if (fileNameDisplay) {
+      fileNameDisplay.textContent = selectedFile ? selectedFile.name : "";
+      fileNameDisplay.style.display = "block";
+    }
+    const addStudentBtn = document.getElementById("addStudentBtn");
+    if (addStudentBtn) {
+      addStudentBtn.textContent = "Add Students";
+    }
   }
 }
 
 function handleFileDrop(e, type) {
   const targetInput = type === "upload" ? uploadFileInput : studentFileInput;
   const fileQueue = type === "upload" ? fileQueueEl : studentList;
-  const allowedExtensions = type === "upload" 
-    ? [".txt", ".pdf", ".doc", ".docx", ".html", ".css"] 
+  const allowedExtensions = type === "upload"
+    ? [".txt", ".pdf", ".doc", ".docx", ".html", ".css"]
     : [".txt", ".csv", ".xls", ".xlsx"];
 
   const newDataTransfer = new DataTransfer();
@@ -117,19 +117,19 @@ function handleFileDrop(e, type) {
 
   targetInput.files = newDataTransfer.files;
   if (type === "upload") {
-      displayQueuedFiles(targetInput.files, fileQueue);
+    displayQueuedFiles(targetInput.files, fileQueue);
   } else {
-      // For student CSV file drop, update the selected file name display and change button text
-      const selectedFile = targetInput.files[0];
-      const fileNameDisplay = document.getElementById("selectedStudentFileName");
-      if (fileNameDisplay) {
-          fileNameDisplay.textContent = selectedFile ? selectedFile.name : "";
-          fileNameDisplay.style.display = "block";
-      }
-      const addStudentBtn = document.getElementById("addStudentBtn");
-      if (addStudentBtn) {
-          addStudentBtn.textContent = "Add Students";
-      }
+    // For student CSV file drop, update the selected file name display and change button text
+    const selectedFile = targetInput.files[0];
+    const fileNameDisplay = document.getElementById("selectedStudentFileName");
+    if (fileNameDisplay) {
+      fileNameDisplay.textContent = selectedFile ? selectedFile.name : "";
+      fileNameDisplay.style.display = "block";
+    }
+    const addStudentBtn = document.getElementById("addStudentBtn");
+    if (addStudentBtn) {
+      addStudentBtn.textContent = "Add Students";
+    }
   }
 }
 
@@ -166,8 +166,8 @@ function displayQueuedFiles(fileList, queueElement) {
 function removeFileFromQueue(index, queueElement) {
   const newDataTransfer = new DataTransfer();
 
-  const currentFiles = queueElement === fileQueueEl 
-    ? uploadFileInput.files 
+  const currentFiles = queueElement === fileQueueEl
+    ? uploadFileInput.files
     : studentFileInput.files;
 
   for (let i = 0; i < currentFiles.length; i++) {
@@ -232,7 +232,7 @@ uploadBtn.addEventListener("click", async () => {
     updateExistingFilesList(data.uploaded_files);
 
     // Clear queue on success
-    removeAllFromQueue(); 
+    removeAllFromQueue();
 
   } catch (error) {
     console.error("Upload Error:", error);
@@ -364,15 +364,15 @@ function sanitizeId(filename) {
 }
 
 async function deleteAllFiles() {
-    const deleteAllBtn = document.getElementById("deleteAllBtn");
-  
-    if (!confirm("Are you sure you want to delete ALL files?")) {
-      return;
-    }
-  
-    // Disable the button, change text, add spinner
-    deleteAllBtn.disabled = true;
-    deleteAllBtn.innerHTML = `Deleting...
+  const deleteAllBtn = document.getElementById("deleteAllBtn");
+
+  if (!confirm("Are you sure you want to delete ALL files?")) {
+    return;
+  }
+
+  // Disable the button, change text, add spinner
+  deleteAllBtn.disabled = true;
+  deleteAllBtn.innerHTML = `Deleting...
       <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
   
     try {
@@ -417,34 +417,34 @@ function submitNewStudent() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: studentEmail, course_id: courseId })
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('Student added successfully!');
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Student added successfully!');
 
-      // Clear the input
-      document.getElementById('studentEmail').value = '';
+        // Clear the input
+        document.getElementById('studentEmail').value = '';
 
-      // Hide the add-student modal
-      let studentModalEl = document.getElementById('addStudentModal');
-      let studentModal = bootstrap.Modal.getInstance(studentModalEl);
-      if (!studentModal) {
-        studentModal = new bootstrap.Modal(studentModalEl);
+        // Hide the add-student modal
+        let studentModalEl = document.getElementById('addStudentModal');
+        let studentModal = bootstrap.Modal.getInstance(studentModalEl);
+        if (!studentModal) {
+          studentModal = new bootstrap.Modal(studentModalEl);
+        }
+        studentModal.hide();
+
+        // Add the newly added student to the list UI
+        addStudentToList(studentEmail);
+
+      } else {
+        const errorMessage = data.error || data.detail || "An error occurred while adding the student.";
+        alert('Error adding student: ' + errorMessage);
       }
-      studentModal.hide();
-
-      // Add the newly added student to the list UI
-      addStudentToList(studentEmail);
-
-    } else {
-      const errorMessage = data.error || data.detail || "An error occurred while adding the student.";
-      alert('Error adding student: ' + errorMessage);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('An error occurred while adding the student.');
-  });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while adding the student.');
+    });
 }
 
 function addStudentToList(email) {
@@ -495,7 +495,7 @@ function removeStudent(email) {
   if (!confirm(`Are you sure you want to remove "${email}"?`)) {
     return;
   }
-  
+
   // Extract course_id from URL query parameters
   const urlParams = new URLSearchParams(window.location.search);
   const courseId = document.getElementById("courseId")?.value;
@@ -509,105 +509,105 @@ function removeStudent(email) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: email, course_id: courseId })
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('Student removed from the course.');
-      let sanitizedEmail = email.replace(/\s/g, '_').replace(/[\\/]/g, '_');
-      let studentItem = document.getElementById(`student-${sanitizedEmail}`);
-      if (studentItem) {
-        studentItem.remove();
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Student removed from the course.');
+        let sanitizedEmail = email.replace(/\s/g, '_').replace(/[\\/]/g, '_');
+        let studentItem = document.getElementById(`student-${sanitizedEmail}`);
+        if (studentItem) {
+          studentItem.remove();
+        }
+      } else {
+        alert(`Error removing student: ${data.detail || 'Unknown error'}`);
       }
-    } else {
-      alert(`Error removing student: ${data.detail || 'Unknown error'}`);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('An error occurred while removing the student.');
-  });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while removing the student.');
+    });
 }
 
 // Attach event listener to the Add Student button
 document.getElementById("addStudentBtn").addEventListener("click", () => {
-    const fileInput = document.getElementById("studentFileInput");
-    if (fileInput.files.length > 0) {
-        // If a CSV file is selected, process the CSV upload
-        submitStudentCSV();
-    } else {
-        // No file selected, show the manual entry modal
-        const studentModalEl = document.getElementById("addStudentModal");
-        let studentModal = bootstrap.Modal.getInstance(studentModalEl);
-        if (!studentModal) {
-            studentModal = new bootstrap.Modal(studentModalEl);
-        }
-        studentModal.show();
+  const fileInput = document.getElementById("studentFileInput");
+  if (fileInput.files.length > 0) {
+    // If a CSV file is selected, process the CSV upload
+    submitStudentCSV();
+  } else {
+    // No file selected, show the manual entry modal
+    const studentModalEl = document.getElementById("addStudentModal");
+    let studentModal = bootstrap.Modal.getInstance(studentModalEl);
+    if (!studentModal) {
+      studentModal = new bootstrap.Modal(studentModalEl);
     }
+    studentModal.show();
+  }
 });
 
 // Function to process CSV file upload for bulk student addition
 async function submitStudentCSV() {
-    const fileInput = document.getElementById("studentFileInput");
-    if (!fileInput.files.length) return;
-    const csvFile = fileInput.files[0];
+  const fileInput = document.getElementById("studentFileInput");
+  if (!fileInput.files.length) return;
+  const csvFile = fileInput.files[0];
 
-    // Check that the file has a .csv extension
-    if (!csvFile.name.toLowerCase().endsWith(".csv")) {
-        alert("Please upload a valid CSV file with a .csv extension.");
-        return;
+  // Check that the file has a .csv extension
+  if (!csvFile.name.toLowerCase().endsWith(".csv")) {
+    alert("Please upload a valid CSV file with a .csv extension.");
+    return;
+  }
+
+  // Extract course_id from URL query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseId = urlParams.get("course_id");
+  if (!courseId) {
+    alert("Course ID is missing in the URL.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", csvFile);
+
+  try {
+    const response = await fetch(`/dashboard/add_students_bulk?course_id=${courseId}`, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to process CSV file.");
     }
 
-    // Extract course_id from URL query parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const courseId = urlParams.get("course_id");
-    if (!courseId) {
-        alert("Course ID is missing in the URL.");
-        return;
+    const data = await response.json();
+    let message = "CSV processed. Results:\n";
+    data.results.forEach(result => {
+      message += `${result.email}: ${result.status}`;
+      if (result.detail) {
+        message += ` (${result.detail})`;
+      }
+      message += "\n";
+      if (result.status === "success") {
+        addStudentToList(result.email);
+      }
+    });
+    alert(message);
+
+    // Clear the file input and remove the selected file display
+    fileInput.value = "";
+    const fileNameDisplay = document.getElementById("selectedStudentFileName");
+    if (fileNameDisplay) {
+      fileNameDisplay.textContent = "";
+      fileNameDisplay.style.display = "none";
     }
-
-    const formData = new FormData();
-    formData.append("file", csvFile);
-
-    try {
-        const response = await fetch(`/dashboard/add_students_bulk?course_id=${courseId}`, {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || "Failed to process CSV file.");
-        }
-
-        const data = await response.json();
-        let message = "CSV processed. Results:\n";
-        data.results.forEach(result => {
-            message += `${result.email}: ${result.status}`;
-            if (result.detail) {
-                message += ` (${result.detail})`;
-            }
-            message += "\n";
-            if (result.status === "success") {
-                addStudentToList(result.email);
-            }
-        });
-        alert(message);
-
-        // Clear the file input and remove the selected file display
-        fileInput.value = "";
-        const fileNameDisplay = document.getElementById("selectedStudentFileName");
-        if (fileNameDisplay) {
-            fileNameDisplay.textContent = "";
-            fileNameDisplay.style.display = "none";
-        }
-        const addStudentBtn = document.getElementById("addStudentBtn");
-        if (addStudentBtn) {
-            addStudentBtn.textContent = "Add Student";
-        }
-    } catch (error) {
-        console.error("CSV Upload Error:", error);
-        alert(`Error: ${error.message}`);
+    const addStudentBtn = document.getElementById("addStudentBtn");
+    if (addStudentBtn) {
+      addStudentBtn.textContent = "Add Student";
     }
+  } catch (error) {
+    console.error("CSV Upload Error:", error);
+    alert(`Error: ${error.message}`);
+  }
 }
 
 async function removeAllStudents() {
@@ -618,17 +618,17 @@ async function removeAllStudents() {
     alert("Course ID is missing in the URL.");
     return;
   }
-  
+
   if (!confirm("Are you sure you want to remove all students from this class?")) {
     return;
   }
-  
+
   try {
     const response = await fetch(`/dashboard/remove_all_students?course_id=${courseId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" }
     });
-    
+
     const data = await response.json();
     if (data.success) {
       // Update the UI: Clear the student list
@@ -646,4 +646,54 @@ async function removeAllStudents() {
     console.error("Error removing all students:", error);
     alert("An error occurred while removing all students.");
   }
+}
+
+async function getStudentChats(student) {
+  let firstConvo = "";
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseId = urlParams.get("course_id");
+  $.ajax({
+    method: "POST",
+    url: '/dashboard/get_chat?course_id=' + courseId,
+    data: JSON.stringify({
+      student_email: student
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "frame-ancestors 'none'",
+      "X-Frame-Options": "DENY",
+    },
+    success: async function (data) {
+      document.getElementById("chat_header").innerText = "Viewing " + student + " Chat History";
+      if (data === null) {
+        document.getElementById("chatview_host_iframe").hidden = true;
+        document.getElementById("chat_error").hidden = false;
+      } else {
+        document.getElementById("chatview_host_iframe").hidden = false;
+        document.getElementById("chat_error").hidden = true;
+        document.getElementById("chatview_host_iframe").src = await GetStudentChat("/chat/" + courseId + "/" + data, student);
+      }
+    },
+  })
+}
+async function GetStudentChat(url, student) {
+  document.getElementById("chatview_host_iframe").hidden = false;
+  document.getElementById("chat_error").hidden = true;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "frame-ancestors 'none'",
+      "X-Frame-Options": "DENY",
+      "X-auditee": student,
+    }
+  });
+  if (!res.ok) {
+    document.getElementById("chatview_host_iframe").hidden = true;
+    document.getElementById("chat_error").hidden = false;
+  }
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
 }

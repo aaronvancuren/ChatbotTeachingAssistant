@@ -8,6 +8,9 @@ class User(UserBase):
     activeCourse: CourseBase | None = None
     activeConversation: object | None = None
 
+    def __init__(self, row: RealDictRow):
+        super().__init__(id=row['id'], display_name=row['display_name'], email=row['email'], role=Role[row['role']])
+        
     # Get user courses
     def get_courses(self):        
         from backend.database.postgres import read_courses_for_user, read_courses_for_instructor
@@ -18,29 +21,30 @@ class User(UserBase):
     
     # Get user conversations by course
     def get_conversations(self, course_id: uuid) -> list[UserConversation]:
-        from backend.models.course import Course
-        self.activeCourse: Course = [course for course in self.courses if course.id == course_id][0]
+        try:
+            course = [course for course in self.courses if course.id == course_id][0]
+        except:
+            course = [course for course in self.courses if course['id'] == course_id][0]
+            from backend.models.course import Course
+            course = Course(**course)
+        self.activeCourse = course
         return self.activeCourse.get_conversations(self)
     
     def find_conversation(self, conversation_id: uuid) -> UserConversation:
         if self.courses == []:
             self.get_courses()
         for course in self.courses:
-            for conversation in self.get_conversations(course.id):
+            try:
+                conversations = self.get_conversations(course.id)
+            except:
+                conversations = self.get_conversations(course['id'])
+            for conversation in conversations:
                 if conversation.conversation_id == conversation_id:
                     return conversation
         raise Exception("Conversation not found")
 
-    def get_conversation(self, conversation_id: uuid) -> tuple[UserConversation, Message]:
+    def get_conversation(self, conversation_id: uuid) -> list[Message]:
         from backend.database.postgres import read_messages_from_conversation
         self.conversation = read_messages_from_conversation(conversation_id)
         self.activeConversation = self.find_conversation(conversation_id)
         return { 'conversation': self.activeConversation, 'messages': self.conversation }
-    
-    def __init__(self, row: RealDictRow):
-        super().__init__(
-            id=row['id'],
-            display_name=row['display_name'],
-            email=row['email'],
-            role=Role[row['role']]
-        )

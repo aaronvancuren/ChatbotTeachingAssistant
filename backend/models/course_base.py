@@ -7,7 +7,7 @@ class CourseBase(BaseModel):
     id: uuid.UUID
     instructor_id: uuid.UUID
     display_name: str
-    subject: Subject
+    subject: Subject | str
     course_number: int
     section_number:int
     title: str
@@ -15,3 +15,5 @@ class CourseBase(BaseModel):
     prompt: str
     documents_path: str
     image_path: str
+
+    conversations: list | None = []
