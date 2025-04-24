@@ -40,10 +40,11 @@ function addChat() {
 
 function AskQuestion() {
     let convoID = window.location.pathname.split('/')[3];
+    const courseID = window.location.pathname.split('/')[2];
     if (isIframe()) {return;}
     $.ajax({
         type: "POST",
-        url: "/ask",
+        url: `/ask/${courseID}/${convoID}`,
         data: JSON.stringify({
             user_content: document.getElementById("question").value,
             currentConversationId: convoID,
