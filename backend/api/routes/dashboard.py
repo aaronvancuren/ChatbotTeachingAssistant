@@ -416,14 +416,13 @@ async def create_course_api(
             raise HTTPException(status_code=401, detail="Unauthorized")
 
         # Handle image upload
-        image_path = "frontend/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
+        image_path = "/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
         if courseImage:
-            filename = f"{uuid.uuid4().hex}_{courseImage.filename}"
-            destination = os.path.join("frontend/static/assets", filename)
+            destination = f"frontend/static/images/{uuid.uuid4().hex}_{courseImage.filename}"
             with open(destination, "wb") as out_file:
                 content = await courseImage.read()
                 out_file.write(content)
-            image_path = os.path.relpath(destination, "frontend")
+            image_path = destination.replace("frontend", "")
 
         # Create course in DB
         course_id = create_course(
@@ -443,7 +442,7 @@ async def create_course_api(
             collection: Collection = get_or_create_collection(client, str(course_id))
             
             # Updates ChromaDB documents path for course
-            documents_path = os.path.join(os.getenv("CHROMA_PERSISTENT_DIRECTORY"), collection.name)
+            documents_path = f"{os.getenv("CHROMA_PERSISTENT_DIRECTORY")}/{collection.name}"
             if update_course_documents_path(course_id, documents_path):
                 create_user_course(course_id, user.id)
                 return JSONResponse({"success": True, "course_id": str(course_id)})
