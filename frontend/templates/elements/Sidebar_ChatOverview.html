@@ -18,6 +18,7 @@
                                 "Content-Security-Policy": "frame-ancestors 'none'",
                                 "X-Frame-Options": "DENY",
                                 "X-auditee": "{{ context.student.email }}",
+                                "accept-encoding": "gzip, deflate, br, zstd"
                             }
                         }).then(async (res) => {
                             const blob = await res.blob();

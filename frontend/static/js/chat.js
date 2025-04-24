@@ -41,6 +41,7 @@ function addChat() {
 function AskQuestion() {
     let convoID = window.location.pathname.split('/')[3];
     const courseID = window.location.pathname.split('/')[2];
+    if (isIframe()) {return;}
     $.ajax({
         type: "POST",
         url: `/ask/${courseID}/${convoID}`,
@@ -98,7 +99,7 @@ function createChatBubble(dialogue, classes) {
     chatWrapper = document.createElement("p");
 
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.text = `${document.getElementById("openai_model").text} says...`;
+        chatWrapper.innerText = `${document.getElementById("openai_model").innerText} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {

@@ -33,7 +33,7 @@
         {% set user = context.user %}
         {% endif %}
 
-        <p hidden id="openai_model">{{user.conversation.model|title}}</p>
+        <p hidden id="openai_model">{{user.activeConversation.getModelAlias() | title}}</p>
 
         <div id="content">
             <div id="conversation">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
                 <div class="talk-bubble left ">
-                    <p class="text-from left">{{user.activeConversation.model.name|title}} Says...</p>
+                    <p class="text-from left">{{user.activeConversation.getModelAlias() | title}} Says...</p>
                     <div class="tri-right btm-left teaching_assistant">
                         <article class="talktext">
                             {{dialogue.response}}
@@ -123,8 +123,8 @@
     </main>
     <div style="pointer-events: none;bottom:2vh; position:fixed" class="d-flex w-100 mx-auto text-center">
         <p class="text-from" id="disclaimer">
-            {{user.activeConversation.model.name|title}} is an AI and will occassionally make
-            mistakes. By using this chat, you consent to chat monitoring and agree to the <span><a href="https://openai.com/policies/"">policies of the service</a></span>.</p>
+            {{user.activeConversation.getModelAlias() | title}} is an AI and will occassionally make
+            mistakes. By using this chat, you consent to chat monitoring and agree to the <span><a href="https://openai.com/policies/" style="pointer-events: all;" target="_blank">policies of the service</a></span>.</p>
     </div>
 </body>
 
