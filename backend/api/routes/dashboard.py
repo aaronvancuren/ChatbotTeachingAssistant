@@ -385,7 +385,6 @@ async def retrieve_studentchats(request: Request, context: dict = Depends(get_co
     if not course_id:
         raise HTTPException(status_code=400, detail="Course ID must be provided")
     
-    from backend.database.postgres import read_user_by_email
     reqBody = await request.json()
     student = read_user_by_email(reqBody['student_email'])
     student.get_courses()

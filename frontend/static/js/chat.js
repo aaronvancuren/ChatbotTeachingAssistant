@@ -98,7 +98,7 @@ function createChatBubble(dialogue, classes) {
     chatWrapper = document.createElement("p");
 
     if (classes.includes('teaching_assistant')) {
-        chatWrapper.text = `${document.getElementById("openai_model").text} says...`;
+        chatWrapper.innerText = `${document.getElementById("openai_model").innerText} says...`;
         containerWrapper.classList.add('left');
         chatWrapper.classList.add('left')
     } else {
