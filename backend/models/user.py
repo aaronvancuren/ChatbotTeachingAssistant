@@ -8,6 +8,9 @@ class User(UserBase):
     activeCourse: CourseBase | None = None
     activeConversation: object | None = None
 
+    def __init__(self, row: RealDictRow):
+        super().__init__(id=row['id'], display_name=row['display_name'], email=row['email'], role=Role[row['role']])
+        
     # Get user courses
     def get_courses(self):        
         from backend.database.postgres import read_courses_for_user, read_courses_for_instructor
@@ -45,11 +48,3 @@ class User(UserBase):
         self.conversation = read_messages_from_conversation(conversation_id)
         self.activeConversation = self.find_conversation(conversation_id)
         return { 'conversation': self.activeConversation, 'messages': self.conversation }
-    
-    def __init__(self, row: RealDictRow):
-        super().__init__(
-            id=row['id'],
-            display_name=row['display_name'],
-            email=row['email'],
-            role=Role[row['role']]
-        )

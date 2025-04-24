@@ -15,3 +15,5 @@ class CourseBase(BaseModel):
     prompt: str
     documents_path: str
     image_path: str
+
+    conversations: list | None = []
