@@ -1,0 +1,1 @@
+This is a directory for storing images for course cards displayed in the web.
