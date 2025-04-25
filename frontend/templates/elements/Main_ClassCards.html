@@ -1,18 +1,20 @@
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for course in context.user.courses %}
-    <div class="col">
-        <div class="card">
+{% for course in context.user.courses %}
+<div class="col">
+    <div class="card h-100">
+        <div class="ratio ratio-4x3">
             <img src="{{course.image_path}}" class="card-img-top" alt="Course Splash Image">
-            <div class="card-body flex-column">
-                <div class="d-flex">
-            <h5 class="card-title">{{course.display_name}}</h5>
-            <p class="ms-auto card-text"><small class="text-body-secondary">{{ course.subject }} {{ course.course_number }}‑{{ course.section_number }}</small></p>
-                </div>
-                <div class="d-flex align-items-center flex-column">
-                    <a href="/chat/{{course.id}}" class="btn btn-outline-primary rounded-pill justify-content-center">Chat with the TA</a>
-                </div>
+        </div>
+        <div class="card-body flex-column">
+            <div class="d-flex">
+                <h5 class="card-title">{{course.display_name}}</h5>
+            </div>
+            <div class="d-flex align-items-center flex-row justify-content-between w-100">
+                {% if context.user.role.name == "instructor" %}
+                <a href="/dashboard/class?course_id={{ course.id }}" class="btn btn-outline-primary rounded-pill">View Course</a>
+                {% endif %}
+                <a href="/chat/{{course.id}}" class="btn btn-outline-primary rounded-pill justify-content-center">Chat with the TA</a>
             </div>
         </div>
     </div>
-    {% endfor %}
 </div>
+{% endfor %}

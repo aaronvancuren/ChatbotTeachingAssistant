@@ -138,3 +138,7 @@ cython_debug/
 
 # SQLite Database
 chromadb_store/
+
+# Course Images
+frontend/static/images/*
+!frontend/static/images/README.md

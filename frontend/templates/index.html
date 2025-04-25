@@ -12,7 +12,9 @@
                 <div class="container">
                     <h2 class="py-3">Your Classes</h2>
                     <div class="container p-2" style="background-color: white;">
-                        {% include './elements/Main_ClassCards.html' %}
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                            {% include './elements/Main_ClassCards.html' %}
+                        </div>
                     </div>
                     <hr>
                 </div>

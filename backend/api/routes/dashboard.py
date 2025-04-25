@@ -1,23 +1,15 @@
-import uuid
-import csv, io
-from backend.api.errors import HTTPError
-from backend.api.routes import get_context
-from backend.database.text_processor import process_file, chunk_text
-from backend.database.chroma_database import initialize_chromadb, get_or_create_collection, add_documents
-from backend.models.course import Course
-from backend.models import Role, User
-from backend.models.subject import Subject
+import csv, io, os, uuid
+
 from fastapi import APIRouter, Depends, File, UploadFile, Form, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from backend.database.postgres import (
-    read_user_by_email,
-    create_user,
-    create_user_course,
-    delete_user_course,
-    read_users_for_course,
-    delete_all_student_user_courses,
-)
+
+from backend.api.errors import HTTPError
+from backend.api.routes import get_context
+from backend.database.text_processor import *
+from backend.database.chroma_database import *
+from backend.models import Role, User, Subject
+from backend.database.postgres import *
 
 # Initialize ChromaDB client
 client = initialize_chromadb()
@@ -40,11 +32,12 @@ async def dashboard(request : Request, context: dict = Depends(get_context)):
         Index Web Page Response
     """
     user: User = context.get("user")
+    subject_options = [{"name": s.name} for s in Subject]
 
     if user is None or user.role is Role.student:
         raise HTTPError(status_code=401, detail="Unauthorized")
 
-    return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context})
+    return page_templates.TemplateResponse('dashboard.html', {"request": request, "context": context, "subjects": subject_options})
 
 @dashboard_router.get("/class")
 async def teacher_class_view(request: Request, context: dict = Depends(get_context)):
@@ -404,3 +397,59 @@ async def retrieve_studentchats(request: Request, context: dict = Depends(get_co
         return student.get_conversations(uuid.UUID(course_id))[0].conversation_id
     except:
         return None
+
+@dashboard_router.post("/create_course")
+async def create_course_api(
+    request: Request,
+    courseSubject: str = Form(...),
+    courseNumber: int = Form(...),
+    sectionNumber: int = Form(...),
+    courseTitle: str = Form(...),
+    customPrompt: str = Form(""),
+    courseModel: str = Form("gpt-4o"),
+    courseImage: UploadFile = File(None),
+    context: dict = Depends(get_context)
+):
+    try:
+        user: User = context.get("user")
+        if user is None or user.role == Role.student:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        # Handle image upload
+        image_path = "/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg"
+        if courseImage:
+            destination = f"frontend/static/images/{uuid.uuid4().hex}_{courseImage.filename}"
+            with open(destination, "wb") as out_file:
+                content = await courseImage.read()
+                out_file.write(content)
+            image_path = destination.replace("frontend", "")
+
+        # Create course in DB
+        course_id = create_course(
+            instructor_id=user.id,
+            display_name=f"{courseSubject}{courseNumber}-{sectionNumber} {courseTitle}",
+            subject=courseSubject,
+            course_number=courseNumber,
+            section_number=sectionNumber,
+            title=courseTitle,
+            model=courseModel,
+            prompt=customPrompt,
+            documents_path=os.getenv("CHROMA_PERSISTENT_DIRECTORY"), # TEMPORARY VALUE
+            image_path=image_path
+        )
+
+        if course_id:
+            collection: Collection = get_or_create_collection(client, str(course_id))
+            
+            # Updates ChromaDB documents path for course
+            documents_path = f"{os.getenv("CHROMA_PERSISTENT_DIRECTORY")}/{collection.name}"
+            if update_course_documents_path(course_id, documents_path):
+                create_user_course(course_id, user.id)
+                return JSONResponse({"success": True, "course_id": str(course_id)})
+            else:
+                delete_course(course_id)
+                raise Exception("Course documents database creation failed")
+        else:
+            raise Exception("Course creation failed")
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)})

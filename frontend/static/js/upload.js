@@ -28,10 +28,12 @@ studentDropzone.addEventListener("dragover", (e) => {
   e.preventDefault();
   studentDropzone.classList.add("bg-info", "text-white");
 });
+
 studentDropzone.addEventListener("dragleave", (e) => {
   e.preventDefault();
   studentDropzone.classList.remove("bg-info", "text-white");
 });
+
 studentDropzone.addEventListener("drop", (e) => {
   e.preventDefault();
   studentDropzone.classList.remove("bg-info", "text-white");
@@ -42,10 +44,12 @@ fileDropzone.addEventListener("dragover", (e) => {
   e.preventDefault();
   fileDropzone.classList.add("bg-info", "text-white");
 });
+
 fileDropzone.addEventListener("dragleave", (e) => {
   e.preventDefault();
   fileDropzone.classList.remove("bg-info", "text-white");
 });
+
 fileDropzone.addEventListener("drop", (e) => {
   e.preventDefault();
   fileDropzone.classList.remove("bg-info", "text-white");

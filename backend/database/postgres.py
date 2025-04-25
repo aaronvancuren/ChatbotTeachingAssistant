@@ -1,6 +1,8 @@
 import logging
 import os
 import uuid
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 import psycopg2
 from psycopg2.extensions import connection, cursor
@@ -16,17 +18,14 @@ register_uuid()
 def get_db_connection() -> connection:
     # Database connection configuration
     db_config = {
+        "host": os.getenv('DB_HOST', 'localhost'),
+        "port": int(os.getenv('DB_PORT', 5432)),
         "dbname": os.environ['DB_NAME'],
         "user": os.environ['DB_USER'],
         "password": os.environ['DB_PASSWORD'],
-        "host": os.getenv('DB_HOST', 'localhost'),  # Default to 'localhost' if not set
-        "port": int(os.getenv('DB_PORT', 5432))     # Default to 5432 if not set
     }
 
     # Connect to PostgreSQL using psycopg2
-    conn = psycopg2.connect(**db_config)
-    conn.commit()
-    return conn
     return psycopg2.connect(**db_config)
 
 def create_user(display_name, email, role='student'):
@@ -383,7 +382,7 @@ def read_courses_for_user(user_id: str) -> list[Course]:
     finally:
         cur.close()
         conn.close()
-        
+
 def update_course_title(course_id, new_title):
     """
     Updates the title of a course.
@@ -404,7 +403,7 @@ def update_course_title(course_id, new_title):
     cur: cursor = conn.cursor()
 
     try:
-        update_query = "UPDATE courses SET title = %s WHERE id = %s;"
+        update_query = """ UPDATE courses SET title = %s WHERE id = %s; """
         cur.execute(update_query, (new_title, course_id))
         conn.commit()
         return True
@@ -438,13 +437,47 @@ def update_course_model(course_id, new_model):
     cur: cursor = conn.cursor()
 
     try:
-        update_query = "UPDATE courses SET model = %s WHERE id = %s;"
+        update_query = """ UPDATE courses SET model = %s WHERE id = %s; """
         cur.execute(update_query, (new_model, course_id))
         conn.commit()
         return True
     
     except Exception as e:
         logging.error(f"Error updating course model: {e}")
+        conn.rollback()
+        return False
+    
+    finally:
+        cur.close()
+        conn.close()
+
+def update_course_documents_path(course_id, new_documents_path):
+    """
+    Updates the documents path of a course.
+
+    Args:
+        course_id (str): The ID of the course.
+        new_documents_path (str): The new documents path.
+
+    Returns:
+        bool: True if update was successful, False otherwise.
+    """
+    conn: connection = get_db_connection()
+
+    if conn is None:
+        logging.error("Failed to connect to the database.")
+        return False
+    
+    cur: cursor = conn.cursor()
+
+    try:
+        update_query = """ UPDATE courses SET documents_path = %s WHERE id = %s; """
+        cur.execute(update_query, (new_documents_path, course_id))
+        conn.commit()
+        return True
+    
+    except Exception as e:
+        logging.error(f"Error updating course documents path: {e}")
         conn.rollback()
         return False
     
@@ -646,7 +679,7 @@ def create_message(conversation_id: str, model: str, prompt: str, response: str)
     if conn is None:
         logging.error("Failed to connect to the database.")
         return None
-      
+
     cur: cursor = conn.cursor()
 
     try:

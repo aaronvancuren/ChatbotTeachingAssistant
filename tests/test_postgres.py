@@ -523,7 +523,7 @@ class TestCourses(TestCase):
 
         mock_get_db_connection.assert_called_once()
         mock_cursor.execute.assert_called_once_with(
-            "UPDATE courses SET title = %s WHERE id = %s;",
+            """ UPDATE courses SET title = %s WHERE id = %s; """,
             ('New Title', '123e4567-e89b-12d3-a456-426614174000')
         )
         mock_conn.commit.assert_called_once()
@@ -577,7 +577,7 @@ class TestCourses(TestCase):
 
         mock_get_db_connection.assert_called_once()
         mock_cursor.execute.assert_called_once_with(
-            "UPDATE courses SET model = %s WHERE id = %s;",
+            """ UPDATE courses SET model = %s WHERE id = %s; """,
             ('new_model', '123e4567-e89b-12d3-a456-426614174000')
         )
         mock_conn.commit.assert_called_once()

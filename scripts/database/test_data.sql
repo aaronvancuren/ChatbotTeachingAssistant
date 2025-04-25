@@ -42,9 +42,9 @@ BEGIN
 	INSERT INTO public.users (id, display_name, email, "role") VALUES (instructorTwo, 'Zesheng Chen', 'chenz@pfw.edu', 'instructor');
 	
 	INSERT INTO public.courses (id, instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path)
-		VALUES (courseOne, instructorOne, 'CS23200-01 Intro to C and Unix', 'CS', 23200, 01, 'Intro to C and Unix', 'gpt-4o', '', '', '');
+		VALUES (courseOne, instructorOne, 'CS23200-01 Intro to C and Unix', 'CS', 23200, 01, 'Intro to C and Unix', 'gpt-4o', '', '', '/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg');
 	INSERT INTO public.courses (id, instructor_id, display_name, subject, course_number, section_number, title, model, prompt, documents_path, image_path)
-		VALUES (courseTwo, instructorTwo, 'CS45500-01 Computer Security', 'CS', 44500, 01, 'Computer Security', 'gpt-4o', '', '', '');
+		VALUES (courseTwo, instructorTwo, 'CS45500-01 Computer Security', 'CS', 44500, 01, 'Computer Security', 'gpt-4o', '', '', '/static/assets/20230504-Crecent-Bridge-Drone-TE-001.jpg');
 
 	INSERT INTO public.user_courses (user_id, course_id) VALUES (studentOne, courseOne);
 	INSERT INTO public.user_courses (user_id, course_id) VALUES (studentTwo, courseOne);
