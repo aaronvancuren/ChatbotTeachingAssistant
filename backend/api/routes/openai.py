@@ -83,7 +83,9 @@ async def chat(request: ChatRequest, course_id: str, conversation_id: str, respo
         conversationData = user.get_conversation(uuid.UUID(reqBody['currentConversationId']))
 
         discussion = []
-        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" + os.getenv(f"{conversationData['conversation'].getModelAlias()}_PROMPT")})
+        discussion.append({'role': 'developer', 'content': os.getenv("BASE_PROMPT") + "\n" +
+                            os.getenv(f"{conversationData['conversation'].getModelAlias()}_PROMPT") + "\n" +
+                            user.activeCourse.prompt})
         for message in conversationData['messages']:
             discussion.append({'role': 'user', 'content': message.prompt})
             discussion.append({'role': 'assistant', 'content': message.response})
