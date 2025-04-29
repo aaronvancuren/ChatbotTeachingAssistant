@@ -416,7 +416,7 @@ function submitNewStudent() {
     return;
   }
 
-  fetch('/dashboard/add_student', {
+  fetch(`/dashboard/add_student?course_id=${courseId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: studentEmail, course_id: courseId })
